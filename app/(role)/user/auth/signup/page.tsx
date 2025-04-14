@@ -21,18 +21,20 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [touched, setTouched] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (name === "confirmPassword") {
+      setTouched(true);
+    }
+    // setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!")
-      return
-    } 
 
     try { 
       const response = await axios.post("/api/auth/signup",formData) 
@@ -58,7 +60,8 @@ export default function SignUp() {
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword)
   }
- 
+
+  const isPasswordMatch = formData.password === formData.confirmPassword && formData.password.length > 7;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8 relative overflow-hidden">
@@ -231,12 +234,14 @@ export default function SignUp() {
                   </div>
                 </div>
               </div>
-
+              {touched && !isPasswordMatch && (
+                <p className="text-sm text-red-500">Passwords do not match or lenght is smaller than 8</p>
+              )}
               <button 
                 type="submit"
-                disabled={loading}
+                disabled={!isPasswordMatch || loading}
                 className={`w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 ${
-                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                  !isPasswordMatch || loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
                 }`}
               >
                 {loading ? (<ButtonLoading name={"Processing..."}/>):("SIGN UP")}

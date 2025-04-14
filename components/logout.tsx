@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Loading from "./loading";
 
-export default function LogoutButton() {
+
+export default function LogoutButton({propUser}:{ propUser: string}) {
   const [loading,setLoading] = useState(false);
   const router = useRouter()
 
@@ -13,12 +14,12 @@ export default function LogoutButton() {
     try {
       const res = await axios.get("/api/auth/logout")
       if (res.status === 200) {
-        router.push("/user/auth/login")
+        router.push(`/${propUser}/auth/login`)
       }
     } catch (err) {
       console.error("Logout failed", err)
     }finally {
-      setLoading(false); // Stop loading
+      setLoading(false);  
     }
   }
   if(loading)return <Loading/>

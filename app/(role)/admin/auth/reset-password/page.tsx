@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import axios from "axios";
-import ButtonLoading from "@/components/buttonLoading";
+import axios from "axios"; 
 import { Eye, EyeOff } from "lucide-react";
 
 export default function ResetPassword() {
@@ -19,7 +18,7 @@ export default function ResetPassword() {
   useEffect(() => {
     if (!token) {
       alert("Invalid or missing token");
-      router.push("/user/auth/login");
+      router.push("/admin/auth/login");
     }
   }, [token, router]);
 
@@ -43,7 +42,7 @@ export default function ResetPassword() {
         headers: { "Content-Type": "application/json" },
       });
       alert(res.data.message);
-      router.push("/user/auth/login");
+      router.push("/admin/auth/login");
     } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong";
       alert(message);
@@ -51,8 +50,8 @@ export default function ResetPassword() {
       setLoading(false); 
     }
   };
-  const isPasswordMatch = password === confirmPassword && password.length > 0;
 
+  const isPasswordMatch = password === confirmPassword && password.length > 0;
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
@@ -142,7 +141,7 @@ export default function ResetPassword() {
         <p className="text-center text-sm text-gray-600 mt-6">
           Remembered your password?{" "}
           <a
-            href="/user/auth/login"
+            href="/admin/auth/login"
             className="text-blue-500 hover:underline"
           >
             Log In
