@@ -97,7 +97,7 @@ export default function SignIn() {
               </div>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Sign In</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Log In</h2>
 
             <form onSubmit={handleClick} className="space-y-4 sm:space-y-6 px-10 text-[#252525]">
               <div>

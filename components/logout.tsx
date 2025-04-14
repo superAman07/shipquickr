@@ -9,7 +9,7 @@ export default function LogoutButton() {
     try {
       const res = await axios.get("/api/auth/logout")
       if (res.status === 200) {
-        router.push("/user/auth/signin")
+        router.push("/user/auth/login")
       }
     } catch (err) {
       console.error("Logout failed", err)
