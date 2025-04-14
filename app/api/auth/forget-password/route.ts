@@ -12,12 +12,12 @@ export async function POST(req: NextRequest) {
   }
 
   const token = jwt.sign(
-    { userId: user.id },
+    { userId: user.id , role: user.role},
     process.env.JWT_SECRET!,
     { expiresIn: '15m' }
   );
 
-  await sendResetEmail(email, token);
+  await sendResetEmail(email, token, user.role);
 
   return NextResponse.json({ message: 'Reset link sent if email exists' });
 }

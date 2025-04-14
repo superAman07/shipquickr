@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 interface DecodedToken {
     userId: string;   
+    role: string;
 }
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid or expired token." }, { status: 400 });
     }
 
-    if (!decoded || !decoded.userId) {
+    if (!decoded || !decoded.userId || !decoded.role) {
         return NextResponse.json({ message: "Invalid token payload." }, { status: 400 });
     }
     
