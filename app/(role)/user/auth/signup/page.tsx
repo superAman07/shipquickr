@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react"
 import axios from "axios"
 import { useRouter } from "next/navigation" 
 import ButtonLoading from "@/components/buttonLoading"
+import { toast } from "react-toastify"
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -28,8 +29,7 @@ export default function SignUp() {
     setFormData({ ...formData, [name]: value });
     if (name === "confirmPassword") {
       setTouched(true);
-    }
-    // setFormData({ ...formData, [e.target.name]: e.target.value })
+    } 
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,14 +39,14 @@ export default function SignUp() {
     try { 
       const response = await axios.post("/api/auth/signup",formData) 
       if (response.status===201) { 
-        alert("Signup successful! Please sign in.");
+        toast.success("Signup successful! Please sign in.");
         router.push("/user/auth/login")
       }
     } catch (error:any) {
       if (error.response?.status === 409) { 
-        alert("User already exists. Please login.");
+        toast.error("User already exists. Please login.");
       } else {
-        alert(error.response?.data?.message || "Signup failed. Please try again.");
+        toast.error(error.response?.data?.message || "Signup failed. Please try again.");
       }
     }finally {
       setLoading(false);  

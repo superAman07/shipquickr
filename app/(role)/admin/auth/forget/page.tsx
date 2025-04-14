@@ -4,6 +4,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation"; 
 import ButtonLoading from "@/components/buttonLoading";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -16,13 +17,12 @@ export default function ForgotPassword() {
     try {
       const resSend = await axios.post("/api/auth/forget-password", { email }, {
         headers: { "Content-Type": "application/json" },
-      });
-      console.log("this is sended response: ", resSend);
-      alert("If the email exists, a reset link has been sent.");
+      }); 
+      toast.success("If the email exists, a reset link has been sent.");
       router.push("/admin/auth/login");
     } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong";
-      alert(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

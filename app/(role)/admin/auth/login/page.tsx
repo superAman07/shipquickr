@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react"
 import axios from "axios"
 import { useRouter } from "next/navigation"  
 import ButtonLoading from "@/components/buttonLoading"
+import { toast } from "react-toastify"
 
 export default function SignIn() {
   const [email,setEmail] = useState("");
@@ -20,16 +21,15 @@ export default function SignIn() {
   }
   const handleClick = async (e: React.FormEvent)=>{
     e.preventDefault();
-    try {
-      console.log('Email:', email);
-      console.log('Password:', password);
+    setLoading(true)
+    try { 
       const response = await axios.post('/api/auth/login', { email, password });
-       
+      toast.success(response.data.message);
       router.push('/admin/dashboard');
 
     } catch (error:any) {
       const message = error.response?.data?.message || "Something went wrong";
-      alert(message);
+      toast.error(message);
     } finally {
       setLoading(false); 
     }

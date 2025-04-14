@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import ButtonLoading from "@/components/buttonLoading";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function ResetPassword() {
   const searchParams = useSearchParams();
@@ -19,7 +20,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (!token) {
-      alert("Invalid or missing token");
+      toast.error("Invalid or missing token");
       router.push("/user/auth/login");
     }
   }, [token, router]);
@@ -47,18 +48,18 @@ export default function ResetPassword() {
     e.preventDefault();
     setLoading(true);
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
     try {
       const res = await axios.post("/api/auth/reset-password", { token, password }, {
         headers: { "Content-Type": "application/json" },
       });
-      alert(res.data.message);
+      toast.done(res.data.message);
       router.push("/user/auth/login");
     } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong";
-      alert(message);
+      toast.done(message);
     }finally {
       setLoading(false); 
     }

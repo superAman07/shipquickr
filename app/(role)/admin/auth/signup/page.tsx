@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react"
 import axios from "axios"
 import { useRouter } from "next/navigation" 
 import ButtonLoading from "@/components/buttonLoading"
+import { toast } from "react-toastify"
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -35,21 +36,21 @@ export default function SignUp() {
     e.preventDefault()
     setLoading(true)
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!")
+      toast.error("Passwords do not match!")
       return
     } 
 
     try { 
       const response = await axios.post("/api/auth/signup",{...formData, role: "admin"}) 
       if (response.status===201) { 
-        alert("Admin signup successful! Please sign in.");
+        toast.success("Admin signup successful! Please sign in.");
         router.push("/admin/auth/login")
       }
     } catch (error:any) {
       if (error.response?.status === 409) { 
-        alert("Admin already exists. Please login.");
+        toast.error("Admin already exists. Please login.");
       } else {
-        alert(error.response?.data?.message || "Signup failed. Please try again.");
+        toast.error(error.response?.data?.message || "Signup failed. Please try again.");
       }
     }finally {
       setLoading(false);  
