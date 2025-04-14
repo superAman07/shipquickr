@@ -5,7 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import axios from "axios"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" 
+import ButtonLoading from "@/components/buttonLoading"
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -14,11 +15,12 @@ export default function SignUp() {
     email: "",
     password: "",
     confirmPassword: "",
-  })
+  }) 
   const router = useRouter()
 
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -26,23 +28,27 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!")
       return
-    }
+    } 
 
     try { 
       const response = await axios.post("/api/auth/signup",formData) 
-      if (response.status===201) {
-        alert("Signup successful! Please sign in.")
+      if (response.status===201) { 
+        alert("Signup successful! Please sign in.");
         router.push("/user/auth/login")
-      } else {
-        alert(response.data.message || "Signup failed. Please try again.")
       }
-    } catch (error) {
-      console.error("Error during signup:", error)
-      alert("An error occurred. Please try again.")
-    }
+    } catch (error:any) {
+      if (error.response?.status === 409) { 
+        alert("User already exists. Please login.");
+      } else {
+        alert(error.response?.data?.message || "Signup failed. Please try again.");
+      }
+    }finally {
+      setLoading(false);  
+    } 
   }
 
   const togglePasswordVisibility = () => {
@@ -52,6 +58,7 @@ export default function SignUp() {
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword)
   }
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8 relative overflow-hidden">
@@ -225,11 +232,14 @@ export default function SignUp() {
                 </div>
               </div>
 
-              <button
+              <button 
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50"
+                disabled={loading}
+                className={`w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                }`}
               >
-                SIGN UP
+                {loading ? (<ButtonLoading name={"Processing..."}/>):("SIGN UP")}
               </button>
             </form>
 

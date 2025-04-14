@@ -1,14 +1,19 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import axios from "axios"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" 
+import Loading from "@/components/loading"
+import ButtonLoading from "@/components/buttonLoading"
+import LoadingBar from "@/components/loadingBar"
 
 export default function SignIn() {
   const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
+  const [password,setPassword] = useState(""); 
+  const [loading,setLoading] = useState(false);
+
   const router = useRouter()
 
   const [showPassword, setShowPassword] = useState(false) 
@@ -21,17 +26,19 @@ export default function SignIn() {
       console.log('Email:', email);
       console.log('Password:', password);
       const response = await axios.post('/api/auth/login', { email, password });
-      alert(response.data.message); 
+       
       router.push('/user/dashboard');
 
     } catch (error:any) {
       const message = error.response?.data?.message || "Something went wrong";
       alert(message);
+    } finally {
+      setLoading(false); 
     }
-  } 
-  
+  }  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8 relative overflow-hidden">
+      {loading && <LoadingBar/>}
       <div className="absolute w-[300px] sm:w-[400px] md:w-[500px] h-[300px] sm:h-[400px] md:h-[500px] rounded-full bg-blue-400/20 -left-24 -top-24 animate-pulse"></div>
       <div className="absolute w-[250px] sm:w-[300px] md:w-[400px] h-[250px] sm:h-[300px] md:h-[400px] rounded-full bg-indigo-500/20 right-0 bottom-0 animate-pulse delay-1000"></div>
 
@@ -145,9 +152,12 @@ export default function SignIn() {
 
               <button 
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50"
+                disabled={loading}
+                className={`w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                }`}
               >
-                SIGN IN
+                {loading ? (<ButtonLoading name={"Processing..."}/>):("LOG IN")}
               </button>
             </form>
 

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcrypt";
-import { verifyToken } from "@/lib/jwt";
-import { number } from "zod";
+import bcrypt from "bcrypt"; 
 import jwt from "jsonwebtoken";
 interface DecodedToken {
     userId: string;   
