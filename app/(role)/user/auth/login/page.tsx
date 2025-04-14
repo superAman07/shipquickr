@@ -4,10 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import axios from "axios"
-import { useRouter } from "next/navigation" 
-import Loading from "@/components/loading"
+import { useRouter } from "next/navigation"  
 import ButtonLoading from "@/components/buttonLoading"
-import LoadingBar from "@/components/loadingBar"
 
 export default function SignIn() {
   const [email,setEmail] = useState("");
@@ -38,7 +36,6 @@ export default function SignIn() {
   }  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8 relative overflow-hidden">
-      {loading && <LoadingBar/>}
       <div className="absolute w-[300px] sm:w-[400px] md:w-[500px] h-[300px] sm:h-[400px] md:h-[500px] rounded-full bg-blue-400/20 -left-24 -top-24 animate-pulse"></div>
       <div className="absolute w-[250px] sm:w-[300px] md:w-[400px] h-[250px] sm:h-[300px] md:h-[400px] rounded-full bg-indigo-500/20 right-0 bottom-0 animate-pulse delay-1000"></div>
 

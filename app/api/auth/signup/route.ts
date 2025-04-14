@@ -16,7 +16,7 @@ export async function POST(req: NextRequest){
             );
         }
 
-        const {firstName,lastName,email,password} = parsed.data;
+        const {firstName,lastName,email,password, role} = parsed.data;
         const alreadyExist = await prisma.user.findFirst({
             where: {
                 email: email
@@ -31,7 +31,8 @@ export async function POST(req: NextRequest){
                 firstName,
                 lastName,
                 email,
-                password: hashedpassword
+                password: hashedpassword,
+                role: role === "admin" ? "admin" : "user",
             }
         })
         if(user){
