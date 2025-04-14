@@ -53,11 +53,11 @@ export default function ResetPassword() {
       const res = await axios.post("/api/auth/reset-password", { token, password }, {
         headers: { "Content-Type": "application/json" },
       });
-      toast.done(res.data.message);
+      toast.success(res.data.message);
       router.push("/admin/auth/login");
     } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong";
-      toast.done(message);
+      toast.error(message);
     }finally {
       setLoading(false); 
     }
