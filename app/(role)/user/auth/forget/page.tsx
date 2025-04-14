@@ -1,33 +1,17 @@
 "use client"
 import { useState } from "react"
 import Image from "next/image"
-import Link from "next/link"
-import { Eye, EyeOff } from "lucide-react"
+import Link from "next/link" 
 import axios from "axios"
 import { useRouter } from "next/navigation"
 
 export default function SignIn() {
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
+  const [email,setEmail] = useState(""); 
   const router = useRouter()
-
-  const [showPassword, setShowPassword] = useState(false) 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+ 
   const handleClick = async (e: React.FormEvent)=>{
     e.preventDefault();
-    try {
-      console.log('Email:', email);
-      console.log('Password:', password);
-      const response = await axios.post('/api/auth/signin', { email, password });
-      alert(response.data.message); 
-      router.push('/user/dashboard');
-
-    } catch (error:any) {
-      const message = error.response?.data?.message || "Something went wrong";
-      alert(message);
-    }
+     
   } 
   
   return (
@@ -76,7 +60,7 @@ export default function SignIn() {
             </div>
             <div className="hidden lg:block absolute bottom-4 lg:-bottom-9 z-20 lg:left-[-105px] ">
               <Image
-                src="/card-image.png?height=125&width=125"
+                src="/forgot-boy.png?height=125&width=125"
                 alt="Delivery Person"
                 width={200}
                 height={200}
@@ -97,9 +81,9 @@ export default function SignIn() {
               </div>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Sign In</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-center text-[#252525] mb-6 sm:mb-8">Forget Your Password</h2>
 
-            <form onSubmit={handleClick} className="space-y-4 sm:space-y-6 px-10 text-black">
+            <form onSubmit={handleClick} className="space-y-4 sm:space-y-6 px-10 text-[#252525]">
               <div>
                 <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-1">
                   Email <span className="text-red-500">*</span>
@@ -115,45 +99,19 @@ export default function SignIn() {
                   placeholder="Enter your email id"
                 />
               </div>
- 
-              <div className="w-full ">
-                <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={password}
-                    onChange={(e)=>{setPassword(e.target.value)}}
-                    required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    placeholder="Enter password"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                    onClick={togglePasswordVisibility}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div> 
 
               <button 
                 type="submit"
                 className="w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50"
               >
-                SIGN IN
+                Send Otp
               </button>
             </form>
 
             <p className="text-center mt-4 sm:mt-6 text-gray-600 text-sm sm:text-base">
               Don't have an account?{" "}
               <Link
-                href="/auth/signup"
+                href="/user/auth/signup"
                 className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
               >
                 Sign Up

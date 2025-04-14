@@ -34,7 +34,7 @@ export async function POST(req:NextRequest) {
                 { status: 401 }
             );
         }
-        const token = signToken({userId: user.id, email: user.email})
+        const token = signToken({userId: user.id,firstName: user.firstName , email: user.email, role: user.role})
         const response = NextResponse.json(
             { message: "Login successful" },
             { status: 200 }

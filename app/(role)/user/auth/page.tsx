@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import SignIn from "./signin/page";
+import SignIn from "./login/page";
 import SignUp from "./signup/page";
 
 export default function(){

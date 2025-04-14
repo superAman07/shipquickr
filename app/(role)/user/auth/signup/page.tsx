@@ -32,11 +32,10 @@ export default function SignUp() {
     }
 
     try { 
-      const response = await axios.post("/api/auth/signup",formData)
-      console.log("this is from signup response: ",response)
+      const response = await axios.post("/api/auth/signup",formData) 
       if (response.status===201) {
         alert("Signup successful! Please sign in.")
-        router.push("/auth/signin")
+        router.push("/user/auth/login")
       } else {
         alert(response.data.message || "Signup failed. Please try again.")
       }
@@ -123,7 +122,7 @@ export default function SignUp() {
 
             <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Sign Up</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 text-black">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 text-[#252525]">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="w-full sm:w-1/2">
                   <label htmlFor="firstName" className="block text-gray-700 text-sm font-medium mb-1">
@@ -237,10 +236,10 @@ export default function SignUp() {
             <p className="text-center mt-4 sm:mt-6 text-gray-600 text-sm sm:text-base">
               Already have an account?{" "}
               <Link
-                href="/auth/signin"
+                href="/user/auth/login"
                 className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
               >
-                Sign In
+                Log In
               </Link>
             </p>
           </div>
