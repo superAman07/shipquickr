@@ -14,6 +14,7 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [touched, setTouched] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -28,6 +29,16 @@ export default function ResetPassword() {
 
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
+  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    if (name === "password") {
+      setPassword(value);
+    } else if (name === "confirmPassword") {
+      setConfirmPassword(value);
+      setTouched(true);  
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +62,7 @@ export default function ResetPassword() {
     }
   };
 
-  const isPasswordMatch = password === confirmPassword && password.length > 0;
+  const isPasswordMatch = password === confirmPassword && password.length > 7;
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
@@ -100,9 +111,10 @@ export default function ResetPassword() {
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
+                name="confirmPassword"
                 placeholder="Confirm new password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={handleChange}
                 required
                 className="w-full text-[#252525] border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
@@ -118,8 +130,8 @@ export default function ResetPassword() {
               </button>
             </div>
           </div>
-          {!isPasswordMatch && (
-            <p className="text-sm text-red-500">Passwords do not match</p>
+          {touched && !isPasswordMatch && (
+            <p className="text-sm text-red-500">Passwords do not match or password lenght might less than 8</p>
           )}
           <button
             type="submit"
