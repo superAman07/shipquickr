@@ -50,11 +50,22 @@ export default function DashboardSidebar() {
         "bg-indigo-950 text-white h-full transition-all duration-300 ease-in-out flex flex-col",
         sidebarCollapsed ? "w-16" : "w-50",
       )}
-    >
-      <div className="flex items-center p-4 h-16 border-b border-indigo-900">
-        {!sidebarCollapsed && <span className="text-xl font-bold text-white">ShipQuickr</span>}
-        {sidebarCollapsed && <span className="text-xl font-bold mx-auto">SQ</span>}
-      </div>
+    > 
+    <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Toggle sidebar"
+        onClick={toggleSidebar}
+        className={cn(
+          "absolute z-40 right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-white border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
+          "hover:bg-indigo-800",
+          "backdrop-blur bg-indigo-700/60",
+          sidebarCollapsed ? "rotate-180" : ""
+        )}
+        style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)" }}
+      >
+        <ChevronRight className="h-5 w-5" />
+      </Button>
       <nav className="flex-1 pt-4">
         {navItems.map((item) => (
           <NavItem

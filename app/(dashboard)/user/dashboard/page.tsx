@@ -113,7 +113,7 @@ export default function Dashboard() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Shipment News</h2>
-              <button className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+              <button type='button' className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
                 View All
               </button>
             </div>
