@@ -4,8 +4,11 @@ import { useRouter } from "next/navigation"
 import { useState } from "react" 
 import ButtonLoading from "./buttonLoading";
 
+interface Styling{
+  color?: string;
+}
 
-export default function LogoutButton({propUser}:{ propUser: string}) {
+export default function LogoutButton({propUser,propStyle}:{ propUser: string; propStyle?:Styling;}) {
   const [loading,setLoading] = useState(false);
   const router = useRouter()
 
@@ -28,7 +31,7 @@ export default function LogoutButton({propUser}:{ propUser: string}) {
       type="button"
       disabled={loading}
       onClick={handleLogout}
-      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+      className={`px-[1px] cursor-pointer py-2 ${propStyle?.color || "text-white"} rounded`}
     >
       {loading ? <ButtonLoading name="Logging out..."/>:"Logout"}
     </button>

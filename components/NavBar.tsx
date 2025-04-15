@@ -1,6 +1,6 @@
 'use client';
-import React, { useState } from 'react';
-import { Sun, Moon, Wallet, Bell, ChevronDown } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Sun, Moon, Wallet, Bell, ChevronDown, User, Lock, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { useTheme } from 'next-themes';
 import LogoutButton from './logout';
@@ -10,6 +10,20 @@ import Link from 'next/link';
 export default function Navbar({ userRole , userName}: { userRole: string , userName: string}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const dropdownRef = useRef<HTMLDivElement>(null);  
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);  
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-50">
@@ -52,15 +66,19 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
               </button>
 
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700">
-                  <a href="#profile" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700">
+                  <Link href="#profile" className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <User className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
                     Your Profile
-                  </a>
-                  <a href="#settings" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    Settings
-                  </a>
-                  <Link href="#settings" className="block px-4  text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <LogoutButton propUser={userRole}/>
+                  </Link>
+                  <Link href="#changePassowrd" className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
+                    Change Password
+                  </Link>
+                  <hr />
+                  <Link href={""} className="flex items-center gap-2 px-4 hover:bg-red-400 text-gray-700 dark:text-gray-300 ">
+                    <LogOut className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
+                    <LogoutButton propUser={userRole} propStyle={{color: "text-gray-500 dark:text-gray-200"}} />
                   </Link>
                 </div>
               )}
