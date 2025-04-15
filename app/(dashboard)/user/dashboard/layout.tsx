@@ -39,8 +39,7 @@ export default async function Dashboard({ children }: { children: React.ReactNod
         <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
           <DashboardSidebar />
         </aside>
-        <div className="flex-1 flex flex-col">
-          <DashboardHorizontalNav />
+        <div className="flex-1 flex flex-col"> 
           <main className="flex-1 p-6 overflow-auto">
             {children}
           </main>

@@ -15,7 +15,7 @@ export default function DashboardHorizontalNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex w-full justify-between gap-1 sm:gap-2 bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow mb-2  ">
+    <nav className="flex w-full justify-between gap-1 sm:gap-2 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow mb-2  ">
       {navItems.map((item) => (
         <Link
           key={item.href}

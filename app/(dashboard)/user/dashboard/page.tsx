@@ -1,7 +1,9 @@
-"use client"
-
 import React from 'react';
 import { Package, Truck, Info, Calculator, TrendingUp, AlertCircle } from 'lucide-react';
+import DashboardHorizontalNav from '@/components/DashboardHorizontalNav';
+import DashboardWelcome from '@/components/DashboardWelcome';
+import { cookies } from 'next/headers';
+import { jwtDecode } from 'jwt-decode';
 
 interface ShipmentCardProps {
   title: string;
@@ -53,8 +55,23 @@ function StatusCard({ count, percentage, status, color }: StatusCardProps) {
     </div>
   );
 }
+interface TokenDetailsType {
+  userId: string;
+  firstName: string;
+  email: string;
+  role: string;
+}
+export default async function Dashboard() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("token")?.value;
+  let firstName = "User";
+  if(token){
+    try{
+      const decoded = jwtDecode<{exp: number} & TokenDetailsType>(token);
+      firstName = decoded.firstName;
+    }catch{}
+  }
 
-export default function Dashboard() {
   const shipmentCards = [
     { title: "Total Shipment", value: "1", info: "Last 30 days", color: "bg-purple-600", icon: <Package className="h-6 w-6 text-white" /> },
     { title: "Today Shipment", value: "0", info: "20-12-2024", color: "bg-blue-500", icon: <Truck className="h-6 w-6 text-white" /> },
@@ -81,16 +98,15 @@ export default function Dashboard() {
   ];
 
   return (
-    <main className="pt-20 px-4 md:px-8 pb-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Shipment Cards */}
+    <main className=" px-4 md:px-8 pb-8">
+      <DashboardWelcome name={firstName}/>
+      <DashboardHorizontalNav />
+      <div className="max-w-7xl mx-auto"> 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
           {shipmentCards.map((card, index) => (
             <ShipmentCard key={index} {...card} />
           ))}
-        </div>
-
-        {/* Shipment Details */}
+        </div> 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -107,8 +123,7 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-
-        {/* Shipment News */}
+ 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
