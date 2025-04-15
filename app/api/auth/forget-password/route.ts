@@ -2,9 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendResetEmail } from '@/lib/email';
 import jwt from 'jsonwebtoken';
+import { forgetPasswordSchema } from '@/lib/validator/userSchema';
+import { ratelimit } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
-  const { email } = await req.json();
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
+  const { success } = await ratelimit.limit(ip as string);
+
+  if (!success) {
+    return NextResponse.json(
+      { message: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
+  }
+
+  const json = await req.json();
+  const parsed = forgetPasswordSchema.safeParse(json);
+  if (!parsed.success) {
+    const errorMessages = parsed.error.errors.map((err) => err.message);
+    return NextResponse.json({ message: "Validation Error", errors: errorMessages }, { status: 400 });
+  }
+
+  const { email } = parsed.data;
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {

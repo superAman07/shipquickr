@@ -1,19 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt"; 
 import jwt from "jsonwebtoken";
+import { resetPasswordSchema } from "@/lib/validator/userSchema";
+
 interface DecodedToken {
-    userId: string;   
-    role: string;
+  userId: string;
+  role: string;
 }
-export async function POST(req: Request) {
+export async function POST(req: NextRequest){
   try {
-    const { token, password } = await req.json();
-    console.log("Token received: ", token)
+    const json = await req.json();
+    const parsed = resetPasswordSchema.safeParse(json);
+    if (!parsed.success) {
+      const errorMessages = parsed.error.errors.map((err) => err.message);
+      return NextResponse.json({ message: "Validation Error", errors: errorMessages }, { status: 400 });
+    }
+
+    const { token, password } = parsed.data; 
+
     let decoded: DecodedToken;
     try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
-      console.log("Decoded token:", decoded);
+      decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
     } catch (err) {
       console.error("Token verification failed:", err);
       return NextResponse.json({ message: "Invalid or expired token." }, { status: 400 });

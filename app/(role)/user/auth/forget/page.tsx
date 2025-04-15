@@ -100,7 +100,7 @@ export default function ForgotPassword() {
             <p className="text-sm text-gray-600 text-center mb-6">
               Enter your email address below and we’ll send you a link to reset your password.
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 text-[#252525]">
               <div>
                 <label
                   htmlFor="email"

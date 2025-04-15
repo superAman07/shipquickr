@@ -3,8 +3,18 @@ import { signinSchema } from "@/lib/validator/userSchema";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt"
 import { signToken } from "@/lib/jwt";
+import { ratelimit } from "@/lib/rateLimit";
 
 export async function POST(req:NextRequest) {
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const { success } = await ratelimit.limit(ip as string);
+
+    if (!success) {
+        return NextResponse.json(
+        { message: "Too many requests. Please try again later." },
+        { status: 429 }
+        );
+    }
     try{
         const json = await req.json();
         const parsed = signinSchema.safeParse(json);
@@ -43,7 +53,8 @@ export async function POST(req:NextRequest) {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             path: '/',
-            maxAge: 60*60
+            maxAge: 60*60,
+            sameSite: "strict",
         })
         return response;
     }catch(e){
