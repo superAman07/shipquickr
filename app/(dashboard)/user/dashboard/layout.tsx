@@ -10,6 +10,7 @@ import { redirect } from "next/navigation"
 interface TokenDetailsType {
   userId: string,
   firstName: string,
+  lastName: string,
   email: string,
   role: string,
 }
@@ -32,9 +33,11 @@ export default async function Dashboard({ children }: { children: React.ReactNod
     redirect("/user/auth/login");
   }
 
+  const fullName = `${decoded.firstName} ${decoded.lastName}`
+
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-      <Navbar />
+      <Navbar userRole={decoded.role} userName={fullName}/>
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
         <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
           <DashboardSidebar />

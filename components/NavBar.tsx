@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Sun, Moon, Wallet, Bell, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { useTheme } from 'next-themes';
+import LogoutButton from './logout';
+import Link from 'next/link';
 
 
-export default function Navbar() {
+export default function Navbar({ userRole , userName}: { userRole: string , userName: string}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -45,21 +47,21 @@ export default function Navbar() {
                   alt="Profile"
                   className="h-8 w-8 rounded-full"
                 />
-                <span className="hidden md:block text-gray-700 dark:text-gray-300">Aman vishwakarma</span>
+                <span className="hidden md:block text-gray-700 dark:text-gray-300">{userName}</span>
                 <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
 
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700">
+                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700">
                   <a href="#profile" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     Your Profile
                   </a>
                   <a href="#settings" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     Settings
                   </a>
-                  <a href="#logout" className="block px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    Sign out
-                  </a>
+                  <Link href="#settings" className="block px-4  text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <LogoutButton propUser={userRole}/>
+                  </Link>
                 </div>
               )}
             </div>

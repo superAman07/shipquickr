@@ -1,8 +1,8 @@
 "use client"
 import axios from "axios"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import Loading from "./loading";
+import { useState } from "react" 
+import ButtonLoading from "./buttonLoading";
 
 
 export default function LogoutButton({propUser}:{ propUser: string}) {
@@ -21,16 +21,16 @@ export default function LogoutButton({propUser}:{ propUser: string}) {
     }finally {
       setLoading(false);  
     }
-  }
-  if(loading)return <Loading/>
+  } 
 
   return (
     <button
       type="button"
+      disabled={loading}
       onClick={handleLogout}
       className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
     >
-      Logout
+      {loading ? <ButtonLoading name="Logging out..."/>:"Logout"}
     </button>
   )
 }
