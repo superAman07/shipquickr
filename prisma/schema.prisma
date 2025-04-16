@@ -24,14 +24,5 @@ model User {
   createdAt DateTime @default(now())
 }
 
-model Admin {
-  id        Int     @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String  @unique @default("admin@admin.com")
-  password  String  @default("admin")
-  status    Boolean @default(true)  
-  role      String  @default("admin") 
-  createdAt DateTime @default(now())
-}
+ 
  
