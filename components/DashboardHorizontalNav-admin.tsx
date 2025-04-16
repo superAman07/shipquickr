@@ -5,13 +5,13 @@ import { Package, Truck, Info, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/user/dashboard", icon: <Package className="h-6 w-6" />, label: "Dashboard" },
-  { href: "/user/dashboard/orders", icon: <Truck className="h-6 w-6" />, label: "Orders" },
-  { href: "/user/dashboard/reports", icon: <Info className="h-6 w-6" />, label: "Reports" },
-  { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-6 w-6" />, label: "Rate Calculator" },
+  { href: "/admin/dashboard", icon: <Package className="h-6 w-6" />, label: "Dashboard" },
+  { href: "/admin/dashboard/orders", icon: <Truck className="h-6 w-6" />, label: "Orders" },
+  { href: "/admin/dashboard/reports", icon: <Info className="h-6 w-6" />, label: "Reports" },
+  { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-6 w-6" />, label: "Rate Calculator" },
 ];
 
-export default function DashboardHorizontalNav() {
+export default function DashboardHorizontalNavAdmin() {
   const pathname = usePathname();
 
   return (

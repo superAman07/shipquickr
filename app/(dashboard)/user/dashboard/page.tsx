@@ -1,9 +1,9 @@
 import React from 'react';
-import { Package, Truck, Info, Calculator, TrendingUp, AlertCircle } from 'lucide-react';
-import DashboardHorizontalNav from '@/components/DashboardHorizontalNav';
+import { Package, Truck, Info, Calculator, TrendingUp, AlertCircle } from 'lucide-react'; 
 import DashboardWelcome from '@/components/DashboardWelcome';
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
+import DashboardHorizontalNavUser from '@/components/DashboardHorizontalNav-user';
 
 interface ShipmentCardProps {
   title: string;
@@ -63,7 +63,7 @@ interface TokenDetailsType {
 }
 export default async function Dashboard() {
   const cookieStore = await cookies()
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("userToken")?.value;
   let firstName = "User";
   if(token){
     try{
@@ -100,7 +100,7 @@ export default async function Dashboard() {
   return (
     <main className=" px-4 md:px-8 pb-8">
       <DashboardWelcome name={firstName}/>
-      <DashboardHorizontalNav />
+      <DashboardHorizontalNavUser />
       <div className="max-w-7xl mx-auto"> 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
           {shipmentCards.map((card, index) => (

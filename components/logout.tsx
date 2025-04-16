@@ -15,7 +15,7 @@ export default function LogoutButton({propUser,propStyle}:{ propUser: string; pr
   const handleLogout = async () => {
     setLoading(true)
     try {
-      const res = await axios.get("/api/auth/logout")
+      const res = await axios.post("/api/auth/logout",{ userType: propUser })
       if (res.status === 200) {
         router.push(`/${propUser}/auth/login`)
       }

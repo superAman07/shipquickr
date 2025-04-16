@@ -4,6 +4,7 @@ import { changePasswordSchema } from "@/lib/validator/userSchema";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { verifyToken } from "@/lib/jwt";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest){
     const ip = req.headers.get("x-forwarded-for") || "unknown";
@@ -16,7 +17,10 @@ export async function POST(req: NextRequest){
         );
     }
     try{
-        const token = req.cookies.get("token")?.value;
+        // const token = req.cookies.get("token")?.value;
+        const cookieStore = await cookies(); 
+        const token = cookieStore.get("userToken")?.value || cookieStore.get("adminToken")?.value; // ✅ Now both tokens are handled
+
         if (!token) {
             return NextResponse.json(
                 { message: "Unauthorized" },

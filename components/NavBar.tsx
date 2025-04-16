@@ -71,7 +71,7 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
                     <User className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
                     Your Profile
                   </Link>
-                  <Link href="/user/dashboard/change-password" className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <Link href={`/${userRole}/dashboard/change-password`} className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
                     Change Password
                   </Link>

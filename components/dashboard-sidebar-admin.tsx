@@ -7,10 +7,10 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/user/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" },
-  { href: "/user/dashboard/orders", icon: <Truck className="h-5 w-5" />, label: "Orders" },
-  { href: "/user/dashboard/reports", icon: <Info className="h-5 w-5" />, label: "Reports" },
-  { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
+  { href: "/admin/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" },
+  { href: "/admin/dashboard/orders", icon: <Truck className="h-5 w-5" />, label: "Orders" },
+  { href: "/admin/dashboard/reports", icon: <Info className="h-5 w-5" />, label: "Reports" },
+  { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
 ];
  
 function NavItem({ icon, label, href, active = false, collapsed }: {
@@ -40,7 +40,7 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
   );
 }
 
-export default function DashboardSidebar() {
+export default function DashboardSidebarAdmin() {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);

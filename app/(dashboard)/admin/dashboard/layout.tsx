@@ -1,4 +1,4 @@
-import DashboardSidebar from "@/components/dashboard-sidebar" 
+import DashboardSidebarAdmin from "@/components/dashboard-sidebar-admin" 
 import Navbar from "@/components/NavBar" 
 import { ThemeProvider } from "@/components/theme-provider" 
 import { jwtDecode } from "jwt-decode"
@@ -14,7 +14,7 @@ interface TokenDetailsType {
 
 export default async function Dashboard({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
-  const token =cookieStore.get("token")?.value
+  const token =cookieStore.get("adminToken")?.value
   console.log("Token on server for admin:", token)
  
   
@@ -37,7 +37,7 @@ export default async function Dashboard({ children }: { children: React.ReactNod
       <Navbar userRole={decoded.role} userName={fullName}/>
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
         <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
-          <DashboardSidebar />
+          <DashboardSidebarAdmin />
         </aside>
         <div className="flex-1 flex flex-col"> 
           <main className="flex-1 p-6 overflow-auto">

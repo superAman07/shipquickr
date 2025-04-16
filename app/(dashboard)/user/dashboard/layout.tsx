@@ -1,9 +1,6 @@
-import DashboardSidebar from "@/components/dashboard-sidebar"
-import DashboardHorizontalNav from "@/components/DashboardHorizontalNav"
-import Navbar from "@/components/NavBar"
-import RateCalculator from "@/components/rate-calculator"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeToggle } from "@/components/theme-toggle"
+import DashboardSidebarUser from "@/components/dashboard-sidebar-user" 
+import Navbar from "@/components/NavBar" 
+import { ThemeProvider } from "@/components/theme-provider" 
 import { jwtDecode } from "jwt-decode"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"  
@@ -17,7 +14,7 @@ interface TokenDetailsType {
 
 export default async function Dashboard({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
-  const token =cookieStore.get("token")?.value
+  const token =cookieStore.get("userToken")?.value
   console.log("Token on server:", token)
  
   
@@ -40,7 +37,7 @@ export default async function Dashboard({ children }: { children: React.ReactNod
       <Navbar userRole={decoded.role} userName={fullName}/>
       <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
         <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
-          <DashboardSidebar />
+          <DashboardSidebarUser />
         </aside>
         <div className="flex-1 flex flex-col"> 
           <main className="flex-1 p-6 overflow-auto">

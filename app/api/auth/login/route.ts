@@ -62,8 +62,9 @@ export async function POST(req:NextRequest) {
         const response = NextResponse.json(
             { message: "Login successful" },
             { status: 200 }
-          );
-        response.cookies.set("token",token,{
+        );
+        const cookieName = isAdmin ? "adminToken" : "userToken";
+        response.cookies.set(cookieName,token,{
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             path: '/',
