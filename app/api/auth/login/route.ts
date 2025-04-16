@@ -25,7 +25,7 @@ export async function POST(req:NextRequest) {
                 { status: 400 }
             );
         }
-        const {email,password} = parsed.data;
+        const {email,password, isAdmin=false} = parsed.data;
         const user = await prisma.user.findUnique({
             where: {
                 email
@@ -44,6 +44,20 @@ export async function POST(req:NextRequest) {
                 { status: 401 }
             );
         }
+        if (isAdmin && user.role !== "admin") {
+            return NextResponse.json(
+              { message: "Unauthorized: Not an admin account." },
+              { status: 403 }
+            );
+        }
+        if (!isAdmin && user.role === "admin") {
+            return NextResponse.json(
+              { message: "Unauthorized: Admin should login from admin portal." },
+              { status: 403 }
+            );
+        }
+
+
         const token = signToken({userId: user.id, firstName: user.firstName,lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret")
         const response = NextResponse.json(
             { message: "Login successful" },

@@ -23,7 +23,7 @@ export default function SignIn() {
     e.preventDefault();
     setLoading(true)
     try { 
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await axios.post('/api/auth/login', { email, password ,isAdmin: true});
       toast.success(response.data.message);
       router.push('/admin/dashboard');
 

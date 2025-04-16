@@ -20,11 +20,18 @@ model User {
   email     String  @unique
   password  String
   status    Boolean @default(true)  
-  role      Role  @default(user) 
+  role      String  @default("user") 
   createdAt DateTime @default(now())
 }
 
-enum Role {
-  user
-  admin
+model Admin {
+  id        Int     @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String  @unique @default("admin@admin.com")
+  password  String  @default("admin")
+  status    Boolean @default(true)  
+  role      String  @default("admin") 
+  createdAt DateTime @default(now())
 }
+ 

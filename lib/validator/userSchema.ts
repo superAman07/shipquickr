@@ -10,7 +10,8 @@ export const signupSchema = z.object({
 
 export const signinSchema = z.object({
     email: z.string().email("Invalid email format"),
-    password: z.string().min(8,"Password is invalid")
+    password: z.string().min(8,"Password is invalid"),
+    isAdmin: z.boolean().optional(),
 })
 
 export const forgetPasswordSchema = z.object({
