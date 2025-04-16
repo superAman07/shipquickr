@@ -96,7 +96,7 @@ export default async function Dashboard() {
     "New partnership with major courier service announced",
     "Updated shipping rates for international destinations",
   ];
-
+  
   return (
     <main className=" px-4 md:px-8 pb-8">
       <DashboardWelcome name={firstName}/>
