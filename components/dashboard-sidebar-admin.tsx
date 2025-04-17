@@ -1,16 +1,16 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight } from "lucide-react";
+import { Package, Truck, Info, Calculator, ChevronRight, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/admin/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" },
-  { href: "/admin/dashboard/orders", icon: <Truck className="h-5 w-5" />, label: "Orders" },
-  { href: "/admin/dashboard/reports", icon: <Info className="h-5 w-5" />, label: "Reports" },
+  { href: "/admin/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" }, 
   { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
+  { href: "/admin/dashboard/users", icon: <Users className="h-5 w-5" />, label: "Users" },
+  { href: "/admin/dashboard/shipping-rates", icon: <Truck className="h-5 w-5" />, label: "Shipping Rates" },
 ];
  
 function NavItem({ icon, label, href, active = false, collapsed }: {
@@ -24,7 +24,7 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
     <Link
       href={href}
       className={cn(
-        "flex items-center px-4 py-3 cursor-pointer rounded-l-full transition-colors",
+        "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
         active ? "bg-indigo-900" : "hover:bg-indigo-900",
         collapsed ? "justify-center" : ""
       )}

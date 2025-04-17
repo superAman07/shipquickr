@@ -24,7 +24,7 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
     <Link
       href={href}
       className={cn(
-        "flex items-center px-4 py-3 cursor-pointer rounded-l-full transition-colors",
+        "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
         active ? "bg-indigo-900" : "hover:bg-indigo-900",
         collapsed ? "justify-center" : ""
       )}
