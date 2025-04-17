@@ -1,10 +1,66 @@
 import React from 'react';
-import { Package} from 'lucide-react'; 
+import { Users } from 'lucide-react'; 
 import DashboardWelcome from '@/components/DashboardWelcome';
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
 import DashboardHorizontalNavAdmin from '@/components/DashboardHorizontalNav-admin';
+import { prisma } from '@/lib/prisma';
 
+export default async function Dashboard() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("adminToken")?.value;
+  let firstName = "Admin";
+  if(token){
+    try{
+      const decoded = jwtDecode<{exp: number} & TokenDetailsType>(token);
+      firstName = decoded.firstName;
+    }catch{}
+  }
+  const totalUsers = await prisma.user.count({
+    where: {
+      role: "user"
+    }
+  })
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const usersInLast30Days = await prisma.user.count({
+    where: {
+      role:"user",
+      createdAt: {gte:thirtyDaysAgo}
+    }
+  })
+
+  const shipmentCards = [
+    {
+      title: "Total Users",
+      value: `${totalUsers}`,
+      info: "All Time",
+      color: "bg-blue-500",
+      icon: <Users className="h-6 w-6 text-white" />,
+    },
+    {
+      title: "New Users (30 Days)",
+      value: `${usersInLast30Days}`,
+      info: `Since ${thirtyDaysAgo.toLocaleDateString()}`,
+      color: "bg-purple-600",
+      icon: <Users className="h-6 w-6 text-white" />,
+    },
+  ]; 
+  
+  return (
+    <main className=" px-4 md:px-8 pb-8">
+      <DashboardWelcome name={firstName}/>
+      <DashboardHorizontalNavAdmin />
+      <div className="max-w-7xl mx-auto"> 
+        <div className="grid grid-cols-1 md:grid-cols-2 pt-4 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+          {shipmentCards.map((card, index) => (
+            <ShipmentCard key={index} {...card} />
+          ))}
+        </div>  
+      </div>
+    </main>
+  );
+}
 interface ShipmentCardProps {
   title: string;
   value: string;
@@ -36,37 +92,4 @@ interface TokenDetailsType {
   firstName: string;
   email: string;
   role: string;
-}
-export default async function Dashboard() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("adminToken")?.value;
-  let firstName = "Admin";
-  if(token){
-    try{
-      const decoded = jwtDecode<{exp: number} & TokenDetailsType>(token);
-      firstName = decoded.firstName;
-    }catch{}
-  }
-
-  const shipmentCards = [
-    { title: "Total Users", value: "0", info: "Last 30 days", color: "bg-purple-600", icon: <Package className="h-6 w-6 text-white" /> },
-    // { title: "Today Shipment", value: "0", info: "20-12-2024", color: "bg-blue-500", icon: <Truck className="h-6 w-6 text-white" /> },
-    // { title: "Yesterday Shipment", value: "0", info: "19-12-2024", color: "bg-indigo-600", icon: <Info className="h-6 w-6 text-white" /> },
-    // { title: "Total Load", value: "0", info: "In Kg", color: "bg-orange-500", icon: <TrendingUp className="h-6 w-6 text-white" /> },
-    // { title: "Avg. Shipment Cost", value: "0", info: "Know More", color: "bg-green-500", icon: <Calculator className="h-6 w-6 text-white" /> },
-  ];
-  
-  return (
-    <main className=" px-4 md:px-8 pb-8">
-      <DashboardWelcome name={firstName}/>
-      <DashboardHorizontalNavAdmin />
-      <div className="max-w-7xl mx-auto"> 
-        <div className="grid grid-cols-1 md:grid-cols-2 pt-4 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
-          {shipmentCards.map((card, index) => (
-            <ShipmentCard key={index} {...card} />
-          ))}
-        </div>  
-      </div>
-    </main>
-  );
 }

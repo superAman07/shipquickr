@@ -19,7 +19,8 @@ model User {
   lastName  String
   email     String  @unique
   password  String
-  status    Boolean @default(true)  
+  status    Boolean @default(true)  //abhi tak use nhi kia ye kahi
+  kycStatus KycStatus? 
   role      Role  @default(user) 
   createdAt DateTime @default(now())
 }
@@ -27,4 +28,10 @@ model User {
 enum Role {
   user
   admin
+}
+enum KycStatus {
+  pending
+  approved
+  rejected 
+  none
 }

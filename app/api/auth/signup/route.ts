@@ -43,6 +43,7 @@ export async function POST(req: NextRequest){
                 email,
                 password: hashedpassword,
                 role: role === "admin" ? "admin" : "user",
+                kycStatus: role === "user" ? "pending" : undefined,
             }
         })
         if(user){
