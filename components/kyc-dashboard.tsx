@@ -34,74 +34,6 @@ type User = {
   status: "Pending" | "Approved" | "Rejected"
 }
 
-// Sample data - replace with actual data from your database
-const data: User[] = [
-  {
-    id: "1",
-    serialNo: 1,
-    firstName: "jkHXaXYHxwmt",
-    lastName: "eHDxdEMJNE",
-    email: "digbinicholsf48@gmail.com",
-    status: "Pending",
-  },
-  {
-    id: "2",
-    serialNo: 2,
-    firstName: "QeThxkBM",
-    lastName: "kmZXHQLawivIAwd",
-    email: "hobargiumy1970@yahoo.com",
-    status: "Pending",
-  },
-  {
-    id: "3",
-    serialNo: 3,
-    firstName: "gatyPkhVALylkQD",
-    lastName: "qYrSRcuY",
-    email: "ilanahuffmangh6@gmail.com",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    serialNo: 4,
-    firstName: "RMBazoiEauTfN",
-    lastName: "TXHTaXbHZrrTXdd",
-    email: "ylaney1983@gmail.com",
-    status: "Pending",
-  },
-  {
-    id: "5",
-    serialNo: 5,
-    firstName: "Aman",
-    lastName: "vishwakarma",
-    email: "amanvishwa2806@gmail.com",
-    status: "Approved",
-  },
-  {
-    id: "6",
-    serialNo: 6,
-    firstName: "john",
-    lastName: "smith",
-    email: "xojim92940@clubemp.com",
-    status: "Pending",
-  },
-  {
-    id: "7",
-    serialNo: 7,
-    firstName: "TbzoeERFOMr",
-    lastName: "iAgVj0lJvHCUtIE",
-    email: "mack.jenny274994@yahoo.com",
-    status: "Pending",
-  },
-  {
-    id: "8",
-    serialNo: 8,
-    firstName: "eKTkmfgBWfc",
-    lastName: "nOtEIXNcExQBL",
-    email: "hamishvcp40@gmail.com",
-    status: "Pending",
-  },
-]
-
 export function KycDashboard() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -110,18 +42,17 @@ export function KycDashboard() {
   const [pageSize, setPageSize] = useState(10)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
 
-  const [datas,setDatas] = useState<User[]>([]);
+  const [data,setData] = useState<User[]>([]);
 
-  useEffect(()=>{
-    const fetchUser = async ()=>{
-        const response = await axios.get('api/admin/kyc');
-        const data = response.data
-        console.log("from admin kyc route",data)
-        setDatas(data.data)
-    }
-    fetchUser();
-    console.log("data from db of users",datas)
-  },[])
+  useEffect(() => {
+    axios.get("/api/admin/kyc")
+      .then((res) => {
+        if (res.data.success) {
+          setData(res.data.data);
+        }
+      })
+      .catch((err) => console.log("Axios error:", err));
+  }, []);
 
   // Define columns for the table
   const columns: ColumnDef<User>[] = [
@@ -135,7 +66,11 @@ export function KycDashboard() {
           </Button>
         )
       },
-      cell: ({ row }) => <div className="pl-4">{row.getValue("serialNo")}</div>,
+      cell: ({ row }) => {
+        const serialNo = row.index + 1;
+        // <div className="pl-4">{row.getValue("serialNo")}</div>
+        return <div className="pl-4">{serialNo}</div>
+    },
     },
     {
       accessorKey: "firstName",
