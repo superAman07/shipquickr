@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight, Users } from "lucide-react";
+import { Package, Truck, Info, Calculator, ChevronRight, Users, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useState } from "react";
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/admin/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" }, 
   { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
   { href: "/admin/dashboard/users", icon: <Users className="h-5 w-5" />, label: "Users" },
+  { href: "/admin/dashboard/kyc", icon: <UserCheck className="h-5 w-5" />, label: "KYC" },
   { href: "/admin/dashboard/shipping-rates", icon: <Truck className="h-5 w-5" />, label: "Shipping Rates" },
 ];
  
