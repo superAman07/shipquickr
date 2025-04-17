@@ -43,9 +43,11 @@ export async function POST(req: NextRequest){
                 email,
                 password: hashedpassword,
                 role: role === "admin" ? "admin" : "user",
-                kycStatus: role === "user" ? "pending" : undefined,
+                kycStatus: role === "admin" ? "none" : "pending",
+                // kycStatus: role === "user" ? "pending" : undefined,
             }
         })
+        console.log(user);
         if(user){
             return NextResponse.json({message: "User Added Successfully"},{status:201});
         }

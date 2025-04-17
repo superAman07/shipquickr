@@ -55,17 +55,7 @@ export async function POST(req:NextRequest) {
               { message: "Unauthorized: Admin should login from admin portal." },
               { status: 403 }
             );
-        } 
-        if (isAdmin && user.role === "admin") {
-            const res = await prisma.user.update({
-                where: {
-                    id: user.id
-                },
-                data: {
-                    kycStatus: "none"
-                }
-            });
-        }
+        }  
 
         const token = signToken({userId: user.id, firstName: user.firstName,lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret")
         const response = NextResponse.json(

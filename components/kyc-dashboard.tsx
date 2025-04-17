@@ -67,8 +67,7 @@ export function KycDashboard() {
         )
       },
       cell: ({ row }) => {
-        const serialNo = row.index + 1;
-        // <div className="pl-4">{row.getValue("serialNo")}</div>
+        const serialNo = row.index + 1; 
         return <div className="pl-4">{serialNo}</div>
     },
     },

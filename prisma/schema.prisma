@@ -20,7 +20,7 @@ model User {
   email     String  @unique
   password  String
   status    Boolean @default(true)  //abhi tak use nhi kia ye kahi
-  kycStatus KycStatus? 
+  kycStatus KycStatus @default(pending)
   role      Role  @default(user) 
   createdAt DateTime @default(now())
 }

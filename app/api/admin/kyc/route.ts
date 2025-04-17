@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       },
       where: {
         role: 'user', 
-        NOT: { kycStatus: null }, // remove users who haven't done any KYC
+        NOT: { kycStatus: undefined }, // remove users who haven't done any KYC
       },
       orderBy: {
         createdAt: 'desc',
