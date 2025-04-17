@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { updateKycStatus } from "@/app/actions/kyc-actions"
 import { Toaster } from "@/components/ui/sonner"
+import axios from "axios"
 
 // Define the User type
 type User = {
@@ -108,6 +109,19 @@ export function KycDashboard() {
   const [rowSelection, setRowSelection] = useState({})
   const [pageSize, setPageSize] = useState(10)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
+
+  const [datas,setDatas] = useState<User[]>([]);
+
+  useEffect(()=>{
+    const fetchUser = async ()=>{
+        const response = await axios.get('api/admin/kyc');
+        const data = response.data
+        console.log("from admin kyc route",data)
+        setDatas(data.data)
+    }
+    fetchUser();
+    console.log("data from db of users",datas)
+  },[])
 
   // Define columns for the table
   const columns: ColumnDef<User>[] = [

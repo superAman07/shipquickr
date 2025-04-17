@@ -12,12 +12,6 @@ export default function KycPage() {
       <header className="bg-primary text-primary-foreground p-4">
         <div className="container mx-auto">
           <h1 className="text-2xl font-bold">Kyc</h1>
-          <div className="text-sm breadcrumbs">
-            <ul>
-              <li>Dashboard</li>
-              <li>Kyc</li>
-            </ul>
-          </div>
         </div>
       </header>
 
