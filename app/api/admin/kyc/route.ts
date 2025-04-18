@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
         firstName: true,
         lastName: true,
         email: true,
+        status: true,
         kycStatus: true,
         role: true,
         createdAt: true,

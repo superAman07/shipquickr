@@ -31,7 +31,7 @@ type User = {
   firstName: string
   lastName: string
   email: string
-  status: "Pending" | "Approved" | "Rejected"
+  kycStatus: "Pending" | "Approved" | "Rejected"
 }
 
 
@@ -130,8 +130,8 @@ export function KycDashboard() {
         }
 
         return (
-          <Select defaultValue={user.status} onValueChange={handleStatusChange} disabled={isUpdating === user.id}>
-            <SelectTrigger className="w-full">
+          <Select defaultValue={user.kycStatus} onValueChange={handleStatusChange} disabled={isUpdating === user.id}>
+            <SelectTrigger className="w-full ">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>

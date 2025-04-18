@@ -29,7 +29,7 @@ type User = {
   firstName: string
   lastName: string
   email: string
-  status: "Pending" | "Approved" | "Rejected"
+  status: boolean
 }
 
 
@@ -43,7 +43,7 @@ export function UsersInAdminDashboard() {
   const [data,setData] = useState<User[]>([]);
 
   useEffect(() => {
-    axios.get("/api/admin/kyc")
+    axios.get("/api/admin/update-user-status")
       .then((res) => {
         if (res.data.success) {
           setData(res.data.data);
@@ -108,10 +108,9 @@ export function UsersInAdminDashboard() {
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => {
-        const user = row.original
+      cell: ({ row }) => { 
         return (
-          <StatusToggle />
+          <StatusToggle userId={row.original.id} initialStatus={row.original.status}  />
         )
       },
     },
