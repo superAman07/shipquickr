@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SwitchIcon } from "./ui/SwitchIcon";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export function StatusToggle({ userId, initialStatus }: { userId: string; initialStatus: boolean }) {
   const [checked, setChecked] = useState(initialStatus);
@@ -18,9 +19,9 @@ export function StatusToggle({ userId, initialStatus }: { userId: string; initia
         userId,
         status: updatedStatus,
       });
-      console.log("Status updated successfully");
-    } catch (error) {
-      console.error("Failed to update status:", error);
+      toast.success("Status updated successfully");
+    } catch (error:any) {
+      toast.error("Failed to update status:", error);
       setChecked(!updatedStatus); 
     } finally {
       setLoading(false);

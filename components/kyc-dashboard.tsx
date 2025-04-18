@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { updateKycStatus } from "@/app/actions/kyc-actions"
 import { Toaster } from "@/components/ui/sonner"
 import axios from "axios"
+import { toast } from "react-toastify"
 
 // Define the User type
 type User = {
@@ -52,7 +53,7 @@ export function KycDashboard() {
           setData(res.data.data);
         }
       })
-      .catch((err) => console.log("Axios error:", err));
+      .catch((err) => toast.error("Axios error:", err));
   }, []);
 
   // Define columns for the table
