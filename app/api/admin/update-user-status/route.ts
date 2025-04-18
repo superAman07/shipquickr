@@ -28,6 +28,9 @@ export async function GET() {
           email: true,
           status: true,
         },
+        where: {
+          role: "user"
+        },
         orderBy: {
           createdAt: "desc",
         },

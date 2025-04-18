@@ -51,8 +51,7 @@ export function UsersInAdminDashboard() {
       })
       .catch((err) => console.log("Axios error:", err));
   }, []);
-
-  // Define columns for the table
+ 
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: "serialNo",
