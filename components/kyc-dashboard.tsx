@@ -20,21 +20,23 @@ import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { updateKycStatus } from "@/app/actions/kyc-actions"
-import { Toaster } from "@/components/ui/sonner"
 import axios from "axios"
-import { toast } from "react-toastify"
-
-// Define the User type
+import { toast } from "react-toastify" 
+import { useRouter } from "next/navigation"
+ 
 type User = {
   id: string
   serialNo: number
   firstName: string
   lastName: string
   email: string
-  kycStatus: "Pending" | "Approved" | "Rejected"
+  kycStatus: string  
 }
-
+ 
+const capitalizeFirstLetter = (str: string): string => {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
 
 export function KycDashboard() {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -44,16 +46,29 @@ export function KycDashboard() {
   const [pageSize, setPageSize] = useState(10)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
 
-  const [data,setData] = useState<User[]>([]);
+  const [data, setData] = useState<User[]>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
-    axios.get("/api/admin/kyc")
-      .then((res) => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get("/api/admin/kyc")
         if (res.data.success) {
-          setData(res.data.data);
+          // Map the API data to match our expected format
+          const formattedData = res.data.data.map((user: any) => ({
+            ...user,
+            id: user.id.toString(), // Ensure id is a string
+          }));
+          setData(formattedData)
         }
-      })
-      .catch((err) => toast.error("Axios error:", err));
+      } catch (err:any) {
+        toast.error("Failed to fetch KYC data")
+        console.error("Axios error:", err)
+      }
+    }
+
+    fetchData()
   }, []);
 
   // Define columns for the table
@@ -71,7 +86,7 @@ export function KycDashboard() {
       cell: ({ row }) => {
         const serialNo = row.index + 1; 
         return <div className="pl-4">{serialNo}</div>
-    },
+      },
     },
     {
       accessorKey: "firstName",
@@ -110,29 +125,43 @@ export function KycDashboard() {
       cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
     },
     {
-      accessorKey: "status",
+      accessorKey: "kycStatus",
       header: "Status",
       cell: ({ row }) => {
         const user = row.original
-
-        const handleStatusChange = async (value: string) => {
-          setIsUpdating(user.id)
-          try {
-            // Call server action to update status
-            await updateKycStatus({
-              userId: user.id,
-              status: value as "Pending" | "Approved" | "Rejected",
-            })
-          } catch (error) {
+        
+        // Get the original kycStatus from backend
+        const originalStatus = user.kycStatus;
+         
+        const capitalizedStatus = capitalizeFirstLetter(originalStatus);
+        
+        const handleStatusChange = async (userId: string, newStatus: string) => {
+          setIsUpdating(userId)
+          try { 
+            const backendStatus = newStatus.toLowerCase();
             
+            await axios.post('/api/admin/kyc',{ userId, status: backendStatus }) 
+            toast.success("KYC Status updated successfully");
+            setData((prevData) =>
+              prevData.map((item) =>
+                item.id === userId ? { ...item, kycStatus: backendStatus } : item
+              )
+            ) 
+          } catch(err) {
+            toast.error("Could not update KYC status");
+            console.error("Status update failed:", err);
           } finally {
             setIsUpdating(null)
           }
         }
 
         return (
-          <Select defaultValue={user.kycStatus} onValueChange={handleStatusChange} disabled={isUpdating === user.id}>
-            <SelectTrigger className="w-full ">
+          <Select 
+            value={capitalizedStatus}  
+            onValueChange={(v) => handleStatusChange(user.id, v)}
+            disabled={isUpdating === user.id}
+          >
+            <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
@@ -232,7 +261,6 @@ export function KycDashboard() {
         </div>
       </div>
 
-      {/* <div className="rounded-md border overflow-x-auto"> */}
       <div className="rounded-md border w-full max-w-full overflow-x-auto lg:overflow-x-visible">
         <Table className="min-w-max table-auto">
           <TableHeader>
