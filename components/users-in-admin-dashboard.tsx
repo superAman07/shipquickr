@@ -19,12 +19,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { updateKycStatus } from "@/app/actions/kyc-actions"
-import { Toaster } from "@/components/ui/sonner"
-import axios from "axios"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" 
+import axios from "axios" 
+import { StatusToggle } from "./StatusToggleAdminsUserAction"
 
-// Define the User type
 type User = {
   id: string
   serialNo: number
@@ -35,13 +33,12 @@ type User = {
 }
 
 
-export function KycDashboard() {
+export function UsersInAdminDashboard() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [pageSize, setPageSize] = useState(10)
-  const [isUpdating, setIsUpdating] = useState<string | null>(null)
+  const [pageSize, setPageSize] = useState(10) 
 
   const [data,setData] = useState<User[]>([]);
 
@@ -113,33 +110,8 @@ export function KycDashboard() {
       header: "Status",
       cell: ({ row }) => {
         const user = row.original
-
-        const handleStatusChange = async (value: string) => {
-          setIsUpdating(user.id)
-          try {
-            // Call server action to update status
-            await updateKycStatus({
-              userId: user.id,
-              status: value as "Pending" | "Approved" | "Rejected",
-            })
-          } catch (error) {
-            
-          } finally {
-            setIsUpdating(null)
-          }
-        }
-
         return (
-          <Select defaultValue={user.status} onValueChange={handleStatusChange} disabled={isUpdating === user.id}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Approved">Approved</SelectItem>
-              <SelectItem value="Rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
+          <StatusToggle />
         )
       },
     },
@@ -160,10 +132,7 @@ export function KycDashboard() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>Copy email</DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.open(`/admin/kyc/${user.id}`, "_blank")}>
-                View details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.open(`/admin/kyc/${user.id}/documents`, "_blank")}>
-                View documents
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

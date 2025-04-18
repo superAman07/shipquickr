@@ -12,6 +12,8 @@ interface KycHeaderProps {
   title?: string
   subtitle?: string
 }
+
+
 export default function KycPage({ title = "KYC Management", subtitle="Review and manage user KYC verification status" }: KycHeaderProps) {
   return (
     <div className="flex flex-col  min-h-screen">
