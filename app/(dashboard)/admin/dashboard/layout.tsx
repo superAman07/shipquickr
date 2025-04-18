@@ -35,15 +35,15 @@ export default async function Dashboard({ children }: { children: React.ReactNod
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <Navbar userRole={decoded.role} userName={fullName}/>
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+      <div className="flex min-h-screen w-full bg-gray-50 dark:bg-gray-900 pt-16">
         <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
           <DashboardSidebarAdmin />
         </aside>
-        <div className="flex-1 flex flex-col"> 
-          <main className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 flex flex-col overflow-hidden"> 
+          <main className="flex-1 pt-2 overflow-hidden  ">
             {children}
           </main>
-        </div>
+        </div> 
       </div>
     </ThemeProvider>
   )

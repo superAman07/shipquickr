@@ -192,8 +192,8 @@ export function KycDashboard() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-col md:flex-row items-center py-4 gap-4 justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center py-2 sm:py-4 gap-3 sm:gap-4 justify-between">
+        <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
           <span>Show</span>
           <Select
             value={pageSize.toString()}
@@ -216,28 +216,29 @@ export function KycDashboard() {
           <span>entries</span>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm">
           <span>Search:</span>
-          <div className="relative w-full md:w-auto">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full sm:w-auto">
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
               value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
               onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
-              className="pl-8 w-full md:w-[300px]"
+              className="pl-7 sm:pl-8 h-8 text-xs sm:text-sm w-full sm:w-[200px] md:w-[300px]"
             />
           </div>
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
+      {/* <div className="rounded-md border overflow-x-auto"> */}
+      <div className="rounded-md border w-full max-w-full overflow-x-auto lg:overflow-x-visible">
+        <Table className="min-w-max table-auto">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm">
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )
@@ -250,13 +251,13 @@ export function KycDashboard() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id} className="px-2 py-2 sm:px-4 sm:py-3">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-16 sm:h-24 text-center text-xs sm:text-sm">
                   No results.
                 </TableCell>
               </TableRow>
@@ -265,8 +266,8 @@ export function KycDashboard() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between space-x-2 py-4">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2 py-2 sm:py-4">
+        <div className="text-xs sm:text-sm text-muted-foreground">
           Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
           {Math.min(
             (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
@@ -274,16 +275,17 @@ export function KycDashboard() {
           )}{" "}
           of {table.getFilteredRowModel().rows.length} entries
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            className="text-xs h-8 px-2 sm:px-3"
           >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="text-xs h-8 px-2 sm:px-3">
             Next
           </Button>
         </div>
