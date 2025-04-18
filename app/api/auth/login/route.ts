@@ -44,6 +44,12 @@ export async function POST(req:NextRequest) {
                 { status: 401 }
             );
         }
+        if(user.status=== false){
+            return NextResponse.json(
+                { message: "Your account has been deactivated. Please contact support." },
+                { status: 403 }
+            );
+        }
         if (isAdmin && user.role !== "admin") {
             return NextResponse.json(
               { message: "Unauthorized: Not an admin account." },
