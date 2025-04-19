@@ -104,8 +104,7 @@ export default function RateCalculator() {
           {loading ? "Checking..." : "Check Price"}
         </Button>
       </form>
-
-      {/* Right: Shipping Rates */}
+ 
       <div className="w-full pl-4 md:w-1/2">
         <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Shipping Rates</h2>
         {rates.length === 0 && <div className="text-gray-500 dark:text-gray-400">No rates found.</div>}
