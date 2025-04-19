@@ -205,7 +205,7 @@ export default function KYC() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Number Of Shipments</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Number Of Shipments {requiredField}</label>
               <select
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none custom-select"
                 title="Select an option"
@@ -250,7 +250,7 @@ export default function KYC() {
               />
             </div>
             <div className="md:col-span-2 lg:col-span-3 space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Billing Address</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Billing Address {requiredField}</label>
               <textarea
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 rows={2}
@@ -348,7 +348,7 @@ export default function KYC() {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">KYC Type</label>
+              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">KYC Type {requiredField}</label>
               <select
                 id="bank-name"
                 className="w-full px-4 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none custom-select"
@@ -468,7 +468,7 @@ export default function KYC() {
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bank Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bank Name {requiredField}</label>
               <select
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none custom-select"
                 title="Select Bank Name"
