@@ -40,7 +40,7 @@ export default async function Dashboard({ children }: { children: React.ReactNod
           <DashboardSidebarAdmin />
         </aside>
         <div className="flex-1 flex flex-col overflow-hidden"> 
-          <main className="flex-1 pt-2 overflow-hidden  ">
+          <main className="flex-1 p-6 overflow-hidden  ">
             {children}
           </main>
         </div> 
