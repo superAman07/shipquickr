@@ -3,6 +3,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Package, Truck, Info, Calculator, HousePlus, Wallet, UserCheck, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { KYCNavIcon } from "./ui/kycNavIcon";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import useSWR from 'swr';
+
 
 function CODIcon({ className, label }: { className?: string; label?: string }) {
   return (
@@ -17,17 +22,26 @@ function CODIcon({ className, label }: { className?: string; label?: string }) {
   );
 }
 
-const navItems = [ 
-  { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-8 w-8" />, label: "Rate Calculator" },
-  { href: "/user/dashboard/wharehouse", icon: <HousePlus  className="h-8 w-8" />, label: "Add Warehouse" },
-  { href: "/user/dashboard/orders", icon: <Wallet className="h-8 w-8" />, label: "Recharge Wallet" },
-  { href: "/user/dashboard/orders", icon: <UserCheck className="h-8 w-8" />, label: "KYC" },
-  { href: "/user/dashboard/reports", icon: <CODIcon label="COD" className="h-8 w-8" />},
-  { href: "/user/dashboard/orders", icon: <Truck className="h-8 w-8" />, label: "Transporter ID" },
-];
+
 
 export default function DashboardHorizontalNavUser() {
   const pathname = usePathname();
+  const fetcher = (url: string) => axios.get(url).then(res => res.data);
+
+  const { data, error, isLoading } = useSWR('/api/user/kyc', fetcher, {
+    refreshInterval: 5000,
+  });
+
+  const kycStatus = isLoading ? "loading" : data?.kycStatus || "not_found";
+
+  const navItems = [ 
+    { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-8 w-8" />, label: "Rate Calculator" },
+    { href: "/user/dashboard/wharehouse", icon: <HousePlus  className="h-8 w-8" />, label: "Add Warehouse" },
+    { href: "/user/dashboard/orders", icon: <Wallet className="h-8 w-8" />, label: "Recharge Wallet" },
+    { href: "/user/dashboard/orders", icon: <KYCNavIcon status={kycStatus}/>, label: "KYC" },
+    { href: "/user/dashboard/reports", icon: <CODIcon label="COD" className="h-8 w-8" />},
+    { href: "/user/dashboard/orders", icon: <Truck className="h-8 w-8" />, label: "Transporter ID" },
+  ];
 
   return (
     <nav className="flex flex-wrap lg:flex-nowrap w-full overflow-hidden justify-between gap-1 sm:gap-2 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-4 shadow mb-2  ">

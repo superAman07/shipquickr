@@ -25,6 +25,8 @@ export default function SignIn() {
     try { 
       const response = await axios.post('/api/auth/login', { email, password });
       toast.success(response.data.message);
+      console.log(response)
+      console.log(response.data)
       router.push('/user/dashboard');
 
     } catch (error:any) {

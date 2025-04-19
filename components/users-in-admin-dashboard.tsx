@@ -22,6 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" 
 import axios from "axios" 
 import { StatusToggle } from "./StatusToggleAdminsUserAction"
+import { prisma } from "@/lib/prisma"
+import { toast } from "react-toastify"
 
 type User = {
   id: string
@@ -129,7 +131,19 @@ export function UsersInAdminDashboard() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>Copy email</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.open(`/admin/kyc/${user.id}`, "_blank")}>
+              <DropdownMenuItem onClick={async ()=>{
+                if (!confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
+                  return
+                }
+                try{
+                  const res = await axios.delete('/api/admin/update-user-status', {data: {userId: user.id}});
+                  toast.success(res.data.message)
+                  setData(prev => prev.filter(u => u.id !== user.id))
+                }catch(e:any){
+                  toast.error("Delete error:", e)
+                  alert("Failed to delete user. See console for details.")
+                }
+              }}>
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>

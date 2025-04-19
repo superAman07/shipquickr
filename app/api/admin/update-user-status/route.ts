@@ -42,3 +42,28 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Something went wrong" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { userId } = await req.json();
+    if (!userId) {
+      return NextResponse.json({ message: "userId is required" }, { status: 400 });
+    }
+
+    const isPresent = await prisma.user.findUnique({
+      where: { id: parseInt(userId) }
+    });
+    if (!isPresent) {
+      return NextResponse.json({ message: "User does not exist" }, { status: 404 });
+    }
+
+    await prisma.user.delete({
+      where: { id: parseInt(userId) }
+    });
+    return NextResponse.json({ message: "User deleted successfully" }, { status: 200 });
+
+  } catch (error) {
+    console.error("Delete User Error:", error);
+    return NextResponse.json({ message: "Error deleting user" }, { status: 500 });
+  }
+}
