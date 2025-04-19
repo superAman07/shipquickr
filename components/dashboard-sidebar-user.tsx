@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Package, Truck, Info, Calculator, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/user/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" },
@@ -43,6 +43,18 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
 export default function DashboardSidebarUser() {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); 
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      setSidebarCollapsed(isMobile);
+    };
+ 
+    handleResize(); 
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   return (
     <aside
