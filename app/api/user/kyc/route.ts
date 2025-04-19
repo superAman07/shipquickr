@@ -14,13 +14,11 @@ interface TokenDetailsType {
 export async function GET(){ 
     try{
         const cookiesStores = await cookies();
-        const token = cookiesStores.get('userToken')?.value;
-        console.log("debugged toke: ", token)
+        const token = cookiesStores.get('userToken')?.value; 
         if (!token) {
             return NextResponse.json({ error: "Token not found" }, { status: 401 });
         }
-        const decoded = jwtDecode<TokenDetailsType>(token)
-        console.log("debugged decoded: ", decoded)
+        const decoded = jwtDecode<TokenDetailsType>(token) 
         if (decoded.exp * 1000 < Date.now()) {
             return NextResponse.json({ error: "Token expired" }, { status: 401 });
         }
@@ -30,8 +28,7 @@ export async function GET(){
             },select: {
                 kycStatus: true
             }
-        })
-        console.log("debugged user: ", user)
+        }) 
         if(!user){
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
