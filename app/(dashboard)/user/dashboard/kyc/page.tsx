@@ -4,6 +4,9 @@ import { Check, Upload, Building2, User, CreditCard, FileText, ChevronRight } fr
 import { Input } from "@/components/ui/input"
 
 export default function KYC() {
+  // Extend Tailwind with custom colors if needed
+  const darkGray850 = "rgb(28, 32, 40)" // Darker shade for headers in dark mode
+
   const [form, setForm] = useState({
     // Add all fields here as per your UI
     kycType: "",
@@ -34,6 +37,9 @@ export default function KYC() {
     signature: null,
     companyLogo: null,
   })
+
+  // Add a CSS utility class for required fields
+  const requiredField = <span className="text-red-500 ml-1">*</span>
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -80,7 +86,7 @@ export default function KYC() {
 
       {/* Personal Information */}
       <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all">
-        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-750 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
               <span className="text-sm font-bold">1</span>
@@ -132,7 +138,7 @@ export default function KYC() {
 
       {/* Company Information */}
       <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all">
-        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-750 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
               <span className="text-sm font-bold">2</span>
@@ -153,6 +159,7 @@ export default function KYC() {
                     type="radio"
                     name="gst"
                     value="yes"
+                    checked={form.gst === "yes"}
                     defaultChecked
                     className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                   />
@@ -160,6 +167,7 @@ export default function KYC() {
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Input
+                    required
                     type="radio"
                     name="gst"
                     value="no"
@@ -170,18 +178,21 @@ export default function KYC() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">GST Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                GST Number{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter GST number"
               />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Upload GST Certificate
+                Upload GST Certificate{requiredField}
               </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="gst-certificate" />
+                <Input required type="file" className="sr-only" id="gst-certificate" />
                 <label
                   htmlFor="gst-certificate"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -207,23 +218,32 @@ export default function KYC() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Company Name{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter company name"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Email Id</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Company Email Id{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter company email"
                 type="email"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Contact No</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Company Contact No{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter contact number"
                 type="tel"
@@ -238,38 +258,48 @@ export default function KYC() {
               ></textarea>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pincode</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Pincode{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter pincode"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">State</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">State{requiredField}</label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter state"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">City{requiredField}</label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter city"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Website Url</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Website Url{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter website URL"
                 type="url"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Signature</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Upload Signature{requiredField}
+              </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="signature" />
+                <Input required type="file" className="sr-only" id="signature" />
                 <label
                   htmlFor="signature"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -282,9 +312,11 @@ export default function KYC() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Company Logo</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Upload Company Logo{requiredField}
+              </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="company-logo" />
+                <Input required type="file" className="sr-only" id="company-logo" />
                 <label
                   htmlFor="company-logo"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -302,7 +334,7 @@ export default function KYC() {
 
       {/* KYC Details */}
       <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all">
-        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-750 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
               <span className="text-sm font-bold">3</span>
@@ -316,11 +348,10 @@ export default function KYC() {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">KYC Type</label>
-              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bank Name</label>
+              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">KYC Type</label>
               <select
                 id="bank-name"
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none custom-select"
+                className="w-full px-4 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none custom-select"
               >
                 <option>Select KYC Type</option>
                 <option>Individual</option>
@@ -328,18 +359,21 @@ export default function KYC() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pan Card No.</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Pan Card No.{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter PAN card number"
               />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                ID Proof - Upload Pan Card
+                ID Proof - Upload Pan Card{requiredField}
               </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="pan-card" />
+                <Input required type="file" className="sr-only" id="pan-card" />
                 <label
                   htmlFor="pan-card"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -354,24 +388,28 @@ export default function KYC() {
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address Proof</label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
                 value="Aadhar Card"
                 disabled
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Enter Aadhaar No.</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Enter Aadhaar No.{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter Aadhaar number"
               />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Upload Aadhaar Card Front Side
+                Upload Aadhaar Card Front Side{requiredField}
               </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="aadhaar-front" />
+                <Input required type="file" className="sr-only" id="aadhaar-front" />
                 <label
                   htmlFor="aadhaar-front"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -385,10 +423,10 @@ export default function KYC() {
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Upload Aadhaar Card Back Side
+                Upload Aadhaar Card Back Side{requiredField}
               </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="aadhaar-back" />
+                <Input required type="file" className="sr-only" id="aadhaar-back" />
                 <label
                   htmlFor="aadhaar-back"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -406,7 +444,7 @@ export default function KYC() {
 
       {/* Bank Information */}
       <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all">
-        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-750 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
               <span className="text-sm font-bold">4</span>
@@ -420,8 +458,11 @@ export default function KYC() {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Holder Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Account Holder Name{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter account holder name"
               />
@@ -441,7 +482,6 @@ export default function KYC() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Type</label>
               <label htmlFor="account-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Type</label>
               <select
                 id="account-type"
@@ -453,32 +493,41 @@ export default function KYC() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account No.</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Account No.{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter account number"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Re-Enter Account No</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Re-Enter Account No{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Re-enter account number"
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">IFSC Code</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                IFSC Code{requiredField}
+              </label>
               <Input
+                required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter IFSC code"
               />
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Upload Cancelled Cheque
+                Upload Cancelled Cheque{requiredField}
               </label>
               <div className="relative">
-                <Input type="file" className="sr-only" id="cancelled-cheque" />
+                <Input required type="file" className="sr-only" id="cancelled-cheque" />
                 <label
                   htmlFor="cancelled-cheque"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
