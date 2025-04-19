@@ -25,7 +25,8 @@ export default function SignIn() {
     try { 
       const response = await axios.post('/api/auth/login', { email, password ,isAdmin: true});
       toast.success(response.data.message);
-      router.push('/admin/dashboard');
+      // router.push('/admin/dashboard');
+      window.location.href = '/admin/dashboard';
 
     } catch (error:any) {
       const message = error.response?.data?.message || "Something went wrong";

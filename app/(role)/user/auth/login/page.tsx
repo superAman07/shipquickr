@@ -24,11 +24,9 @@ export default function SignIn() {
     setLoading(true)
     try { 
       const response = await axios.post('/api/auth/login', { email, password });
-      toast.success(response.data.message);
-      console.log(response)
-      console.log(response.data)
-      router.push('/user/dashboard');
-
+      toast.success(response.data.message); 
+      // router.push('/user/dashboard');
+      window.location.href = '/user/dashboard'; // hard reload k liye
     } catch (error:any) {
       const message = error.response?.data?.message || "Something went wrong";
       toast.error(message);
