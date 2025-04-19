@@ -1,10 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, HousePlus, Wallet, UserCheck, ArrowLeftRight } from "lucide-react";
+import { Package, Truck, Calculator, HousePlus, Wallet, UserCheck, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { KYCNavIcon } from "./ui/kycNavIcon";
-import { useEffect, useState } from "react";
+import { KYCNavIcon } from "./ui/kycNavIcon"; 
 import axios from "axios";
 import useSWR from 'swr';
 
@@ -21,8 +20,6 @@ function CODIcon({ className, label }: { className?: string; label?: string }) {
     </div>
   );
 }
-
-
 
 export default function DashboardHorizontalNavUser() {
   const pathname = usePathname();
