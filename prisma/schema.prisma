@@ -23,7 +23,43 @@ model User {
   kycStatus KycStatus @default(pending)
   role      Role  @default(user) 
   createdAt DateTime @default(now())
+  kycDetail KycDetail?
 }
+
+model KycDetail {
+  id                Int      @id @default(autoincrement())
+  user              User     @relation(fields: [userId], references: [id])
+  userId            Int      @unique
+  gst               Boolean
+  gstNumber         String?
+  gstCertificateUrl String?
+  shipments         String
+  companyName       String
+  companyEmail      String
+  companyContact    String
+  billingAddress    String
+  pincode           String
+  state             String
+  city              String
+  website           String?
+  signatureUrl      String?
+  companyLogoUrl    String?
+  kycType           String
+  panCardNo         String
+  panCardUrl        String?
+  aadhaarNo         String
+  aadhaarFrontUrl   String?
+  aadhaarBackUrl    String?
+  accountHolder     String
+  bankName          String
+  accountType       String
+  accountNo         String
+  ifsc              String
+  chequeUrl         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
 
 enum Role {
   user

@@ -7,8 +7,7 @@ export default function KYC() {
   // Extend Tailwind with custom colors if needed
   const darkGray850 = "rgb(28, 32, 40)" // Darker shade for headers in dark mode
 
-  const [form, setForm] = useState({
-    // Add all fields here as per your UI
+  const [form, setForm] = useState({ 
     kycType: "",
     panCardNo: "",
     panCardFile: null,

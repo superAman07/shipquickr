@@ -54,11 +54,10 @@ export function KycDashboard() {
     const fetchData = async () => {
       try {
         const res = await axios.get("/api/admin/kyc")
-        if (res.data.success) {
-          // Map the API data to match our expected format
+        if (res.data.success) { 
           const formattedData = res.data.data.map((user: any) => ({
             ...user,
-            id: user.id.toString(), // Ensure id is a string
+            id: user.id.toString(),  
           }));
           setData(formattedData)
         }
@@ -70,8 +69,7 @@ export function KycDashboard() {
 
     fetchData()
   }, []);
-
-  // Define columns for the table
+ 
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: "serialNo",
@@ -129,8 +127,7 @@ export function KycDashboard() {
       header: "Status",
       cell: ({ row }) => {
         const user = row.original
-        
-        // Get the original kycStatus from backend
+         
         const originalStatus = user.kycStatus;
          
         const capitalizedStatus = capitalizeFirstLetter(originalStatus);
