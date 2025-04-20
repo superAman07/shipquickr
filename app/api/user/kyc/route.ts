@@ -70,11 +70,9 @@ export async function POST(req: NextRequest) {
       if (!token) return NextResponse.json({ error: "Token not found" }, { status: 401 });
       const decoded = jwtDecode<any>(token);
       if (decoded.exp * 1000 < Date.now()) return NextResponse.json({ error: "Token expired" }, { status: 401 });
-  
-      // Parse form-data using native API
+   
       const formData = await req.formData();
-  
-      // Helper to save file
+   
       async function saveFile(file: File | null, folder: string) {
         if (!file) return null;
         const arrayBuffer = await file.arrayBuffer();
@@ -87,8 +85,7 @@ export async function POST(req: NextRequest) {
         fs.writeFileSync(filepath, buffer);
         return `/uploads/kyc/${filename}`;
       }
-  
-      // Save files and get URLs
+   
       const gstCertificateUrl = await saveFile(formData.get("gstCertificate") as File, "kyc");
       const signatureUrl = await saveFile(formData.get("signature") as File, "kyc");
       const companyLogoUrl = await saveFile(formData.get("companyLogo") as File, "kyc");
@@ -96,12 +93,10 @@ export async function POST(req: NextRequest) {
       const aadhaarFrontUrl = await saveFile(formData.get("aadhaarFront") as File, "kyc");
       const aadhaarBackUrl = await saveFile(formData.get("aadhaarBack") as File, "kyc");
       const chequeUrl = await saveFile(formData.get("cheque") as File, "kyc");
-  
-      // Prevent duplicate KYC
+   
       const already = await prisma.kycDetail.findUnique({ where: { userId: parseInt(decoded.userId) } });
       if (already) return NextResponse.json({ error: "KYC already submitted" }, { status: 409 });
-  
-      // Save to DB
+   
       const kyc = await prisma.kycDetail.create({
         data: {
           userId: parseInt(decoded.userId),
