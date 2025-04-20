@@ -186,12 +186,12 @@ export function KycDashboard() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>Copy email</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.open(`/admin/kyc/${user.id}`, "_blank")}>
+              <DropdownMenuItem onClick={() => window.open(`/admin/dashboard/kyc/${user.id}`, "_blank")}>
                 View details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.open(`/admin/kyc/${user.id}/documents`, "_blank")}>
+              {/* <DropdownMenuItem onClick={() => window.open(`/admin/kyc/${user.id}/documents`, "_blank")}>
                 View documents
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         )
