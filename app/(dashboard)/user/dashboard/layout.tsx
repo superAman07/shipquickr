@@ -1,5 +1,6 @@
 import DashboardSidebarUser from "@/components/dashboard-sidebar-user" 
 import Navbar from "@/components/NavBar" 
+import RouteLoadingBar from "@/components/RouteLoadingBar"
 import { ThemeProvider } from "@/components/theme-provider" 
 import { jwtDecode } from "jwt-decode"
 import { cookies } from "next/headers"
@@ -42,6 +43,7 @@ export default async function Dashboard({ children }: { children: React.ReactNod
         </aside>
         <div className="flex-1 flex flex-col overflow-hidden"> 
           <main className="flex-1 p-6 overflow-hidden">
+            <RouteLoadingBar />
             {children}
           </main>
         </div>
