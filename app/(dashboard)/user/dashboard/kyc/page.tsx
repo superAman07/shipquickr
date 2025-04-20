@@ -228,9 +228,12 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload Certificate</span>
+                    {form.gstCertificate ? form.gstCertificate.name : "Upload Certificate"}
                   </div>
                 </label>
+                {form.gstCertificate && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.gstCertificate.name}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -352,9 +355,12 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload Signature</span>
+                    {form.signature ? form.signature.name : "Upload Signature"}
                   </div>
                 </label>
+                {form.signature && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.signature.name}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -372,9 +378,12 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload Logo</span>
+                    {form.companyLogo ? form.companyLogo.name : "Upload Company Logo"}
                   </div>
                 </label>
+                {form.companyLogo && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.companyLogo.name}</p>
+                )}
               </div>
             </div>
           </div>
@@ -437,15 +446,17 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload PAN Card</span>
+                    {form.panCardFile ? form.panCardFile.name : "Upload Pan Card"}
                   </div>
                 </label>
+                {form.panCardFile && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.panCardFile.name}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address Proof</label>
               <Input
-
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
                 value="Aadhar Card"
@@ -479,9 +490,12 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload Front Side</span>
+                    {form.aadhaarFront ? form.aadhaarFront.name : "Upload Front Side"}
                   </div>
                 </label>
+                {form.aadhaarFront && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.aadhaarFront.name}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -499,9 +513,12 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload Back Side</span>
+                    {form.aadhaarBack ? form.aadhaarBack.name : "Upload Back Side"}
                   </div>
                 </label>
+                {form.aadhaarBack && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.aadhaarBack.name}</p>
+                )}
               </div>
             </div>
           </div>
@@ -630,9 +647,12 @@ export default function KYC() {
                 >
                   <div className="flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Upload Cheque</span>
+                    {form.cheque ? form.cheque.name : "Upload Cancelled Cheque"}
                   </div>
                 </label>
+                {form.cheque && (
+                  <p className="text-xs text-green-600 mt-1 truncate">{form.cheque.name}</p>
+                )}
               </div>
             </div>
           </div>
