@@ -4,6 +4,7 @@ import { Check, Upload, Building2, User, CreditCard, FileText, ChevronRight } fr
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 import { toast } from "react-toastify"
+import ButtonLoading from "@/components/buttonLoading"
 
 export default function KYC() {
   // Extend Tailwind with custom colors if needed
@@ -546,6 +547,7 @@ export default function KYC() {
               </label>
               <Input
                 value={form.accountHolder}
+                onChange={(e) => setForm({ ...form, accountHolder: e.target.value })}
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter account holder name"
@@ -627,6 +629,7 @@ export default function KYC() {
               </label>
               <Input
                 value={form.ifsc}
+                onChange={(e) => setForm({ ...form, ifsc: e.target.value })}
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter IFSC code"
@@ -661,15 +664,22 @@ export default function KYC() {
 
       {/* Submit Button */}
       <div className="flex justify-end mt-8">
-        <button
-          onClick={handler}
-          type="button"
-          disabled={loading || !!accountError}
-          className={`px-6 py-3 ${loading ? "bg-gray-400" : "bg-purple-600"} hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2`}>
-          Submit KYC
-          <ChevronRight size={18} />
-        </button>
-      </div>
+      <button
+        onClick={handler}
+        type="button"
+        disabled={loading || !!accountError}
+        className={`px-6 py-3 ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-purple-600"} hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2`}
+      >
+        {loading ? (
+          <ButtonLoading name="Submitting..." />
+        ) : (
+          <>
+            Submit KYC
+            <ChevronRight size={18} />
+          </>
+        )}
+      </button>
+    </div>
     </div>
   )
 }
