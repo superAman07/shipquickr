@@ -30,6 +30,7 @@ model KycDetail {
   id                Int      @id @default(autoincrement())
   user              User     @relation(fields: [userId], references: [id])
   userId            Int      @unique
+  mobile            String
   gst               Boolean
   gstNumber         String?
   gstCertificateUrl String?

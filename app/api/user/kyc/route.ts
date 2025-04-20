@@ -55,14 +55,15 @@ export async function POST (req: NextRequest){
         if (already) {
             return NextResponse.json({ error: "KYC already submitted" }, { status: 409 });
         }
-        
-        const {gst,gstNumber,gstCertificateUrl,shipments,companyName,companyEmail,companyContact,billingAddress,pincode, state, city,website,signatureUrl,companyLogoUrl,kycType,panCardNo,panCardUrl,aadhaarNo,aadhaarFrontUrl,aadhaarBackUrl,accountHolder,bankName,accountType,accountNo,ifsc,chequeUrl} = await req.json();
+
+        const {mobile,gst,gstNumber,gstCertificateUrl,shipments,companyName,companyEmail,companyContact,billingAddress,pincode, state, city,website,signatureUrl,companyLogoUrl,kycType,panCardNo,panCardUrl,aadhaarNo,aadhaarFrontUrl,aadhaarBackUrl,accountHolder,bankName,accountType,accountNo,ifsc,chequeUrl} = await req.json();
         if (gst=== undefined || !gstNumber || !gstCertificateUrl || !shipments || !companyName || !companyEmail || !companyContact || !billingAddress || !pincode || !state || !city || !website || !signatureUrl || !companyLogoUrl || !kycType) {
             return NextResponse.json({ error: "All fields must be filled" }, { status: 400 });
         }
         const kyc = await prisma.kycDetail.create({
             data: {
                 userId: parseInt(decoded.userId),
+                mobile,
                 gst,
                 gstNumber,
                 gstCertificateUrl,
