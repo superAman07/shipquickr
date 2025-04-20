@@ -6,6 +6,8 @@ import axios from "axios"
 import { toast } from "react-toastify"
 import ButtonLoading from "@/components/buttonLoading"
 
+
+
 export default function KYC() {
   // Extend Tailwind with custom colors if needed
   const darkGray850 = "rgb(28, 32, 40)" // Darker shade for headers in dark mode
@@ -40,6 +42,36 @@ export default function KYC() {
     signature: null as File | null,
     companyLogo: null as File | null,
   })
+
+  function isFormValid() {
+    return (
+      form.mobile.trim() &&
+      form.kycType !== "Select KYC Type" &&
+      form.panCardNo.trim() &&
+      form.panCardFile &&
+      form.aadhaarNo.trim() &&
+      form.aadhaarFront &&
+      form.aadhaarBack &&
+      form.accountHolder.trim() &&
+      form.bankName !== "Select Bank Name" &&
+      form.accountType !== "Select Account Type" &&
+      form.accountNo.trim() &&
+      form.reAccountNo.trim() &&
+      form.ifsc.trim() &&
+      form.cheque &&
+      form.gstNumber.trim() &&
+      form.gstCertificate &&
+      form.shipments !== "Select" &&
+      form.companyName.trim() &&
+      form.companyEmail.trim() &&
+      form.companyContact.trim() &&
+      form.billingAddress.trim() &&
+      form.pincode.trim() &&
+      form.state.trim() &&
+      form.city.trim()
+    );
+  }
+
   const [loading, setLoading] = useState(false)
 
   const handler = async () => {
@@ -56,7 +88,11 @@ export default function KYC() {
       });
       toast.success("KYC submitted successfully");
     } catch (err) {
-      toast.error("Something went wrong");
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        toast.info("KYC already uploaded. Verification pending by admin.");
+      } else {
+        toast.error("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -221,7 +257,18 @@ export default function KYC() {
               </label>
               <div className="relative">
                 <Input 
-                  onChange={e=>setForm({...form,gstCertificate:e.target.files?.[0]||null})} required type="file" className="sr-only" id="gst-certificate" 
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0];
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                      setForm({...form,gstCertificate:e.target.files?.[0]||null})
+                    }
+                  } 
+                  required  className="sr-only" id="gst-certificate" 
                 />
                 <label
                   htmlFor="gst-certificate"
@@ -349,7 +396,18 @@ export default function KYC() {
                 Upload Signature 
               </label>
               <div className="relative">
-                <Input onChange={e=>setForm({...form,signature:e.target.files?.[0]|| null})}   type="file" className="sr-only" id="signature" />
+                <Input 
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0]
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                      setForm({...form,signature:e.target.files?.[0]|| null})
+                    }}   
+                  type="file"  className="sr-only" id="signature" 
+                />
                 <label
                   htmlFor="signature"
                   className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
@@ -370,7 +428,14 @@ export default function KYC() {
               </label>
               <div className="relative">
                 <Input 
-                  onChange={e=>setForm({...form,companyLogo:(e.target as HTMLInputElement).files?.[0]||null})}
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0]
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                    setForm({...form,companyLogo:(e.target as HTMLInputElement).files?.[0]||null})}}
                   type="file" className="sr-only" id="company-logo"
                 />
                 <label
@@ -437,8 +502,14 @@ export default function KYC() {
               </label>
               <div className="relative">
                 <Input 
-
-                  onChange={e=>setForm({...form,panCardFile:(e.target as HTMLInputElement).files?.[0]||null})}
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0]
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                    setForm({...form,panCardFile:(e.target as HTMLInputElement).files?.[0]||null})}}
                   required type="file" className="sr-only" id="pan-card"
                 />
                 <label
@@ -482,7 +553,14 @@ export default function KYC() {
               </label>
               <div className="relative">
                 <Input
-                  onChange={e=>setForm({...form,aadhaarFront:(e.target as HTMLInputElement).files?.[0]||null})}
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0]
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                    setForm({...form,aadhaarFront:(e.target as HTMLInputElement).files?.[0]||null})}}
                   required type="file" className="sr-only" id="aadhaar-front" 
                 />
                 <label
@@ -505,7 +583,15 @@ export default function KYC() {
               </label>
               <div className="relative">
                 <Input  
-                  onChange={e=>setForm({...form,aadhaarBack:(e.target as HTMLInputElement).files?.[0]||null})}
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0]
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                    setForm({...form,aadhaarBack:(e.target as HTMLInputElement).files?.[0]||null})
+                  }}
                   required type="file" className="sr-only" id="aadhaar-back" 
                 />
                 <label
@@ -641,7 +727,14 @@ export default function KYC() {
               </label>
               <div className="relative">
                 <Input 
-                  onChange={e=>setForm({...form,cheque:(e.target as HTMLInputElement).files?.[0]||null})}
+                  accept="image/*,application/pdf"
+                  onChange={e=>{
+                      const file = e.target.files?.[0]
+                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                        toast.error("Only images or PDF allowed!");
+                        return;
+                      }
+                    setForm({...form,cheque:(e.target as HTMLInputElement).files?.[0]||null})}}
                   required type="file" className="sr-only" id="cancelled-cheque"
                 />
                 <label
@@ -667,8 +760,10 @@ export default function KYC() {
       <button
         onClick={handler}
         type="button"
-        disabled={loading || !!accountError}
-        className={`px-6 py-3 ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-purple-600"} hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2`}
+        disabled={loading || !!accountError || !isFormValid()}
+        className={`px-6 cursor-pointer py-3 ${loading || !!accountError || !isFormValid()
+          ? "bg-gray-400 cursor-not-allowed text-gray-200"
+          : "bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"}   text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2`}
       >
         {loading ? (
           <ButtonLoading name="Submitting..." />

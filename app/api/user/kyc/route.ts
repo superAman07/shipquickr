@@ -75,6 +75,9 @@ export async function POST(req: NextRequest) {
    
       async function saveFile(file: File | null, folder: string) {
         if (!file) return null;
+        if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+          throw new Error("Only images or PDF allowed");
+        }
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const ext = path.extname(file.name);
