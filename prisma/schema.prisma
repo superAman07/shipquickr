@@ -21,6 +21,7 @@ model User {
   wallet    Wallet?
   transactions Transaction[]
   orders    Order[]
+  warehouses Warehouse[]
 }
 
 model KycDetail {
@@ -104,6 +105,23 @@ model Order {
   status          String   @default("pending")
   createdAt       DateTime @default(now())
 }
+
+model Warehouse {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  warehouseName String
+  pincode      String
+  address1     String
+  address2     String?
+  landmark     String?
+  state        String
+  city         String
+  contactName  String
+  mobile       String
+  createdAt    DateTime @default(now())
+}
+
 
 enum Role {
   user

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AddWarehouseModal from "@/components/AddWarehouse";
 
 const initialForm = {
   customerName: "",
@@ -33,15 +34,15 @@ export default function SingleOrderPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch orders
+  const [showWarehouseModal, setShowWarehouseModal] = useState(false);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
   useEffect(() => {
     setLoading(true);
     axios.get("/api/user/orders/single-order")
       .then(res => setOrders(res.data.orders || []))
       .finally(() => setLoading(false));
   }, [submitting]);
-
-  // Handle form submit
+ 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setSubmitting(true);
@@ -64,6 +65,30 @@ export default function SingleOrderPage() {
       setSubmitting(false);
     }
   };
+  const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pincode = e.target.value;
+    setForm(f => ({ ...f, pincode }));
+    if (pincode.length === 6) {
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await res.json();
+        if (data[0].Status === "Success") {
+          setForm(f => ({
+            ...f,
+            state: data[0].PostOffice[0].State,
+            city: data[0].PostOffice[0].District
+          }));
+        }
+      } catch {}
+    }
+  };
+  const handleWarehouseFromDB = async ()=>{
+    try{
+      const response = await axios.get("/api/user/warehouses")
+      const data = response.data.warehouses || [];
+      setWarehouses(data);
+    }catch{}
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-2 sm:p-6">
@@ -91,9 +116,9 @@ export default function SingleOrderPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <input className="border p-2 rounded col-span-2" placeholder="Complete Address *" required value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} />
-              <input className="border p-2 rounded" placeholder="Pincode *" required value={form.pincode} onChange={e => setForm(f => ({ ...f, pincode: e.target.value }))} />
-              <input className="border p-2 rounded" placeholder="State *" required value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} />
-              <input className="border p-2 rounded" placeholder="City *" required value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
+              <input className="border p-2 rounded" placeholder="Pincode *" required value={form.pincode} onChange={handlePincodeChange} />
+              <input className="border p-2 rounded" placeholder="State *" readOnly tabIndex={-1} value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} />
+              <input className="border p-2 rounded" placeholder="City *" readOnly tabIndex={-1} value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
               <input className="border p-2 rounded col-span-2" placeholder="Famous Landmark" value={form.landmark} onChange={e => setForm(f => ({ ...f, landmark: e.target.value }))} />
             </div>
           </section>
@@ -106,6 +131,13 @@ export default function SingleOrderPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input className="border p-2 rounded" placeholder="Order Id *" required value={form.orderId} onChange={e => setForm(f => ({ ...f, orderId: e.target.value }))} />
+              <button
+                type="button"
+                className="text-blue-600 text-xs underline ml-2"
+                onClick={() => setForm(f => ({ ...f, orderId: `ORD-${Date.now()}` }))}
+                >
+                Auto Generate ID
+              </button>
               <input className="border p-2 rounded" type="date" placeholder="Order Date *" required value={form.orderDate} onChange={e => setForm(f => ({ ...f, orderDate: e.target.value }))} />
               <label htmlFor="paymentMode" className="sr-only">Payment Mode</label>
               <select id="paymentMode" className="border p-2 rounded" required value={form.paymentMode} onChange={e => setForm(f => ({ ...f, paymentMode: e.target.value }))}>
@@ -140,7 +172,17 @@ export default function SingleOrderPage() {
               <input className="border p-2 rounded" type="number" min={1} placeholder="Quantity *" required value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: Number(e.target.value) }))} />
               <input className="border p-2 rounded" type="number" min={0} placeholder="Order Value *" required value={form.orderValue} onChange={e => setForm(f => ({ ...f, orderValue: e.target.value }))} />
               <input className="border p-2 rounded" placeholder="HSN" value={form.hsn} onChange={e => setForm(f => ({ ...f, hsn: e.target.value }))} />
-              <input className="border p-2 rounded" type="number" min={0} placeholder="COD Amount (in Rs.) *" required={form.paymentMode === "COD"} value={form.codAmount} onChange={e => setForm(f => ({ ...f, codAmount: e.target.value }))} />
+              {form.paymentMode === "COD" && (
+                <input
+                    className="border p-2 rounded"
+                    type="number"
+                    min={0}
+                    placeholder="COD Amount (in Rs.) *"
+                    required
+                    value={form.codAmount}
+                    onChange={e => setForm(f => ({ ...f, codAmount: e.target.value }))}
+                />
+                )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
               <div className="flex">
@@ -162,27 +204,90 @@ export default function SingleOrderPage() {
             </div>
           </section>
 
-          {/* Pickup Location */}
+          {/* Pickup Location */} 
           <section>
             <div className="flex items-center mb-4">
               <span className="bg-indigo-900 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2">4</span>
               <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">Pickup Location</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input className="border p-2 rounded" placeholder="Search Pickup Location" value={form.pickupLocation} onChange={e => setForm(f => ({ ...f, pickupLocation: e.target.value }))} />
-              {/* Add Warehouse button (dummy for now) */}
-              <button type="button" className="bg-indigo-900 text-white rounded px-4 py-2 font-semibold">Add Warehouse</button>
+              <input
+                className="border p-2 rounded"
+                placeholder="Search Pickup Location"
+                value={form.pickupLocation}
+                onChange={e => {
+                  setForm(f => ({ ...f, pickupLocation: e.target.value }));
+                  // Optionally filter warehouses here
+                }}
+                onFocus={handleWarehouseFromDB}
+              />
+              <button
+                type="button"
+                onClick={() => setShowWarehouseModal(true)}
+                className="bg-indigo-900 text-white rounded px-4 py-2 font-semibold"
+              >
+                Add Warehouse
+              </button>
+            </div>
+ 
+            <div className="mt-2">
+              {warehouses.length === 0 ? (
+                <div className="text-gray-500 text-sm">No warehouses found.</div>
+              ) : (
+                <div className="max-h-32 overflow-y-auto border rounded bg-gray-50 dark:bg-gray-800">
+                  {(form.pickupLocation
+                    ? warehouses.filter(w =>
+                        w.warehouseName.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
+                        w.city.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
+                        w.state.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
+                        w.pincode.includes(form.pickupLocation)
+                      )
+                    : warehouses
+                  )
+                    .slice(0, 2)
+                    .map(w => (
+                      <div
+                        key={w.id}
+                        className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 border-b last:border-b-0"
+                        onClick={() => setForm(f => ({ ...f, pickupLocation: w.warehouseName }))}
+                      >
+                        <div className="font-semibold">{w.warehouseName}</div>
+                        <div className="text-xs text-gray-500">{w.address1}, {w.city}, {w.state} - {w.pincode}</div>
+                      </div>
+                    ))} 
+                  {warehouses.length > 2 && (
+                    <details>
+                      <summary className="p-2 text-indigo-700 cursor-pointer select-none">Show more...</summary>
+                      {warehouses.slice(2).map(w => (
+                        <div
+                          key={w.id}
+                          className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900 border-b last:border-b-0"
+                          onClick={() => setForm(f => ({ ...f, pickupLocation: w.warehouseName }))}
+                        >
+                          <div className="font-semibold">{w.warehouseName}</div>
+                          <div className="text-xs text-gray-500">{w.address1}, {w.city}, {w.state} - {w.pincode}</div>
+                        </div>
+                      ))}
+                    </details>
+                  )}
+                </div>
+              )}
             </div>
           </section>
-
           <div className="flex justify-center mt-8">
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded px-8 py-2 font-semibold" disabled={submitting}>
               {submitting ? "Adding..." : "Add Order"}
             </button>
           </div>
         </form>
+        <AddWarehouseModal
+          open={showWarehouseModal}
+          onClose={() => setShowWarehouseModal(false)}
+          onSuccess={() => { 
+          }}
+        />
       </div>
-
+      
       {/* Orders Table */}
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4 sm:p-8">
         <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">My Orders</h2>
