@@ -1,0 +1,198 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Wallet, PlusCircle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+declare global {
+  interface Window {
+    Razorpay?: any;
+  }
+}
+
+export default function WalletPage() {
+  const [balance, setBalance] = useState<number | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    axios.get("/api/user/wallet")
+      .then(res => {
+        setBalance(res.data.balance);
+        setTransactions(res.data.transactions || []);
+      })
+      .catch(() => toast.error("Failed to load wallet info"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAddMoney = async () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) < 1) {
+      toast.error("Enter a valid amount (min ₹1)");
+      return;
+    }
+    setAdding(true);
+    try {
+      const res = await axios.post("/api/user/wallet", { amount: Number(amount) });
+      const { orderId } = res.data;
+
+      if (!window.Razorpay) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: Number(amount) * 100,
+        currency: "INR",
+        name: "ShipQuickr Wallet Recharge",
+        description: "Add money to your wallet",
+        order_id: orderId,
+        handler: function (response: any) {
+          toast.success("Payment successful! Balance will update soon.");
+          setShowModal(false);
+          setAmount("");
+          setTimeout(() => {
+            axios.get("/api/user/wallet").then(res => {
+              setBalance(res.data.balance);
+              setTransactions(res.data.transactions || []);
+            });
+          }, 2000);
+        },
+        theme: {
+          color: "#7c3aed",
+          hide_topbar: false,
+        },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error("Failed to initiate payment");
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto py-4 px-2 sm:px-4">
+      <Card className="mb-6 shadow-lg bg-white dark:bg-gray-900 border-0">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3 w-full">
+            <Wallet className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+              My Wallet
+            </CardTitle>
+            <span className="ml-auto text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
+              {loading ? <Loader2 className="animate-spin" /> : <>₹ {balance?.toFixed(2) ?? "--"}</>}
+            </span>
+          </div>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto flex items-center gap-2"
+            onClick={() => setShowModal(true)}
+          >
+            <PlusCircle className="h-5 w-5" />
+            Add Money
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Use your wallet balance to pay for shipments instantly.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Add Money Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-xs sm:max-w-sm relative">
+            <button
+              className="absolute top-2 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl"
+              onClick={() => setShowModal(false)}
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Add Money</h2>
+            <Input
+              type="number"
+              min={1}
+              placeholder="Enter amount (₹)"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              className="mb-4"
+              autoFocus
+            />
+            <Button
+              className="w-full"
+              onClick={handleAddMoney}
+              disabled={adding}
+            >
+              {adding ? <Loader2 className="animate-spin" /> : "Proceed to Pay"}
+            </Button>
+            <p className="text-xs text-gray-400 mt-2">Powered by Razorpay</p>
+          </div>
+        </div>
+      )}
+
+      <Card className="shadow bg-white dark:bg-gray-900 border-0 mt-6">
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Transaction History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="animate-spin h-6 w-6 text-gray-400" />
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className="text-gray-500 dark:text-gray-400 text-center py-8">
+              No transactions yet.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactions.map((txn, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="whitespace-nowrap">
+                        {new Date(txn.createdAt).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`font-semibold ${txn.type === "recharge" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                          {txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        ₹ {txn.amount.toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

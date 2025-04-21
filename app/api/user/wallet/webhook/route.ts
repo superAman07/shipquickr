@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { prisma } from "@/lib/prisma";
 // import { prisma } from "@/lib/prisma"; // Uncomment and use for wallet update
 
 
 // bacha hua kaam 
 // Razorpay Dashboard Setting
-// Webhook URL: https://yourdomain.com/api/user/razorpay/webhook
+// Webhook URL: https://yourdomain.com/api/user/wallet/webhook
 // Events: payment.captured (minimum)
 
 
@@ -28,15 +29,26 @@ export async function POST(req: NextRequest) {
 
     // Example: payment.captured event
     if (event.event === "payment.captured") {
-      const payment = event.payload.payment.entity;
-      const userId = payment.notes.userId;
-      const amount = payment.amount / 100;
-
-      // TODO: Update wallet balance for userId in your DB
-      // await prisma.wallet.update({ ... });
-
-      // Optionally, log transaction in DB
-    }
+        const payment = event.payload.payment.entity;
+        const userId = Number(payment.notes.userId);
+        const amount = payment.amount / 100;
+      
+        // Wallet update
+        await prisma.wallet.upsert({
+          where: { userId },
+          update: { balance: { increment: amount } },
+          create: { userId, balance: amount },
+        });
+      
+        // Transaction log
+        await prisma.transaction.create({
+          data: {
+            userId,
+            amount,
+            type: "recharge",
+          },
+        });
+      }
 
     return NextResponse.json({ received: true });
   } catch (err) {

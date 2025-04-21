@@ -24,6 +24,8 @@ model User {
   role      Role  @default(user) 
   createdAt DateTime @default(now())
   kycDetail KycDetail?
+  wallet    Wallet?
+  transactions Transaction[]
 }
 
 model KycDetail {
@@ -59,6 +61,23 @@ model KycDetail {
   chequeUrl         String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model Wallet {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int     @unique
+  balance   Float   @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Transaction {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+  amount    Float
+  type      String
+  createdAt DateTime @default(now())
 }
 
 
