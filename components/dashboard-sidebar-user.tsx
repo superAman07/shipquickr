@@ -78,19 +78,19 @@ function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
         className={cn(
           "absolute left-full top-0 bg-indigo-800 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
           showSubMenu ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible",
-          collapsed ? "mt-3" : "mt-3 ml-2",
+          collapsed ? "mt-3" : "mt-3 ml-0",
           "submenu"
         )}
       >
         <Link
-          href="/user/dashboard/orders/single-order"
+          href="/user/dashboard/single-order"
           className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
         >
           <Plus className="h-4 w-4" />
           <span className="ml-3 whitespace-nowrap">Add Single Order</span>
         </Link>
         <Link
-          href="/user/dashboard/orders/bulk"
+          href="/user/dashboard/bulk"
           className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
         >
           <ListFilter className="h-4 w-4" />
