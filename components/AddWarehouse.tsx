@@ -52,7 +52,7 @@ export default function AddWarehouseModal({ open, onClose, onSuccess }: { open: 
       onSuccess();
       onClose();
     } catch {
-      alert("Failed to add warehouse");
+      toast.error("Failed to add warehouse");
     } finally {
       setSubmitting(false);
     }

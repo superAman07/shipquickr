@@ -18,6 +18,10 @@ export async function POST(req: NextRequest){
         if(decoded.exp * 1000 < Date.now()){
             return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
         }
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user || user.kycStatus !== "approved") {
+            return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
+        }
         const data = await req.json();
         const order = await prisma.order.create({
             data: {
@@ -41,6 +45,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Token expired" }, { status: 401 });
       }
   
+      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user || user.kycStatus !== "approved") {
+            return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
+        }
       const orders = await prisma.order.findMany({
         where: { userId: decoded.userId },
         orderBy: { createdAt: "desc" },

@@ -14,7 +14,10 @@ export async function POST(req: NextRequest){
         if(!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         const decoded = jwtDecode<TokenDetailsType>(token);
         if(decoded.exp * 1000 < Date.now()) return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
-    
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user || user.kycStatus !== "approved") {
+            return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
+        }
         const data = await req.json();
         const warehouse = await prisma.warehouse.create({
             data: {
@@ -38,6 +41,11 @@ export async function GET(req: NextRequest) {
 
         const search = req.nextUrl.searchParams.get("search")?.toLowerCase() || "";
         const userId = decoded.userId;
+        
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user || user.kycStatus !== "approved") {
+            return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
+        }
 
         const warehouses = await prisma.warehouse.findMany({
             where: {
