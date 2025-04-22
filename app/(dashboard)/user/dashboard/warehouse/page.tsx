@@ -1,8 +1,9 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlusIcon, Search } from 'lucide-react';
+import { Pencil, PlusIcon, Search, Trash2 } from 'lucide-react';
 import AddWarehouseModal from '@/components/AddWarehouse';
+import { toast } from 'react-toastify';
 
 interface Warehouse {
   id: string;
@@ -56,7 +57,7 @@ export default function WarehousesPage() {
           </h1>
           <button
             type="button"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
+            className="bg-blue-500 cursor-pointer hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
             onClick={() => setShowAddModal(true)}
           >
             <PlusIcon size={18} />
@@ -148,7 +149,7 @@ export default function WarehousesPage() {
                             await loadWarehouses();
                             setUpdatingId(null);
                           }}
-                          className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${warehouse.isPrimary ? "bg-blue-500" : "bg-gray-300"} ${warehouse.status === false ? "opacity-50 cursor-not-allowed" : ""}`}
+                          className={`w-10 h-6 flex cursor-pointer items-center rounded-full p-1 transition-colors duration-200 ${warehouse.isPrimary ? "bg-blue-500" : "bg-gray-300"} ${warehouse.status === false ? "opacity-50 cursor-not-allowed" : ""}`}
                           title="Make Primary"
                         >
                           <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.isPrimary ? "translate-x-4" : ""}`}></span>
@@ -164,7 +165,7 @@ export default function WarehousesPage() {
                             await loadWarehouses();
                             setUpdatingId(null);
                           }}
-                          className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${warehouse.status ? "bg-green-500" : "bg-gray-300"}`}
+                          className={`w-10 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-200 ${warehouse.status ? "bg-green-500" : "bg-gray-300"}`}
                           title="Active/Inactive"
                         >
                           <span className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.status ? "translate-x-4" : ""}`}></span>
@@ -172,13 +173,39 @@ export default function WarehousesPage() {
                       </td>
                       {/* Action */}
                       <td className="px-4 py-3 text-sm flex gap-2">
-                        <button className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">
-                          Edit
-                        </button>
-                        {/* <button className="text-red-500 hover:text-red-700 dark:hover:text-red-400">
-                          Delete
-                        </button> */}
-                      </td>
+                      <button
+                        type="button"
+                        className="text-blue-500 cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 p-1 rounded transition-colors"
+                        title="Edit"
+                        onClick={() => {}}
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        type="button"
+                        className="text-red-500 cursor-pointer hover:text-red-700 dark:hover:text-red-400 p-1 rounded transition-colors"
+                        title="Delete"
+                        onClick={() => {
+                          try{
+                            const response = confirm("Are you sure you want to delete this warehouse?");
+                            if(response){
+                              axios.delete(`/api/user/warehouses/${warehouse.id}`)
+                              .then(() => {
+                                loadWarehouses();
+                              })
+                              .catch((error) => {
+                                console.error("Failed to delete warehouse:", error);
+                              });
+                            }
+                            toast.success("Warehouse deleted successfully")
+                          }catch(e){
+                            toast.error("Failed to delete warehouse") 
+                          }
+                        }}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
                     </tr>
                   ))
                 )}
