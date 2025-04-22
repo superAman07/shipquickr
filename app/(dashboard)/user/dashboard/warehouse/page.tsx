@@ -16,6 +16,8 @@ interface Warehouse {
   pincode: string;
   isPrimary?: boolean;
   status?: boolean;
+  mobile?: string;
+  landmark?: string;
 }
 
 export default function WarehousesPage() {
@@ -25,6 +27,7 @@ export default function WarehousesPage() {
   const [entries, setEntries] = useState(10);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editWarehouse, setEditWarehouse] = useState<Warehouse | null>(null);
 
   useEffect(() => {
     loadWarehouses();
@@ -177,7 +180,7 @@ export default function WarehousesPage() {
                         type="button"
                         className="text-blue-500 cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 p-1 rounded transition-colors"
                         title="Edit"
-                        onClick={() => {}}
+                        onClick={() => setEditWarehouse(warehouse)}
                       >
                         <Pencil size={18} />
                       </button>
@@ -220,12 +223,32 @@ export default function WarehousesPage() {
           </div>
         </div>
         <AddWarehouseModal
-          open={showAddModal}
-          onClose={() => setShowAddModal(false)}
+          open={showAddModal || !!editWarehouse}
+          onClose={() => {
+            setShowAddModal(false);
+            setEditWarehouse(null);
+          }}
           onSuccess={() => {
             setShowAddModal(false);
+            setEditWarehouse(null);
             loadWarehouses();
           }}
+          editData={
+            editWarehouse
+              ? {
+                  id: editWarehouse.id, // ab allowed hai
+                  warehouseName: editWarehouse.warehouseName || "",
+                  pincode: editWarehouse.pincode || "",
+                  address1: editWarehouse.address1 || "",
+                  address2: editWarehouse.address2 || "",
+                  landmark: editWarehouse.landmark || "",
+                  state: editWarehouse.state || "",
+                  city: editWarehouse.city || "",
+                  contactName: editWarehouse.contactName || "",
+                  mobile: editWarehouse.mobile || "",
+                }
+              : undefined
+          }
         />
       </div>
     </div>

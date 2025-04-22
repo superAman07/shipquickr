@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const initialWarehouse = {
+  id: undefined as number | string | undefined,
   warehouseName: "",
   pincode: "",
   address1: "",
@@ -16,7 +17,7 @@ const initialWarehouse = {
   mobile: "",
 };
 
-export default function AddWarehouseModal({ open, onClose, onSuccess }: { open: boolean, onClose: () => void, onSuccess: () => void }) {
+export default function AddWarehouseModal({ open, onClose, onSuccess, editData }: { open: boolean, onClose: () => void, onSuccess: () => void, editData?: typeof initialWarehouse }) {
   const [form, setForm] = useState(initialWarehouse);
   const [submitting, setSubmitting] = useState(false);
  
@@ -37,17 +38,24 @@ export default function AddWarehouseModal({ open, onClose, onSuccess }: { open: 
       } catch {}
     }
   };
+  useEffect(() => {
+    if (editData) setForm(editData);
+    else setForm(initialWarehouse);
+  }, [editData, open]);
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    console.log("Form submitted", form);
-    setSubmitting(true);
-    console.log("Submitting form", form);
-    try {
-      console.log("Sending request to server", form);
-      const response = await axios.post("/api/user/warehouses", form);
-      console.log("Response from server", response.data);
-      toast.success(response.data.message);
+    e.preventDefault(); 
+    setSubmitting(true); 
+    try { 
+      if (form.id) {
+        // Edit mode
+        await axios.patch(`/api/user/warehouses/${form.id}`, form);
+        toast.success("Warehouse updated successfully");
+      } else {
+        // Add mode
+        await axios.post("/api/user/warehouses", form);
+        toast.success("Warehouse added successfully");
+      }
       setForm(initialWarehouse);
       onSuccess();
       onClose();
