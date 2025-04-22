@@ -236,7 +236,7 @@ export default function WarehousesPage() {
           editData={
             editWarehouse
               ? {
-                  id: editWarehouse.id, // ab allowed hai
+                  id: editWarehouse.id,  
                   warehouseName: editWarehouse.warehouseName || "",
                   pincode: editWarehouse.pincode || "",
                   address1: editWarehouse.address1 || "",
