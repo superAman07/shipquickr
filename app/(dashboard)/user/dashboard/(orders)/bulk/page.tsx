@@ -13,6 +13,7 @@ interface Order {
   customerName: string;
   mobile: string;
   address: string;
+  pickupLocation?: string;
   status: string;
 }
 
@@ -125,6 +126,7 @@ const BulkOrdersPage: React.FC = () => {
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Payment</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Customer</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Address</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Pickup Location</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
                     <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Actions</th>
                   </tr>
@@ -150,6 +152,9 @@ const BulkOrdersPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-sm max-w-xs truncate">
                         {order.address}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {order.pickupLocation || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
