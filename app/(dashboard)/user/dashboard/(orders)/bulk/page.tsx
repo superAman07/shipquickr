@@ -15,6 +15,10 @@ interface Order {
   address: string;
   pickupLocation?: string;
   status: string;
+  length?: number | string;
+  breadth?: number | string;
+  height?: number | string;
+  physicalWeight?: number | string;
 }
 
 const BulkOrdersPage: React.FC = () => {
@@ -39,7 +43,7 @@ const BulkOrdersPage: React.FC = () => {
   };
 
   const handleCloneOrder = (orderId: string) => {
-    alert(`Cloning order: ${orderId}`);
+    window.location.href = `/user/dashboard/clone-order/${orderId}`;
   };
 
   const handleDeleteOrder = async (orderId: string) => {
@@ -122,7 +126,7 @@ const BulkOrdersPage: React.FC = () => {
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Order ID</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Product Details</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Payment</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Customer</th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Address</th>
@@ -142,6 +146,12 @@ const BulkOrdersPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {order.productName}
+                        {order.length && order.breadth && order.height
+                          ? ` (${order.length}x${order.breadth}x${order.height})`
+                          : ""}
+                        {order.physicalWeight
+                          ? ` Weight : ${order.physicalWeight}Kg`
+                          : ""}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {order.paymentMode}
@@ -158,7 +168,7 @@ const BulkOrdersPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
-                          {order.status}
+                          {order.status === "pending" ? "unshipped" : order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">

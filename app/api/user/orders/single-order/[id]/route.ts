@@ -41,3 +41,25 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     return NextResponse.json({ error: "Failed to delete order" }, { status: 500 });
   }
 }
+
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+    try{
+        const cookieStore = await cookies();
+        const token = cookieStore.get("userToken")?.value;
+        if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        const decoded = jwtDecode<TokenDetailsType>(token);
+        if (decoded.exp * 1000 < Date.now()) {
+        return NextResponse.json({ error: "Token expired" }, { status: 401 });
+        }
+        const order = await prisma.order.findUnique({
+            where: { id: parseInt(params.id) },
+        });
+        if (!order || order.userId !== decoded.userId) {
+            return NextResponse.json({ error: "Order not found" }, { status: 404 });
+        }
+        return NextResponse.json({ order }, { status: 200 });
+    }catch(e){
+        return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
+    }
+}

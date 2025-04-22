@@ -1,10 +1,8 @@
-"use client"
-import { useEffect, useState } from "react"
-import type React from "react"
-
-import axios from "axios"
-import AddWarehouseModal from "@/components/AddWarehouse"
-import KycGuard from "@/components/isKycDone"
+"use client";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import AddWarehouseModal from "@/components/AddWarehouse";
+import KycGuard from "@/components/isKycDone";
 
 const initialForm = {
   customerName: "",
@@ -29,25 +27,31 @@ const initialForm = {
   breadth: "",
   height: "",
   pickupLocation: "",
-}
+};
 
-export default function SingleOrderPage() {
-  const [form, setForm] = useState(initialForm)
-  const [submitting, setSubmitting] = useState(false)
-  const [orders, setOrders] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const [showWarehouseModal, setShowWarehouseModal] = useState(false)
-  const [warehouses, setWarehouses] = useState<any[]>([])
+export default function CloneOrderPage({ params }: { params: { id: string } }) {
+  const [form, setForm] = useState(initialForm);
+  const [loading, setLoading] = useState(true);
+  const [showWarehouseModal, setShowWarehouseModal] = useState(false);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    setLoading(true)
-    axios
-      .get("/api/user/orders/single-order")
-      .then((res) => setOrders(res.data.orders || []))
-      .finally(() => setLoading(false))
-  }, [submitting])
+    axios.get(`/api/user/orders/single-order/${params.id}`)
+      .then(res => {
+        const { id, orderId, orderDate, status, ...rest } = res.data.order;
+        setForm({
+          ...initialForm,
+          ...rest,
+          orderId: "",
+          orderDate: new Date().toISOString().slice(0, 10),
+          status: "pending",
+        });
+      })
+      .finally(() => setLoading(false));
+  }, [params.id]);
 
+  // ...handleSubmit, handlePincodeChange, handleWarehouseFromDB (same as SingleOrderPage)...
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     setSubmitting(true)
@@ -96,14 +100,14 @@ export default function SingleOrderPage() {
       setWarehouses(data)
     } catch {}
   }
+  if (loading) return <div>Loading...</div>;
 
   return (
     <KycGuard>
       <div className="max-w-6xl mx-auto p-2 sm:p-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 mb-8 transition-colors duration-200">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Add Single Order</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Clone Order</h2>
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Consignee Details */}
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -134,8 +138,7 @@ export default function SingleOrderPage() {
                 />
               </div>
             </section>
-
-            {/* Customer Address */}
+ 
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -182,8 +185,7 @@ export default function SingleOrderPage() {
                 />
               </div>
             </section>
-
-            {/* Order Details */}
+ 
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -453,99 +455,13 @@ export default function SingleOrderPage() {
               </button>
             </div>
           </form>
-          <AddWarehouseModal
-            open={showWarehouseModal}
-            onClose={() => setShowWarehouseModal(false)}
-            onSuccess={() => {}}
-          />
-        </div>
-
-        {/* Orders Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 transition-colors duration-200">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">My Orders</h2>
-          {loading ? (
-            <div className="flex justify-center items-center py-8 text-gray-600 dark:text-gray-300">
-              <div className="animate-pulse flex space-x-2">
-                <div>Loading</div>
-                <div className="flex space-x-1">
-                  <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div>
-                  <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div>
-                  <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-md border border-gray-300 dark:border-gray-600 transition-colors duration-200">
-              <table className="min-w-full text-xs md:text-sm">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-700 transition-colors duration-200">
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Order ID
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Product
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Qty
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Value
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Status
-                    </th>
-                    <th className="p-2 border-b border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o, i) => (
-                    <tr
-                      key={o.id || i}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
-                    >
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {o.orderId}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {o.productName}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {o.quantity}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        ₹{o.orderValue}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            o.status === "Delivered"
-                              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
-                              : o.status === "Pending"
-                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
-                                : "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                          }`}
-                        >
-                          {o.status || "Processing"}
-                        </span>
-                      </td>
-                      <td className="p-2 border-b border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {new Date(o.orderDate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {orders.length === 0 && (
-                <div className="text-gray-500 dark:text-gray-400 text-center py-6 border-b border-gray-300 dark:border-gray-600">
-                  No orders yet.
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
+      <AddWarehouseModal
+        open={showWarehouseModal}
+        onClose={() => setShowWarehouseModal(false)}
+        onSuccess={() => {}}
+      />
     </KycGuard>
-  )
+  );
 }
