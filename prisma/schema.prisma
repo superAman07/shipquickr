@@ -119,6 +119,8 @@ model Warehouse {
   city         String
   contactName  String
   mobile       String
+  isPrimary    Boolean?  @default(false)
+  status       Boolean?  @default(true) 
   createdAt    DateTime @default(now())
 }
 

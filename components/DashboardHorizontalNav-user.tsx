@@ -33,7 +33,7 @@ export default function DashboardHorizontalNavUser() {
 
   const navItems = [ 
     { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-8 w-8" />, label: "Rate Calculator" },
-    { href: "/user/dashboard/wharehouse", icon: <HousePlus  className="h-8 w-8" />, label: "Add Warehouse" },
+    { href: "/user/dashboard/warehouse", icon: <HousePlus  className="h-8 w-8" />, label: "Add Warehouse" },
     { href: "/user/dashboard/wallet", icon: <Wallet className="h-8 w-8" />, label: "Recharge Wallet" },
     { href: "/user/dashboard/kyc", icon: <KYCNavIcon status={kycStatus}/>, label: "KYC" },
     { href: "/user/dashboard/reports", icon: <CODIcon label="COD" className="h-8 w-8" />},
