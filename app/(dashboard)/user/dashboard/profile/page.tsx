@@ -43,9 +43,13 @@ export default function UserProfile() {
       <section className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
         <h2 className="text-lg font-bold mb-4">Company Information</h2>
         <div>Company Name: {kycDetail?.companyName || "-"}</div>
+        <div>Company Type: {kycDetail?.companyType || "-"}</div>
+        <div>Company Email: {kycDetail?.companyEmail || "-"}</div>
+        <div>Company Contact: {kycDetail?.companyContact || "-"}</div>
         <div>GST Number: {kycDetail?.gstNumber || "-"}</div>
+        <div>Shipments: {kycDetail?.shipments || "-"}</div>
         <div>Billing Address: {kycDetail?.billingAddress || "-"}</div>
-        {/* ...aur fields... */}
+        <div>Website: {kycDetail?.website || "-"}</div>
       </section>
 
       {/* KYC Details */}
