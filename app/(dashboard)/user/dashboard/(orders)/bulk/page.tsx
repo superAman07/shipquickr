@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Copy, Trash2, Search, Plus, Package } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface Order {
   id: string;
@@ -40,9 +41,14 @@ const BulkOrdersPage: React.FC = () => {
     alert(`Cloning order: ${orderId}`);
   };
 
-  const handleDeleteOrder = (orderId: string) => {
-    if (window.confirm("Are you sure you want to delete this order?")) {
-      setOrders(orders.filter(order => order.id !== orderId));
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+    try {
+        await axios.delete(`/api/user/orders/single-order/${orderId}`);
+        setOrders(orders.filter(order => order.id !== orderId));
+        toast.success(`Order ${orderId} deleted successfully`);
+    } catch (error) {
+        toast.error("Failed to delete order. Please try again.");
     }
   };
 
