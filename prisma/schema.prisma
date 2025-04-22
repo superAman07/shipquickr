@@ -43,7 +43,7 @@ model KycDetail {
   website           String?
   signatureUrl      String?
   companyLogoUrl    String?
-  kycType           String
+  companyType       String
   panCardNo         String
   panCardUrl        String?
   aadhaarNo         String

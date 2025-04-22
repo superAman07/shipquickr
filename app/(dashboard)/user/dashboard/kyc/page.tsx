@@ -14,7 +14,7 @@ export default function KYC() {
   const [accountError, setAccountError] = useState("");
   const [form, setForm] = useState({ 
     mobile: "",
-    kycType: "",
+    companyType: "",
     panCardNo: "",
     panCardFile: null as File | null,
     aadhaarNo: "",
@@ -46,7 +46,7 @@ export default function KYC() {
   function isFormValid() {
     return (
       form.mobile.trim() &&
-      form.kycType !== "Select KYC Type" &&
+      form.companyType !== "Select Company Type" &&
       form.panCardNo.trim() &&
       form.panCardFile &&
       form.aadhaarNo.trim() &&
@@ -472,14 +472,14 @@ export default function KYC() {
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">KYC Type {requiredField}</label>
+              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Type {requiredField}</label>
               <select
-                value={form.kycType}
-                onChange={(e) => setForm({ ...form, kycType: e.target.value })}
+                value={form.companyType}
+                onChange={(e) => setForm({ ...form, companyType: e.target.value })}
                 id="bank-name"
                 className="w-full px-4 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none custom-select"
               >
-                <option>Select KYC Type</option>
+                <option>Select Company Type</option>
                 <option>Individual</option>
                 <option>Business</option>
               </select>

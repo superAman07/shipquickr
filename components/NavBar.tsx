@@ -67,7 +67,7 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
 
               {isProfileOpen && (
                 <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700">
-                  <Link href={`/admin/dashboard/profile`} className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <Link href={`/user/dashboard/profile`} className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <User className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
                     Your Profile
                   </Link>
