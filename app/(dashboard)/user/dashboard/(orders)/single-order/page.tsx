@@ -5,6 +5,7 @@ import type React from "react"
 import axios from "axios"
 import AddWarehouseModal from "@/components/AddWarehouse"
 import KycGuard from "@/components/isKycDone"
+import { toast } from "react-toastify"
 
 const initialForm = {
   customerName: "",
@@ -64,8 +65,9 @@ export default function SingleOrderPage() {
         orderDate: new Date(form.orderDate),
       })
       setForm(initialForm)
+      toast.success("Order added successfully")
     } catch (err) {
-      alert("Failed to add order")
+      toast.error("Failed to add order")
     } finally {
       setSubmitting(false)
     }

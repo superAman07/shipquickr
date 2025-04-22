@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import AddWarehouseModal from "@/components/AddWarehouse";
 import KycGuard from "@/components/isKycDone";
+import { toast } from "react-toastify";
 
 const initialForm = {
   customerName: "",
@@ -51,7 +52,7 @@ export default function CloneOrderPage({ params }: { params: { id: string } }) {
       .finally(() => setLoading(false));
   }, [params.id]);
 
-  // ...handleSubmit, handlePincodeChange, handleWarehouseFromDB (same as SingleOrderPage)...
+   
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     setSubmitting(true)
@@ -68,8 +69,10 @@ export default function CloneOrderPage({ params }: { params: { id: string } }) {
         orderDate: new Date(form.orderDate),
       })
       setForm(initialForm)
+      toast.success("Order cloned successfully!");
+      window.location.href = "/user/dashboard/bulk";
     } catch (err) {
-      alert("Failed to add order")
+        toast.error("Failed to clone order. Please try again.");
     } finally {
       setSubmitting(false)
     }
@@ -97,7 +100,7 @@ export default function CloneOrderPage({ params }: { params: { id: string } }) {
     try {
       const response = await axios.get("/api/user/warehouses")
       const data = response.data.warehouses || []
-      setWarehouses(data)
+      setWarehouses(data) 
     } catch {}
   }
   if (loading) return <div>Loading...</div>;
