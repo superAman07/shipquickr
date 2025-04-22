@@ -128,3 +128,16 @@
 .animate-loading {
   animation: loading 1.2s linear infinite;
 }
+
+.kycProgressBarApproved {
+  width: 100%;
+  background-color: #22c55e; /* green-500 */
+}
+.kycProgressBarPending {
+  width: 60%;
+  background-color: #facc15; /* yellow-400 */
+}
+.kycProgressBarRejected {
+  width: 100%;
+  background-color: #ef4444; /* red-500 */
+}
