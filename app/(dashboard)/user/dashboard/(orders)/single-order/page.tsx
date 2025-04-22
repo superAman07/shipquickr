@@ -388,7 +388,7 @@ export default function SingleOrderPage() {
                 <button
                   type="button"
                   onClick={() => setShowWarehouseModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 font-semibold transition-colors duration-200 shadow-sm"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md cursor-pointer px-4 py-2 font-semibold transition-colors duration-200 shadow-sm"
                 >
                   Add Warehouse
                 </button>
@@ -448,7 +448,7 @@ export default function SingleOrderPage() {
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-8 py-2 font-semibold transition-colors duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer px-8 py-2 font-semibold transition-colors duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={submitting}
               >
                 {submitting ? "Adding..." : "Add Order"}
