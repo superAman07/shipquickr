@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { User } from "lucide-react";
+import Loading from "@/components/loading";
 
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -14,7 +15,7 @@ export default function AdminProfilePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <div className="p-8 text-center"><Loading/></div>;
   if (!profile) return <div className="p-8 text-center text-red-500">Profile not found.</div>;
 
   const { firstName, lastName, email, createdAt } = profile;

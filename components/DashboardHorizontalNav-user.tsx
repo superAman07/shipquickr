@@ -36,7 +36,7 @@ export default function DashboardHorizontalNavUser() {
     { href: "/user/dashboard/warehouse", icon: <HousePlus  className="h-8 w-8" />, label: "Add Warehouse" },
     { href: "/user/dashboard/wallet", icon: <Wallet className="h-8 w-8" />, label: "Recharge Wallet" },
     { href: "/user/dashboard/kyc", icon: <KYCNavIcon status={kycStatus}/>, label: "KYC" },
-    { href: "/user/dashboard/reports", icon: <CODIcon label="COD" className="h-8 w-8" />},
+    { href: "/user/dashboard/cod", icon: <CODIcon label="COD" className="h-8 w-8" />},
     { href: "/user/dashboard/orders", icon: <Truck className="h-8 w-8" />, label: "Transporter ID" },
   ];
 
