@@ -4,6 +4,7 @@ import axios from "axios";
 import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 interface Order {
   id: string;
@@ -25,10 +26,19 @@ interface Order {
   labelUrl?: string;
 }
 
+const tabs = [
+  { label: "All Orders", href: "/user/dashboard/bulk" },
+  { label: "Unshipped", href: "/user/dashboard/unshipped" },
+  { label: "Shipped", href: "/user/dashboard/shipped" },
+  { label: "Cancelled", href: "/user/dashboard/cancel" },
+];
+
 const ShippedOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     fetchOrders();
@@ -104,6 +114,22 @@ const ShippedOrdersPage: React.FC = () => {
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Shipped Orders</h2>
+                <div className="flex gap-2 mb-4">
+                  {tabs.map((tab) => (
+                    <button
+                      type="button"
+                      key={tab.href}
+                      onClick={() => router.push(tab.href)}
+                      className={`px-4 py-2 rounded-md font-semibold transition ${
+                        pathname === tab.href
+                          ? "bg-blue-600 text-white shadow"
+                          : "bg-gray-200 text-gray-700 hover:bg-blue-100"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
                     href="/user/dashboard"
