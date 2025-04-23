@@ -1,72 +1,45 @@
-// import { NextRequest, NextResponse } from "next/server";
-// import axios from "axios";
-
-// export async function POST(req: NextRequest) {
-//   try {
-//     const body = await req.json();
-
-//     // Yahan aapko LRN generate ya fetch karna hoga, abhi ke liye ek static LRN use kar rahe hain
-//     const lrns = "220029522"; // Replace with dynamic LRN if available
-
-//     const options = {
-//       method: "GET",
-//       url: `https://ltl-clients-api-dev.delhivery.com/lrn/freight-breakup/lrns=${encodeURIComponent(lrns)}`,
-//       headers: {
-//         Authorization: `Bearer ${process.env.DELHIVERY_API_TOKEN}`,
-//       },
-//     };
-
-//     const delhiveryRes = await axios.request(options);
-
-//     // Response ko apne frontend ke format me convert karo
-//     // Yahan response structure Delhivery docs ke hisaab se adjust karo
-//     const rateData = delhiveryRes.data[0]; // Assuming response is an array
-
-//     return NextResponse.json({
-//       rates: [
-//         {
-//           courierName: "Delhivery",
-//           serviceType: "Standard",
-//           weight: body.weight,
-//           courierCharges: rateData?.freight_charge || 0,
-//           codCharges: body.paymentMode === "COD" ? 25 : 0,
-//           totalPrice: (rateData?.freight_charge || 0) + (body.paymentMode === "COD" ? 25 : 0),
-//         },
-//       ],
-//     });
-//   } catch (err: any) {
-//     return NextResponse.json({ rates: [], error: "Failed to fetch rates" }, { status: 500 });
-//   }
-// }
-
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
+  const body = await req.json();
 
-    // Dummy calculation logic
-    const weight = parseFloat(body.weight) || 0;
-    const declaredValue = parseFloat(body.declaredValue) || 0;
-    const codCharges = body.paymentMode === "COD" ? 25 : 0;
+  const rates = await prisma.shippingRates.findFirst({ orderBy: { createdAt: "desc" } });
+  if (!rates) return NextResponse.json({ error: "Shipping rates not set" }, { status: 400 });
 
-    // Example: base rate + weight * 10 + declared value * 0.01
-    const courierCharges = 50 + weight * 10 + declaredValue * 0.01;
-    const totalPrice = courierCharges + codCharges;
-
-    return NextResponse.json({
-      rates: [
-        {
-          courierName: "DemoCourier",
-          serviceType: "Standard",
-          weight: weight,
-          courierCharges: courierCharges,
-          codCharges: codCharges,
-          totalPrice: totalPrice,
-        },
-      ],
-    });
-  } catch (err: any) {
-    return NextResponse.json({ rates: [], error: "Failed to calculate rates" }, { status: 500 });
+  const actualWeight = parseFloat(body.weight) || 0;
+  const volumetricWeight =
+    (parseFloat(body.length) * parseFloat(body.width) * parseFloat(body.height)) / 5000 || 0;
+  const finalWeight = Math.max(actualWeight, volumetricWeight);
+ 
+  let courierCharges = 0;
+  if (rates.courierChargesType === "fixed") {
+    courierCharges = finalWeight * rates.courierChargesAmount;
+  } else { 
+    courierCharges = parseFloat(body.declaredValue) * (rates.courierChargesAmount / 100);
   }
+ 
+  let codCharges = 0;
+  if (body.paymentMode === "COD") {
+    if (rates.codChargesType === "fixed") {
+      codCharges = rates.codChargesAmount;
+    } else {
+      codCharges = parseFloat(body.collectableValue) * (rates.codChargesAmount / 100);
+    }
+  }
+
+  const totalPrice = courierCharges + codCharges;
+
+  return NextResponse.json({
+    rates: [
+      {
+        courierName: "DemoCourier",
+        serviceType: "Standard",
+        weight: finalWeight,
+        courierCharges: Math.round(courierCharges * 100) / 100,
+        codCharges: Math.round(codCharges * 100) / 100,
+        totalPrice: Math.round(totalPrice * 100) / 100,
+      },
+    ],
+  });
 }
