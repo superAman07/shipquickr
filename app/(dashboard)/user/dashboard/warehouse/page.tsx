@@ -90,7 +90,6 @@ export default function WarehousesPage({title = "Warehouse List", subtitle = "Ma
       </header>
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
-
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
