@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   const actualWeight = parseFloat(body.weight) || 0;
   const volumetricWeight =
-    (parseFloat(body.length) * parseFloat(body.width) * parseFloat(body.height)) / 5000 || 0;
+    (parseFloat(body.length) * parseFloat(body.width) * parseFloat(body.height)) / 6000 || 0;
   const finalWeight = Math.max(actualWeight, volumetricWeight);
  
   let courierCharges = 0;
