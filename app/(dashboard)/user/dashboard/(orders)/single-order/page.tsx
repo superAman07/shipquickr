@@ -6,6 +6,8 @@ import axios from "axios"
 import AddWarehouseModal from "@/components/AddWarehouse"
 import KycGuard from "@/components/isKycDone"
 import { toast } from "react-toastify"
+import { ChevronRight, FileCheck, Home } from "lucide-react"
+import Link from "next/link"
 
 const initialForm = {
   customerName: "",
@@ -100,6 +102,33 @@ export default function SingleOrderPage() {
   }
 
   return (
+    <>
+      <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
+        <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center justify-end gap-2 dark:text-amber-50">
+                <FileCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">
+                  Add Single Order
+                </h1>
+              </div> 
+              <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
+                <Link
+                  href="/user/dashboard"
+                  className="flex items-center hover:text-gray-300 transition-colors min-w-0 shrink-0"
+                >
+                  <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+                  <span className="truncate">Dashboard</span>
+                </Link>
+                <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
+                <span className="font-medium truncate">Single Order</span>
+              </div>
+            </div>  
+          </div>
+        </div>
+      </header>
+    
     <KycGuard>
       <div className="max-w-6xl mx-auto p-2 sm:p-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 mb-8 transition-colors duration-200">
@@ -549,5 +578,6 @@ export default function SingleOrderPage() {
         </div>
       </div>
     </KycGuard>
+    </>
   )
 }

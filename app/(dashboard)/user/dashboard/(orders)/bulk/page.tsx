@@ -1,8 +1,9 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 interface Order {
   id: string;
@@ -94,10 +95,25 @@ const BulkOrdersPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
+      <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <h2 className="text-3xl font-bold tracking-tight">Bulk Orders</h2>
+            <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
+              <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
+                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Bulk Orders</h2>
+                <div className="flex items-center gap-1 min-w-0">
+                  <Link
+                    href="/user/dashboard"
+                    className="flex items-center hover:text-gray-700 dark:hover:text-gray-200 transition-colors min-w-0 shrink-0"
+                  >
+                    <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 text-gray-400 dark:text-white" />
+                    <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
+                  </Link>
+                  <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
+                  <span className="font-medium truncate text-gray-700 dark:text-white">Bulk Orders</span>
+                </div>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-4">
               <div className="relative">
                 <input

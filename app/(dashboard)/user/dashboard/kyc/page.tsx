@@ -110,8 +110,7 @@ export default function KYC() {
           Pending
         </span>
       </div>
-
-      {/* Progress Steps */}
+ 
       <div className="flex justify-between mb-8 relative">
         <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0"></div>
 
