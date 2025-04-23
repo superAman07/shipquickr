@@ -1,9 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, PlusIcon, Search, Trash2 } from 'lucide-react';
+import { ChevronRight, FileCheck, Home, Pencil, PlusIcon, Search, Trash2 } from 'lucide-react';
 import AddWarehouseModal from '@/components/AddWarehouse';
 import { toast } from 'react-toastify';
+import Link from 'next/link';
 
 interface Warehouse {
   id: string;
@@ -20,7 +21,7 @@ interface Warehouse {
   landmark?: string;
 }
 
-export default function WarehousesPage() {
+export default function WarehousesPage({title = "Warehouse List", subtitle = "Manage your warehouses" }: { title?: string; subtitle?: string }) {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -52,21 +53,43 @@ export default function WarehousesPage() {
   );
 
   return (
+    <>
+    <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
+        <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 dark:text-amber-50">
+                <FileCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">{title}</h1>
+              </div>
+              {subtitle && (
+                <p className="text-xs sm:text-sm text-primary-foreground/80 dark:text-amber-50/90">{subtitle}</p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
+                <Link
+                  href="/user/dashboard"
+                  className="flex items-center hover:text-gray-300 transition-colors min-w-0 shrink-0"
+                >
+                  <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+                  <span className="truncate">Dashboard</span>
+                </Link>
+                <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
+                <span className="font-medium truncate">Rate Calculator</span>
+              </div>
+            </div> 
+            <button
+              type="button"
+              className="bg-blue-500 cursor-pointer hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
+              onClick={() => setShowAddModal(true)}
+            >
+              <PlusIcon size={18} />
+              <span>Add Warehouse</span>
+            </button>
+          </div>
+        </div>
+      </header>
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 sm:mb-0">
-            Warehouse List
-          </h1>
-          <button
-            type="button"
-            className="bg-blue-500 cursor-pointer hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200"
-            onClick={() => setShowAddModal(true)}
-          >
-            <PlusIcon size={18} />
-            <span>Add Warehouse</span>
-          </button>
-        </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -252,5 +275,6 @@ export default function WarehousesPage() {
         />
       </div>
     </div>
+    </>
   );
 }
