@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
     }
 
-    const status = req.nextUrl.searchParams.get("status") as any; // typecast for enum
+    const status = req.nextUrl.searchParams.get("status") as any; 
 
     const orders = await prisma.order.findMany({
       where: {

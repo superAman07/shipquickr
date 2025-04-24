@@ -106,6 +106,12 @@ model Order {
   shippingId      String?    
   awbNumber       String?    
   labelUrl        String?   
+  billableWeight  Float?
+  ageing          Int?    
+  attempts        Int?     
+  shippingDetails String?
+  remarks         String?    
+  updatedAt       DateTime   @updatedAt
   createdAt       DateTime @default(now())  
 }
 
@@ -153,5 +159,10 @@ enum OrderStatus {
   pending
   unshipped
   shipped
+  delivered
+  undelivered
+  rto_intransit
+  rto_delivered
+  lost_shipment
   cancelled
 }
