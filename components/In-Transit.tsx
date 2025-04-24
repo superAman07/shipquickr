@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -122,6 +122,42 @@ const InTransitPage: React.FC = () => {
       </div>
     );
   }
+  function downloadCSV(orders: Order[]) {
+    if (!orders.length) return;
+    const headers = [
+      "Order ID",
+      "Product Details",
+      "Order Value",
+      "Customer Details",
+      "Billable Weight",
+      "Ageing",
+      "Attempts",
+      "Shipping Details",
+      "Status"
+    ];
+    const rows = orders.map(order => [
+      order.orderId,
+      order.productName,
+      order.orderValue,
+      order.customerName,
+      order.billableWeight,
+      order.ageing,
+      order.attempts,
+      order.shippingDetails,
+      order.status
+    ]);
+    const csvContent =
+      [headers, ...rows]
+        .map(e => e.map(x => `"${(x ?? "").toString().replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "in-transit-orders.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
       <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
@@ -158,6 +194,15 @@ const InTransitPage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
+              <button
+                type="button"
+                onClick={() => downloadCSV(filteredOrders)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+                title="Download CSV"
+              >
+                <Download className="h-5 w-5" />
+                Download
+              </button>
             </div>
           </div>
 
