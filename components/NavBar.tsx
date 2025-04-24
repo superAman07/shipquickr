@@ -36,8 +36,12 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg">
-              <Wallet className="h-5 w-5 text-gray-600 dark:text-gray-400 mr-2" />
-              <span className="text-green-600 dark:text-green-400 font-semibold">₹ 0.00</span>
+              {userRole !== "admin" && (
+                <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-4 ...">
+                  <Wallet className="..." />
+                  <span className="text-green-600 dark:text-green-400 font-semibold">₹ 0.00</span>
+                </Link>
+              )}
             </div> 
             <button
               type="button"
@@ -45,11 +49,7 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
               className="p-2 cursor-pointer rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button> 
-            {/* <Button className="p-2 cursor-pointer rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            </Button>  */}
+            </button>  
             <div className="relative cursor-pointer">
               <button
                 type='button'
