@@ -5,6 +5,7 @@ import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { OrderTabs } from "@/components/orderTabs";
 
 interface Order {
   id: string;
@@ -113,22 +114,7 @@ const BulkOrdersPage: React.FC = () => {
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Bulk Orders</h2>
-                <div className="flex gap-2 mb-4">
-                  {tabs.map((tab) => (
-                    <button
-                      type="button"
-                      key={tab.href}
-                      onClick={() => router.push(tab.href)}
-                      className={`px-4 py-2 rounded-md font-semibold transition ${
-                        pathname === tab.href
-                          ? "bg-blue-600 text-white shadow"
-                          : "bg-gray-200 text-gray-700 hover:bg-blue-100"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+                <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
                     href="/user/dashboard"
