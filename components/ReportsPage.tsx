@@ -30,7 +30,7 @@ const tabs = [
     { label: "All-Shipments", status: undefined, href: "/user/dashboard/reports" },
     { label: "In-Transit", status: "in_transit" , href: "/user/dashboard/in-transit"},
     { label: "Out For Delivery", status: "out_for_delivery" , href: "/user/dashboard/out-for-delivery"},
-    { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped" },
+    { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped-reports" },
     { label: "Delivered", status: "delivered" , href: "/user/dashboard/delivered"},
     { label: "Undelivered", status: "undelivered" , href: "/user/dashboard/undelivered"},
     { label: "RTO Intransit", status: "rto_intransit" , href: "/user/dashboard/rto-intransit"},

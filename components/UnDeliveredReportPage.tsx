@@ -32,7 +32,7 @@ const tabs = [
     { label: "All-Shipments", status: undefined, href: "/user/dashboard/reports" },
     { label: "In-Transit", status: "in_transit" , href: "/user/dashboard/in-transit"},
     { label: "Out For Delivery", status: "out_for_delivery" , href: "/user/dashboard/out-for-delivery"},
-    { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped" },
+    { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped-reports" },
     { label: "Delivered", status: "delivered" , href: "/user/dashboard/delivered"},
     { label: "Undelivered", status: "undelivered" , href: "/user/dashboard/undelivered"},
     { label: "RTO Intransit", status: "rto_intransit" , href: "/user/dashboard/rto-intransit"},
@@ -56,7 +56,7 @@ const UnDeliveredPage: React.FC = () => {
   ];
 
 
-  const [activeTab, setActiveTab] = useState(4);
+  const [activeTab, setActiveTab] = useState(5);
 
   useEffect(() => {
     fetchOrders();
@@ -217,15 +217,10 @@ const UnDeliveredPage: React.FC = () => {
                             <td className="px-4 py-3">{order.attempts ?? "0"}</td>
                             <td className="px-4 py-3">{order.shippingDetails ?? "-"}</td>
                             <td className="px-4 py-3">{order.remarks ?? "-"}</td>
-                            {/* <td className="px-4 py-3">
-                              {undeliveredStatuses.includes(order.status)
-                                ? order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())
-                                : "-"}
-                            </td> */}
                             <td className="px-4 py-3">
-                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full shadow bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 whitespace-nowrap">
-                                    Unshipped
-                                </span>
+                              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
+                                {order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                              </span>
                             </td>
                             <td className="px-4 py-3 text-center"> 
                                 <div className="flex justify-center gap-3">
