@@ -24,6 +24,8 @@ interface Order {
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
+  remarks?: string;
+  lastUpdate?: string;
 }
 
 const tabs = [
@@ -37,15 +39,23 @@ const tabs = [
     { label: "Lost Shipment", status: "lost_shipment" , href: "/user/dashboard/lost-shipment"},
   ];
 
-const DeliveredPage: React.FC = () => {
+const UnDeliveredPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   const pathname = usePathname(); 
 
+  const undeliveredStatuses = [
+    "undelivered",
+    "unshipped",
+    "rto_intransit",
+    "rto_delivered",
+    "lost_shipment"
+  ];
 
-  const [activeTab, setActiveTab] = useState(3);
+
+  const [activeTab, setActiveTab] = useState(4);
 
   useEffect(() => {
     fetchOrders();
@@ -83,9 +93,11 @@ const DeliveredPage: React.FC = () => {
   };
 
   const filteredOrders = orders.filter(order =>
-    order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.productName.toLowerCase().includes(searchTerm.toLowerCase())
+    undeliveredStatuses.includes(order.status) && (
+      order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.productName.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   const getStatusColor = (status: string) => {
@@ -128,7 +140,7 @@ const DeliveredPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Delivered</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Undelivered</h2>
                 <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
@@ -139,7 +151,7 @@ const DeliveredPage: React.FC = () => {
                     <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
                   </Link>
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
-                  <span className="font-medium truncate text-gray-700 dark:text-white">Delivered</span>
+                  <span className="font-medium truncate text-gray-700 dark:text-white">Undelivered</span>
                 </div>
               </div>
             </div>
@@ -174,7 +186,8 @@ const DeliveredPage: React.FC = () => {
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Ageing</th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Attempts</th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Shipping Details</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Remarks</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Last Update</th>
                     <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
@@ -202,9 +215,15 @@ const DeliveredPage: React.FC = () => {
                             <td className="px-4 py-3">{order.ageing ?? "0"}</td>
                             <td className="px-4 py-3">{order.attempts ?? "0"}</td>
                             <td className="px-4 py-3">{order.shippingDetails ?? "-"}</td>
+                            <td className="px-4 py-3">{order.remarks ?? "-"}</td>
+                            {/* <td className="px-4 py-3">
+                              {undeliveredStatuses.includes(order.status)
+                                ? order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())
+                                : "-"}
+                            </td> */}
                             <td className="px-4 py-3">
-                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
-                                {order.status === "pending" ? "Unshipped" : order.status.replace(/_/g, " ")}
+                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full shadow bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 whitespace-nowrap">
+                                    Unshipped
                                 </span>
                             </td>
                             <td className="px-4 py-3 text-center"> 
@@ -270,4 +289,4 @@ const DeliveredPage: React.FC = () => {
   );
 };
 
-export default DeliveredPage;
+export default UnDeliveredPage;
