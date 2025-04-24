@@ -140,7 +140,11 @@ const ReportsPage: React.FC = () => {
     ];
     const rows = orders.map(order => [
       order.orderId,
-      order.productName,
+      `${order.productName || ""}` +
+      ((order.length && order.breadth && order.height)
+        ? ` (${order.length}x${order.breadth}x${order.height})`
+        : "") +
+      (order.physicalWeight ? ` Weight : ${order.physicalWeight}Kg` : ""),
       order.orderValue,
       order.customerName,
       order.billableWeight,
