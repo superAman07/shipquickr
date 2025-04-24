@@ -37,7 +37,7 @@ const tabs = [
     { label: "Lost Shipment", status: "lost_shipment" , href: "/user/dashboard/lost-shipment"},
   ];
 
-const ReportsPage: React.FC = () => {
+const InTransitPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,7 +45,7 @@ const ReportsPage: React.FC = () => {
   const pathname = usePathname(); 
 
 
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(1);
 
   useEffect(() => {
     fetchOrders();
@@ -128,7 +128,7 @@ const ReportsPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Reports</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">In-Transit</h2>
                 <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
@@ -139,7 +139,7 @@ const ReportsPage: React.FC = () => {
                     <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
                   </Link>
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
-                  <span className="font-medium truncate text-gray-700 dark:text-white">Reports</span>
+                  <span className="font-medium truncate text-gray-700 dark:text-white">In-Transit</span>
                 </div>
               </div>
             </div>
@@ -203,8 +203,8 @@ const ReportsPage: React.FC = () => {
                             <td className="px-4 py-3">{order.attempts ?? "0"}</td>
                             <td className="px-4 py-3">{order.shippingDetails ?? "-"}</td>
                             <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
-                            {order.status === "pending" ? "Unshipped" : order.status.replace(/_/g, " ")}
+                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
+                                {order.status === "pending" ? "Unshipped" : order.status.replace(/_/g, " ")}
                                 </span>
                             </td>
                             <td className="px-4 py-3 text-center"> 
@@ -243,12 +243,14 @@ const ReportsPage: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                   disabled={true}
                 >
                   Previous
                 </button>
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
                 >
                   1
@@ -268,4 +270,4 @@ const ReportsPage: React.FC = () => {
   );
 };
 
-export default ReportsPage;
+export default InTransitPage;

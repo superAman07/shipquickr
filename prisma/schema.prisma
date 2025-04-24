@@ -159,6 +159,8 @@ enum OrderStatus {
   pending
   unshipped
   shipped
+  in_transit
+  out_for_delivery
   delivered
   undelivered
   rto_intransit
