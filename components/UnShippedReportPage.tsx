@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -135,13 +135,58 @@ const UnShippedPage: React.FC = () => {
     );
   }
 
+  function downloadCSV(orders: Order[]) {
+    if (!orders.length) return;
+    const headers = [
+      "Order ID",
+      "Product Details",
+      "Order Value",
+      "Customer Details",
+      "Billable Weight",
+      "Ageing",
+      "Attempts",
+      "Shipping Details",
+      "Remarks",
+      "Status",
+      "Last Update"
+    ];
+    const rows = orders.map(order => [
+      order.orderId, 
+      `${order.productName || ""}` +
+        ((order.length && order.breadth && order.height)
+          ? ` (${order.length}x${order.breadth}x${order.height})`
+          : "") +
+        (order.physicalWeight ? ` Weight : ${order.physicalWeight}Kg` : ""),
+      order.orderValue,
+      order.customerName,
+      order.billableWeight,
+      order.ageing,
+      order.attempts,
+      order.shippingDetails,
+      order.remarks,
+      order.status,
+      order.lastUpdate
+    ]);
+    const csvContent =
+      [headers, ...rows]
+        .map(e => e.map(x => `"${(x ?? "").toString().replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unshipped-orders.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
       <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Undelivered</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Unshipped</h2>
                 <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
@@ -152,7 +197,7 @@ const UnShippedPage: React.FC = () => {
                     <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
                   </Link>
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
-                  <span className="font-medium truncate text-gray-700 dark:text-white">Undelivered</span>
+                  <span className="font-medium truncate text-gray-700 dark:text-white">Unshipped</span>
                 </div>
               </div>
             </div>
@@ -170,6 +215,15 @@ const UnShippedPage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
+              <button
+                type="button"
+                onClick={() => downloadCSV(filteredOrders)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+                title="Download CSV"
+              >
+                <Download className="h-5 w-5" />
+                Download
+              </button>
             </div>
           </div>
 

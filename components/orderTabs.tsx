@@ -43,7 +43,7 @@ export function OrderTabs({ tabs, pathname }: OrderTabsProps) {
   }, [])
 
   return (
-    <div className={`flex ${isMobile ? "flex-wrap" : "flex-row"} gap-2 mb-4`}>
+    <div className={`flex ${isMobile ? "flex-wrap" : "flex-row"} gap-2  mb-4`}>
       {tabs.map((tab) => {
         const isActive = pathname === tab.href
 
@@ -53,7 +53,7 @@ export function OrderTabs({ tabs, pathname }: OrderTabsProps) {
             key={tab.href}
             onClick={() => router.push(tab.href)}
             className={`
-              relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ease-in-out
+              relative px-4 py-2 cursor-pointer rounded-lg font-medium text-sm transition-all duration-200 ease-in-out
               ${isMobile ? "flex-1 min-w-[120px] mb-1" : ""}
               ${
                 isActive
