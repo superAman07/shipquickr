@@ -35,14 +35,14 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
             </div>
           </div>
           <div className="flex items-center gap-4">
+          {userRole !== "admin" && (
             <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg">
-              {userRole !== "admin" && (
-                <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-4 ...">
-                  <Wallet className="..." />
-                  <span className="text-green-600 dark:text-green-400 font-semibold">₹ 0.00</span>
-                </Link>
-              )}
-            </div> 
+              <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-4 ...">
+                <Wallet className="..." />
+                <span className="text-green-600 dark:text-green-400 font-semibold">₹ 0.00</span>
+              </Link>
+            </div>
+          )} 
             <button
               type="button"
               onClick={()=>setTheme(theme === 'dark' ? 'light' : 'dark')}
