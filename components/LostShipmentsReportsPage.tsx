@@ -140,7 +140,7 @@ const LostShipmentReportPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">RTO Intransit</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Lost Shipment</h2>
                 <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
@@ -151,7 +151,7 @@ const LostShipmentReportPage: React.FC = () => {
                     <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
                   </Link>
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
-                  <span className="font-medium truncate text-gray-700 dark:text-white">RTO Intransit</span>
+                  <span className="font-medium truncate text-gray-700 dark:text-white">Lost Shipment</span>
                 </div>
               </div>
             </div>
