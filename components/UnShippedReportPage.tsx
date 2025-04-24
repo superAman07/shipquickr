@@ -38,7 +38,6 @@ const tabs = [
     { label: "RTO Intransit", status: "rto_intransit" , href: "/user/dashboard/rto-intransit"},
     { label: "RTO Delivered", status: "rto_delivered" , href: "/user/dashboard/rto-delivered"},
     { label: "Lost Shipment", status: "lost_shipment" , href: "/user/dashboard/lost-shipment"},
-    { label: "Cancelled", status: "cancelled", href: "/user/dashboard/cancelled" }
   ];
 
 const UnShippedPage: React.FC = () => {
