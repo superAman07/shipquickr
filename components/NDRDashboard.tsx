@@ -58,11 +58,6 @@ const NDRUserDashboardPage: React.FC = () => {
       setLoading(false);
     }
   };
-
-  const handleCloneOrder = (orderId: string) => {
-    window.location.href = `/user/dashboard/clone-order/${orderId}`;
-  };
-
    
 
   const filteredOrders = orders.filter(order =>
