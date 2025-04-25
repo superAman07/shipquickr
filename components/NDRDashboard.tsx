@@ -279,17 +279,20 @@ const NDRUserDashboardPage: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                   disabled={true}
                 >
                   Previous
                 </button>
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
                 >
                   1
                 </button>
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                   disabled={true}
                 >
