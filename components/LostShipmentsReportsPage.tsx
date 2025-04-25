@@ -45,6 +45,8 @@ const LostShipmentReportPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const pathname = usePathname(); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 1;
 
   const undeliveredStatuses = [
     "undelivered",
@@ -96,9 +98,26 @@ const LostShipmentReportPage: React.FC = () => {
     undeliveredStatuses.includes(order.status) && (
       order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      order.productName.toLowerCase().includes(searchTerm.toLowerCase())||
+      order.mobile.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     const baseColors = {
@@ -241,7 +260,7 @@ const LostShipmentReportPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
-                    {filteredOrders.map((order, idx) => (
+                    {paginatedOrders.map((order, idx) => (
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                             <td className="px-4 py-3">{idx + 1}</td>
                             <td className="px-4 py-3">{order.orderId}</td>
@@ -306,20 +325,20 @@ const LostShipmentReportPage: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={true}
+                  onClick={handlePreviousPage}
+                  className="px-3 py-1 cursor-pointer rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                  disabled={currentPage === 1}
                 >
                   Previous
                 </button>
+                <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                  {currentPage} / {totalPages}
+                </span>
                 <button
                   type="button"
-                  className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                >
-                  1
-                </button>
-                <button
-                  className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={true}
+                  onClick={handleNextPage}
+                  className="px-3 py-1 cursor-pointer rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                  disabled={currentPage === totalPages}
                 >
                   Next
                 </button>
