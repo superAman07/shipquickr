@@ -228,7 +228,7 @@ const NDRUserDashboardPage: React.FC = () => {
                     {filteredOrders.map((order, idx) => (
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                             <td className="px-4 py-3">{order.courierName}</td>
-                            <td className="px-4 py-3">{order.productName}</td>
+                            <td className="px-4 py-3">{`${order.productName} (${order.length}x${order.breadth}x${order.height}) Weight: ${order.physicalWeight}Kg`}</td>
                             <td className="px-4 py-3">₹{order.orderValue?.toFixed(2) ?? "0.00"}</td>
                             <td className="px-4 py-3">{order.mobile}</td>
                             <td className="px-4 py-3">{order.awbNumber}</td>
