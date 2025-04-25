@@ -3,7 +3,7 @@ import Link from "next/link"
 import type React from "react"
 
 import { usePathname } from "next/navigation"
-import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw } from "lucide-react"
+import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw, Banknote } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
@@ -169,6 +169,13 @@ export default function DashboardSidebarUser() {
           icon={<Calculator className="h-5 w-5" />}
           label="Rate Calculator"
           href="/user/dashboard/rate-calculator"
+          active={pathname === "/user/dashboard/rate-calculator"}
+          collapsed={sidebarCollapsed}
+        />
+        <NavItem
+          icon={<Banknote className="h-5 w-5" />}
+          label="Remittance"
+          href="/user/dashboard/remittance"
           active={pathname === "/user/dashboard/rate-calculator"}
           collapsed={sidebarCollapsed}
         />
