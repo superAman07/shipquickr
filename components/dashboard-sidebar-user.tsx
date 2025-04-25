@@ -147,8 +147,7 @@ export default function DashboardSidebarUser() {
           active={pathname === "/user/dashboard"}
           collapsed={sidebarCollapsed}
         />
-
-        {/* Orders menu with hover functionality */}
+ 
         <OrdersNavItem collapsed={sidebarCollapsed} />
 
         <NavItem
@@ -156,6 +155,13 @@ export default function DashboardSidebarUser() {
           label="Reports"
           href="/user/dashboard/reports"
           active={pathname === "/user/dashboard/reports"}
+          collapsed={sidebarCollapsed}
+        />
+        <NavItem
+          icon={<Info className="h-5 w-5" />}
+          label="NDR"
+          href="/user/dashboard/ndr"
+          active={pathname === "/user/dashboard/ndr"}
           collapsed={sidebarCollapsed}
         />
 

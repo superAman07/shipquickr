@@ -68,7 +68,8 @@ const NDRUserDashboardPage: React.FC = () => {
   const filteredOrders = orders.filter(order =>
     (order.orderId ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.productName.toLowerCase().includes(searchTerm.toLowerCase())
+    order.productName.toLowerCase().includes(searchTerm.toLowerCase())||
+    order.mobile.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
