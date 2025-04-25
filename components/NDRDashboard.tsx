@@ -103,43 +103,51 @@ const NDRUserDashboardPage: React.FC = () => {
 
   function downloadCSV(orders: Order[]) {
     if (!orders.length) return;
+  
     const headers = [
-      "Order ID",
-      "Product Details",
+      "Courier Name",
+      "Product Name",
       "Order Value",
-      "Customer Details",
-      "Billable Weight",
+      "Mobile Number",
+      "Waybill",
+      "Consignee",
+      "Count",
+      "Type",
+      "Picked On",
       "Ageing",
-      "Attempts",
-      "Shipping Details",
       "Remarks",
-      "Status"
+      "Last Updated",
     ];
+  
     const rows = orders.map(order => [
-      order.orderId,
+      order.courierName || "DemoCourier",
       `${order.productName || ""}` +
-      ((order.length && order.breadth && order.height)
-        ? ` (${order.length}x${order.breadth}x${order.height})`
-        : "") +
-      (order.physicalWeight ? ` Weight : ${order.physicalWeight}Kg` : ""),
-      order.orderValue,
-      order.customerName,
-      order.billableWeight,
-      order.ageing,
-      order.attempts,
-      order.shippingDetails,
-      order.remarks,
-      order.status
+        ((order.length && order.breadth && order.height)
+          ? ` (${order.length}x${order.breadth}x${order.height})`
+          : "") +
+        (order.physicalWeight ? ` Weight: ${order.physicalWeight}Kg` : ""),
+      order.orderValue?.toFixed(2) ?? "0.00",
+      order.mobile || "-",
+      order.awbNumber || "-",
+      order.customerName || "-",
+      order.attempts ?? "0",
+      order.paymentMode || "-",
+      order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-",
+      order.ageing ?? "0",
+      order.remarks || "-",
+      order.updatedAt ? new Date(order.updatedAt).toLocaleString() : "-",
     ]);
+  
     const csvContent =
       [headers, ...rows]
         .map(e => e.map(x => `"${(x ?? "").toString().replace(/"/g, '""')}"`).join(","))
         .join("\n");
+  
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "orders-report.csv";
+    a.download = "ndr-orders.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
