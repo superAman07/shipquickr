@@ -4,43 +4,33 @@ import axios from "axios";
 import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { OrderTabs } from "@/components/orderTabs";
+import { usePathname, useRouter } from "next/navigation"; 
 
 interface Order {
   id: string;
-  orderId: string;
-  orderDate: string;
-  productName: string; 
-  orderValue: number ;
-  customerName: string;
+  courierName?: string; 
+  productName: string;
+  orderValue: number;
   mobile: string;
-  billableWeight?: number | string;
+  awbNumber: string;  
+  customerName: string;
+  attempts?: number | string;  
+  paymentMode?: string; // type
+  orderDate?: string;  // picked on
   ageing?: number | string;
-  attempts?: number | string;
-  shippingDetails?: string;  
-  remarks?: string;  
+  remarks?: string;
   status: string;
   length?: number | string;
   breadth?: number | string;
   height?: number | string;
+
+  orderId?: string;
+  billableWeight?: number | string;
+  shippingDetails?: string;
   physicalWeight?: number | string;
-  updatedAt?: string;
-  courierName?: string;
-  paymentMode?: string;
+  updatedAt?: string;  
 }
 
-const tabs = [
-    { label: "All-Shipments", status: undefined, href: "/user/dashboard/reports" },
-    { label: "In-Transit", status: "in_transit" , href: "/user/dashboard/in-transit"},
-    { label: "Out For Delivery", status: "out_for_delivery" , href: "/user/dashboard/out-for-delivery"},
-    { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped-reports" },
-    { label: "Delivered", status: "delivered" , href: "/user/dashboard/delivered"},
-    { label: "Undelivered", status: "undelivered" , href: "/user/dashboard/undelivered"},
-    { label: "RTO Intransit", status: "rto_intransit" , href: "/user/dashboard/rto-intransit"},
-    { label: "RTO Delivered", status: "rto_delivered" , href: "/user/dashboard/rto-delivered"},
-    { label: "Lost Shipment", status: "lost_shipment" , href: "/user/dashboard/lost-shipment"},
-  ];
 
 const NDRUserDashboardPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -58,15 +48,12 @@ const NDRUserDashboardPage: React.FC = () => {
   
   const fetchOrders = async () => {
     setLoading(true);
-    try {
-      const status = tabs[activeTab].status;
-      const url = status
-        ? `/api/user/orders/single-order?status=${status}`
-        : `/api/user/orders/single-order`;
+    try { 
+      const url = "/api/user/orders/ndr";
       const response = await axios.get(url);
       setOrders(response.data.orders || []);
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("Error fetching ndr:", error);
     } finally {
       setLoading(false);
     }
@@ -88,7 +75,7 @@ const NDRUserDashboardPage: React.FC = () => {
   };
 
   const filteredOrders = orders.filter(order =>
-    order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.orderId ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -177,7 +164,6 @@ const NDRUserDashboardPage: React.FC = () => {
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">NDR</h2>
-                <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
                     href="/user/dashboard"
@@ -235,8 +221,7 @@ const NDRUserDashboardPage: React.FC = () => {
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Picked On</th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Ageing</th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Remarks</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Last Updated</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Action</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Last Updated</th> 
                   </tr>
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
@@ -246,14 +231,14 @@ const NDRUserDashboardPage: React.FC = () => {
                             <td className="px-4 py-3">{order.productName}</td>
                             <td className="px-4 py-3">₹{order.orderValue?.toFixed(2) ?? "0.00"}</td>
                             <td className="px-4 py-3">{order.mobile}</td>
-                            <td className="px-4 py-3">{order.orderId}</td>
+                            <td className="px-4 py-3">{order.awbNumber}</td>
                             <td className="px-4 py-3">{order.customerName || "DemoCourier"}</td>
                             <td className="px-4 py-3">{order.attempts ?? "0"}</td>
                             <td className="px-4 py-3">{order.paymentMode}</td>
                             <td className="px-4 py-3">{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-"}</td>
                             <td className="px-4 py-3">{order.ageing ?? "0"}</td>
                             <td className="px-4 py-3">{order.remarks ?? "-"}</td>
-                            <td className="px-4 py-3">{order.updatedAt ? new Date(order.updatedAt).toLocaleString() : "-"}</td>
+                            <td className="px-4 py-3">{order.status}</td>
                             
                         </tr>
                     ))}

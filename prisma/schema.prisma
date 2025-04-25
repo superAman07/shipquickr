@@ -80,7 +80,7 @@ model Order {
   id              Int      @id @default(autoincrement()) 
   user            User     @relation(fields: [userId], references: [id])
   userId          Int
-  customerName    String
+  customerName    String     // consignee
   mobile          String
   email           String?
   address         String
@@ -105,7 +105,7 @@ model Order {
   pickupLocation  String?
   status          OrderStatus   @default(unshipped)
   shippingId      String?    
-  awbNumber       String?    
+  awbNumber       String?     // awb hi waybill hai...
   labelUrl        String?   
   billableWeight  Float?
   ageing          Int?    
