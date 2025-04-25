@@ -63,16 +63,7 @@ const NDRUserDashboardPage: React.FC = () => {
     window.location.href = `/user/dashboard/clone-order/${orderId}`;
   };
 
-  const handleDeleteOrder = async (orderId: string) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-    try {
-        await axios.delete(`/api/user/orders/single-order/${orderId}`);
-        setOrders(orders.filter(order => order.id !== orderId));
-        toast.success(`Order ${orderId} deleted successfully`);
-    } catch (error) {
-        toast.error("Failed to delete order. Please try again.");
-    }
-  };
+   
 
   const filteredOrders = orders.filter(order =>
     (order.orderId ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,14 +73,10 @@ const NDRUserDashboardPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     const baseColors = {
-      unshipped: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       undelivered: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
       rto_intransit: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
       rto_delivered: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
-      lost_shipment: 'bg-gray-400 text-white dark:bg-gray-700 dark:text-gray-200',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      lost_shipment: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
     };
     const statusKey = status.toLowerCase() as keyof typeof baseColors;
     return baseColors[statusKey] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
@@ -238,8 +225,11 @@ const NDRUserDashboardPage: React.FC = () => {
                             <td className="px-4 py-3">{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-"}</td>
                             <td className="px-4 py-3">{order.ageing ?? "0"}</td>
                             <td className="px-4 py-3">{order.remarks ?? "-"}</td>
-                            <td className="px-4 py-3">{order.status}</td>
-                            
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {order.status}
+                              </span>
+                            </td>                        
                         </tr>
                     ))}
                     </tbody>
