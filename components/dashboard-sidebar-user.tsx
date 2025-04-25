@@ -3,7 +3,7 @@ import Link from "next/link"
 import type React from "react"
 
 import { usePathname } from "next/navigation"
-import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon } from "lucide-react"
+import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
@@ -158,7 +158,7 @@ export default function DashboardSidebarUser() {
           collapsed={sidebarCollapsed}
         />
         <NavItem
-          icon={<TruckIcon className="h-5 w-5" />}
+          icon={<RefreshCw className="h-5 w-5" />}
           label="NDR"
           href="/user/dashboard/ndr"
           active={pathname === "/user/dashboard/ndr"}
