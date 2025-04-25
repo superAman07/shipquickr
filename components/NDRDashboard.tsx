@@ -16,13 +16,18 @@ interface Order {
   customerName: string;
   mobile: string;
   billableWeight?: number | string;
+  ageing?: number | string;
+  attempts?: number | string;
   shippingDetails?: string;  
+  remarks?: string;  
   status: string;
   length?: number | string;
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
-  lastUpdate?: string;
+  updatedAt?: string;
+  courierName?: string;
+  paymentMode?: string;
 }
 
 const tabs = [
@@ -37,23 +42,15 @@ const tabs = [
     { label: "Lost Shipment", status: "lost_shipment" , href: "/user/dashboard/lost-shipment"},
   ];
 
-const RtoDeliveredPage: React.FC = () => {
+const NDRUserDashboardPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   const pathname = usePathname(); 
 
-  const undeliveredStatuses = [
-    "undelivered",
-    "unshipped",
-    "rto_intransit",
-    "rto_delivered",
-    "lost_shipment"
-  ];
 
-
-  const [activeTab, setActiveTab] = useState(7);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     fetchOrders();
@@ -91,11 +88,9 @@ const RtoDeliveredPage: React.FC = () => {
   };
 
   const filteredOrders = orders.filter(order =>
-    undeliveredStatuses.includes(order.status) && (
-      order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.productName.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -140,20 +135,26 @@ const RtoDeliveredPage: React.FC = () => {
       "Order Value",
       "Customer Details",
       "Billable Weight",
+      "Ageing",
+      "Attempts",
       "Shipping Details",
+      "Remarks",
       "Status"
     ];
     const rows = orders.map(order => [
       order.orderId,
       `${order.productName || ""}` +
-        ((order.length && order.breadth && order.height)
-          ? ` (${order.length}x${order.breadth}x${order.height})`
-          : "") +
-        (order.physicalWeight ? ` Weight : ${order.physicalWeight}Kg` : ""),
+      ((order.length && order.breadth && order.height)
+        ? ` (${order.length}x${order.breadth}x${order.height})`
+        : "") +
+      (order.physicalWeight ? ` Weight : ${order.physicalWeight}Kg` : ""),
       order.orderValue,
-      `${order.customerName}\n${order.mobile}`,
+      order.customerName,
       order.billableWeight,
+      order.ageing,
+      order.attempts,
       order.shippingDetails,
+      order.remarks,
       order.status
     ]);
     const csvContent =
@@ -164,7 +165,7 @@ const RtoDeliveredPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "rto-delivered-orders.csv";
+    a.download = "orders-report.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -175,7 +176,7 @@ const RtoDeliveredPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">RTO Delivered</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">NDR</h2>
                 <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
@@ -186,7 +187,7 @@ const RtoDeliveredPage: React.FC = () => {
                     <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
                   </Link>
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
-                  <span className="font-medium truncate text-gray-700 dark:text-white">RTO Delivered</span>
+                  <span className="font-medium truncate text-gray-700 dark:text-white">NDR</span>
                 </div>
               </div>
             </div>
@@ -204,15 +205,17 @@ const RtoDeliveredPage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              <button
-                type="button"
-                onClick={() => downloadCSV(filteredOrders)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
-                title="Download CSV"
-              >
-                <Download className="h-5 w-5" />
-                Download
-              </button>
+              <div className="flex flex-wrap items-center gap-4"> 
+                <button
+                  type="button"
+                  onClick={() => downloadCSV(filteredOrders)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+                  title="Download CSV"
+                >
+                  <Download className="h-5 w-5" />
+                  Download
+                </button>
+              </div>
             </div>
           </div>
 
@@ -221,56 +224,37 @@ const RtoDeliveredPage: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">S.No</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Order ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Product Details</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Courier Name</th> 
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Product Name</th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Order Value</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Customer Details</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Billable Weight</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Shipping Details</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Last Update</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Mobile Number</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Waybill</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Consignee</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Count</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Picked On</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Ageing</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Remarks</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Last Updated</th>
                     <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
                     {filteredOrders.map((order, idx) => (
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                            <td className="px-4 py-3">{idx + 1}</td>
-                            <td className="px-4 py-3">{order.orderId}</td>
-                            <td className="px-4 py-3">
-                                {order.productName}
-                                {(order.length && order.breadth && order.height)
-                                    ? ` (${order.length}x${order.breadth}x${order.height})`
-                                    : ""}
-                                {order.physicalWeight
-                                    ? ` Weight : ${order.physicalWeight}Kg`
-                                    : ""}
-                            </td>
+                            <td className="px-4 py-3">{order.courierName}</td>
+                            <td className="px-4 py-3">{order.productName}</td>
                             <td className="px-4 py-3">₹{order.orderValue?.toFixed(2) ?? "0.00"}</td>
-                            <td className="px-4 py-3">
-                                {order.customerName}
-                                <br />
-                                <span className="text-xs text-gray-500">{order.mobile}</span>
-                            </td>
-                            <td className="px-4 py-3">{order.billableWeight ?? "N/A"}</td> 
-                            <td className="px-4 py-3">{order.shippingDetails ?? "-"}</td> 
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
-                                {order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center"> 
-                                <div className="flex justify-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => handleCloneOrder(order.id)}
-                                    className="p-2 rounded-full border border-transparent text-blue-700 hover:bg-blue-100 hover:border-blue-400 transition dark:text-blue-300 dark:hover:bg-blue-900 dark:hover:border-blue-700"
-                                    title="Clone Order"
-                                >
-                                    <Copy className="h-5 w-5" />
-                                </button>
-                                </div>
-                            </td>
+                            <td className="px-4 py-3">{order.mobile}</td>
+                            <td className="px-4 py-3">{order.orderId}</td>
+                            <td className="px-4 py-3">{order.customerName || "DemoCourier"}</td>
+                            <td className="px-4 py-3">{order.attempts ?? "0"}</td>
+                            <td className="px-4 py-3">{order.paymentMode}</td>
+                            <td className="px-4 py-3">{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-"}</td>
+                            <td className="px-4 py-3">{order.ageing ?? "0"}</td>
+                            <td className="px-4 py-3">{order.remarks ?? "-"}</td>
+                            <td className="px-4 py-3">{order.updatedAt ? new Date(order.updatedAt).toLocaleString() : "-"}</td>
+                            
                         </tr>
                     ))}
                     </tbody>
@@ -295,14 +279,12 @@ const RtoDeliveredPage: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <button
-                  type="button"
                   className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                   disabled={true}
                 >
                   Previous
                 </button>
                 <button
-                  type="button"
                   className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
                 >
                   1
@@ -322,4 +304,4 @@ const RtoDeliveredPage: React.FC = () => {
   );
 };
 
-export default RtoDeliveredPage;
+export default NDRUserDashboardPage;

@@ -92,7 +92,7 @@ const ReportsPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     const baseColors = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      unshipped: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
       shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       undelivered: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
@@ -260,7 +260,7 @@ const ReportsPage: React.FC = () => {
                             <td className="px-4 py-3">{order.shippingDetails ?? "-"}</td>
                             <td className="px-4 py-3">
                             <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
-                            {order.status === "pending" ? "Unshipped" : order.status.replace(/_/g, " ")}
+                            {order.status === "unshipped" ? "Unshipped" : order.status.replace(/_/g, " ")}
                                 </span>
                             </td>
                             <td className="px-4 py-3 text-center"> 

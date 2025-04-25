@@ -46,7 +46,7 @@ export default function CloneOrderPage({ params }: { params: { id: string } }) {
           ...rest,
           orderId: "",
           orderDate: new Date().toISOString().slice(0, 10),
-          status: "pending",
+          status: "unshipped",
         });
       })
       .finally(() => setLoading(false));

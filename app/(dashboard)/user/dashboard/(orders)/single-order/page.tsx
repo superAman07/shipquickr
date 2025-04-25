@@ -394,8 +394,7 @@ export default function SingleOrderPage() {
                 </div>
               </div>
             </section>
-
-            {/* Pickup Location */}
+ 
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -413,6 +412,7 @@ export default function SingleOrderPage() {
                     // Optionally filter warehouses here
                   }}
                   onFocus={handleWarehouseFromDB}
+                  required
                 />
                 <button
                   type="button"
@@ -553,7 +553,7 @@ export default function SingleOrderPage() {
                           className={`px-2 py-1 rounded-full text-xs ${
                             o.status === "Delivered"
                               ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
-                              : o.status === "Pending"
+                              : o.status === "Unshipped"
                                 ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
                                 : "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
                           }`}

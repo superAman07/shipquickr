@@ -101,8 +101,9 @@ model Order {
   length          Float
   breadth         Float
   height          Float
+  courierName     String?
   pickupLocation  String?
-  status          OrderStatus   @default(pending)
+  status          OrderStatus   @default(unshipped)
   shippingId      String?    
   awbNumber       String?    
   labelUrl        String?   
@@ -155,8 +156,7 @@ enum KycStatus {
   none
 }
 
-enum OrderStatus {
-  pending
+enum OrderStatus { 
   unshipped
   shipped
   in_transit

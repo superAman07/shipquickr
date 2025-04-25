@@ -79,7 +79,7 @@ const BulkOrdersPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     const baseColors = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      unshipped: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
       shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
       cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
@@ -198,7 +198,7 @@ const BulkOrdersPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
-                          {order.status === "pending" ? "unshipped" : order.status}
+                          {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
@@ -251,11 +251,13 @@ const BulkOrdersPage: React.FC = () => {
                   Previous
                 </button>
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
                 >
                   1
                 </button>
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                   disabled={true}
                 >
