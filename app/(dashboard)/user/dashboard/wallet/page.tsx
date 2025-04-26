@@ -15,7 +15,8 @@ declare global {
   }
 }
 
-export default function WalletPage({title = "My Wallet", subtitle = "Manage your wallet balance and transactions" }: { title?: string; subtitle?: string }) {
+export default function WalletPage() {
+  const title = "My Wallet", subtitle = "Manage your wallet balance and transactions"
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
