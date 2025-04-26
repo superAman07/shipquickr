@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest) {
   try {
-    const userId = parseInt(params.userId);
+    const url = new URL(req.url);
+    const userId = url.pathname.split("/").pop(); 
+    if (!userId) return NextResponse.json({ error: "UserId missing" }, { status: 400 });
+
     const kyc = await prisma.kycDetail.findUnique({
-      where: { userId },
+      where: { userId: parseInt(userId) },
       include: { user: { select: { firstName: true, lastName: true, email: true } } }
     });
     if (!kyc) return NextResponse.json({ error: "KYC not found" }, { status: 404 });
