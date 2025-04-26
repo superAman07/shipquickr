@@ -176,7 +176,7 @@ export default function DashboardSidebarUser() {
           icon={<Banknote className="h-5 w-5" />}
           label="Remittance"
           href="/user/dashboard/remittance"
-          active={pathname === "/user/dashboard/rate-calculator"}
+          active={pathname === "/user/dashboard/remittance"}
           collapsed={sidebarCollapsed}
         />
       </nav>
