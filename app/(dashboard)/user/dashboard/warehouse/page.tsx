@@ -21,7 +21,8 @@ interface Warehouse {
   landmark?: string;
 }
 
-export default function WarehousesPage({title = "Warehouse List", subtitle = "Manage your warehouses" }: { title?: string; subtitle?: string }) {
+export default function WarehousesPage() {
+  const title = "Warehouse List", subtitle = "Manage your warehouses" ;
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
