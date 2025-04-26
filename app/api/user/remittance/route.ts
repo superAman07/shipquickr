@@ -85,15 +85,9 @@ export async function GET(req: NextRequest) {
       totalCOD: summary._sum.collectableValue || 0,
       codPaid: summary._sum.codPaid || 0,
       deduction:
-        (summary._sum.netOffAmount || 0) +
-        (summary._sum.earlyCodCharge || 0) +
-        (summary._sum.otherDeductions || 0),
+        (summary._sum.netOffAmount || 0) + (summary._sum.earlyCodCharge || 0) + (summary._sum.otherDeductions || 0),
       codAvailable:
-        (summary._sum.collectableValue || 0) -
-        ((summary._sum.netOffAmount || 0) +
-          (summary._sum.earlyCodCharge || 0) +
-          (summary._sum.otherDeductions || 0) +
-          (summary._sum.codPaid || 0)),
+        (summary._sum.collectableValue || 0) - ((summary._sum.netOffAmount || 0) + (summary._sum.earlyCodCharge || 0) + (summary._sum.otherDeductions || 0) + (summary._sum.codPaid || 0)),
     },
   });
 }
