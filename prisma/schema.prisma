@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js" 
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,28 +8,26 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String  @unique
-  password  String
-  status    Boolean @default(true)  
-  kycStatus KycStatus @default(pending)
-  role      Role  @default(user) 
-  createdAt DateTime @default(now())
-  kycDetail KycDetail?
-  wallet    Wallet?
+  id           Int           @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String        @unique
+  password     String
+  status       Boolean       @default(true)
+  role         Role          @default(user)
+  createdAt    DateTime      @default(now())
+  kycStatus    KycStatus     @default(pending)
+  kycDetail    KycDetail?
+  orders       Order[]
+  remittances  Remittance[]
   transactions Transaction[]
-  orders    Order[]
-  warehouses Warehouse[]
-  remittances    Remittance[]
+  wallet       Wallet?
+  warehouses   Warehouse[]
 }
 
 model KycDetail {
   id                Int      @id @default(autoincrement())
-  user              User     @relation(fields: [userId], references: [id])
   userId            Int      @unique
-  mobile            String
   gst               Boolean
   gstNumber         String?
   gstCertificateUrl String?
@@ -44,7 +42,6 @@ model KycDetail {
   website           String?
   signatureUrl      String?
   companyLogoUrl    String?
-  companyType       String
   panCardNo         String
   panCardUrl        String?
   aadhaarNo         String
@@ -58,38 +55,33 @@ model KycDetail {
   chequeUrl         String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  mobile            String
+  companyType       String
+  user              User     @relation(fields: [userId], references: [id])
 }
 
 model Wallet {
-  id        Int     @id @default(autoincrement())
-  user      User    @relation(fields: [userId], references: [id])
-  userId    Int     @unique
-  balance   Float   @default(0)
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
+
 model Transaction {
-  id        Int     @id @default(autoincrement())
-  user      User    @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
   userId    Int
   amount    Float
   type      String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Order {
-  id              Int      @id @default(autoincrement()) 
-  user            User     @relation(fields: [userId], references: [id])
+  id              Int         @id @default(autoincrement())
   userId          Int
-  customerName    String     // consignee
-  mobile          String
-  email           String?
-  address         String
-  landmark        String?
-  pincode         String
-  state           String
-  city            String
-  orderId         String   @unique 
+  orderId         String      @unique
   orderDate       DateTime
   paymentMode     String
   productName     String
@@ -97,49 +89,58 @@ model Order {
   quantity        Int
   orderValue      Float
   hsn             String?
-  codAmount       Float?
   physicalWeight  Float
   length          Float
   breadth         Float
   height          Float
-  courierName     String?
   pickupLocation  String?
-  status          OrderStatus   @default(unshipped)
-  shippingId      String?    
-  awbNumber       String?     // awb hi waybill hai...
-  labelUrl        String?   
+  address         String
+  pincode         String
+  state           String
+  city            String
+  createdAt       DateTime    @default(now())
+  codAmount       Float?
+  customerName    String
+  email           String?
+  landmark        String?
+  mobile          String
+  awbNumber       String?
+  labelUrl        String?
+  shippingId      String?
+  status          OrderStatus @default(unshipped)
+  ageing          Int?
+  attempts        Int?
   billableWeight  Float?
-  ageing          Int?    
-  attempts        Int?     
+  remarks         String?
   shippingDetails String?
-  remarks         String?    
-  remittanceId   Int?        
-  remittance     Remittance? @relation(fields: [remittanceId], references: [id], onDelete: SetNull) 
-  @@index([remittanceId])
+  updatedAt       DateTime    @updatedAt
+  courierName     String?
+  remittanceId    Int?
+  remittance      Remittance? @relation(fields: [remittanceId], references: [id])
+  user            User        @relation(fields: [userId], references: [id])
 
-  updatedAt       DateTime   @updatedAt
-  createdAt       DateTime @default(now())  
+  @@index([remittanceId])
 }
 
 model Warehouse {
-  id           Int      @id @default(autoincrement())
-  user         User     @relation(fields: [userId], references: [id])
-  userId       Int
+  id            Int      @id @default(autoincrement())
+  userId        Int
   warehouseName String
-  pincode      String
-  address1     String
-  address2     String?
-  landmark     String?
-  state        String
-  city         String
-  contactName  String
-  mobile       String
-  isPrimary    Boolean?  @default(false)
-  status       Boolean?  @default(true) 
-  createdAt    DateTime @default(now())
+  pincode       String
+  address1      String
+  address2      String?
+  landmark      String?
+  state         String
+  city          String
+  contactName   String
+  mobile        String
+  createdAt     DateTime @default(now())
+  isPrimary     Boolean? @default(false)
+  status        Boolean? @default(true)
+  user          User     @relation(fields: [userId], references: [id])
 }
 
-model ShippingRates{
+model ShippingRates {
   id                   Int      @id @default(autoincrement())
   courierChargesType   String
   courierChargesAmount Float
@@ -149,40 +150,38 @@ model ShippingRates{
   updatedAt            DateTime @updatedAt
 }
 
-
 model Remittance {
   id               Int      @id @default(autoincrement())
-  userId           Int     
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
-  remittanceDate   DateTime 
-  utrReference     String?  
-
-  collectableValue Float    
-  netOffAmount     Float    @default(0) 
-  earlyCodCharge   Float    @default(0) 
-  otherDeductions  Float    @default(0)  
-  codPaid          Float    
-  remarks          String?  
-
+  userId           Int
+  remittanceDate   DateTime
+  utrReference     String?
+  collectableValue Float
+  netOffAmount     Float    @default(0)
+  earlyCodCharge   Float    @default(0)
+  otherDeductions  Float    @default(0)
+  codPaid          Float
+  remarks          String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  orders           Order[] 
-  @@index([userId])  
-}
+  orders           Order[]
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+}
 
 enum Role {
   user
   admin
 }
+
 enum KycStatus {
   pending
   approved
-  rejected 
+  rejected
   none
 }
 
-enum OrderStatus { 
+enum OrderStatus {
   unshipped
   shipped
   in_transit
