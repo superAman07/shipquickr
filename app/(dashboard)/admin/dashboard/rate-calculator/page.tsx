@@ -8,7 +8,9 @@ import axios from "axios";
 import { ChevronRight, FileCheck, Home } from "lucide-react";
 import Link from "next/link";
 
-export default function RateCalculator({title = "Rate Calculator", subtitle = "Calculate shipping rates for your packages"}: { title?: string; subtitle?: string }) {
+export default function RateCalculator() {
+  const title = "Rate Calculator", subtitle = "Calculate shipping rates for your packages"
+  
   const [form, setForm] = useState({
     paymentMode: "COD",
     pickupPincode: "",

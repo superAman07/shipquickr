@@ -8,11 +8,8 @@ export const metadata: Metadata = {
   description: "Review and manage user KYC verification status",
 }
 
-interface KycHeaderProps {
-  title?: string
-  subtitle?: string
-}
-export default function KycPage({ title = "User Management", subtitle="Review and manage user status" }: KycHeaderProps) {
+export default function KycPage() {
+  const title = "User Management", subtitle="Review and manage user status"
   return (
     <div className="flex flex-col  min-h-screen">
       <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-4 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
