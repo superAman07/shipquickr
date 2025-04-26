@@ -113,7 +113,7 @@ export default function SignUp() {
             </div>
             <div className="hidden lg:block absolute bottom-4 lg:-bottom-9 z-20 lg:left-[-90px] ">
               <Image
-                src="/card-image.png?height=125&width=125"
+                src="/card-image.png"
                 alt="Delivery Person"
                 width={200}
                 height={200}

@@ -73,7 +73,7 @@ export default function ForgotPassword() {
             </div>
             <div className="hidden lg:block absolute bottom-4 lg:-bottom-9 z-20 lg:left-[-105px] ">
               <Image
-                src="/forgot-boy.png?height=125&width=125"
+                src="/forgot-boy.png"
                 alt="Delivery Person"
                 width={200}
                 height={200}
