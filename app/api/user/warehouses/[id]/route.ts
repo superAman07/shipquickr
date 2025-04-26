@@ -22,7 +22,6 @@ export async function PATCH(req: NextRequest): Promise<Response> {
     const url = new URL(req.url);
     const id = Number(url.pathname.split("/").pop());
     if (isNaN(id)) return new Response(JSON.stringify({ error: "Warehouse ID missing" }), { status: 400 });
-    // const warehouseId = Number(params.id);
  
     if (data.isPrimary === true) {
       await prisma.warehouse.updateMany({
