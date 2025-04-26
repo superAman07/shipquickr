@@ -22,6 +22,7 @@ model User {
   transactions Transaction[]
   orders    Order[]
   warehouses Warehouse[]
+  remittances    Remittance[]
 }
 
 model KycDetail {
@@ -112,6 +113,10 @@ model Order {
   attempts        Int?     
   shippingDetails String?
   remarks         String?    
+  remittanceId   Int?        
+  remittance     Remittance? @relation(fields: [remittanceId], references: [id], onDelete: SetNull) 
+  @@index([remittanceId])
+
   updatedAt       DateTime   @updatedAt
   createdAt       DateTime @default(now())  
 }
@@ -142,6 +147,27 @@ model ShippingRates{
   codChargesAmount     Float
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+
+model Remittance {
+  id               Int      @id @default(autoincrement())
+  userId           Int     
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  remittanceDate   DateTime 
+  utrReference     String?  
+
+  collectableValue Float    
+  netOffAmount     Float    @default(0) 
+  earlyCodCharge   Float    @default(0) 
+  otherDeductions  Float    @default(0)  
+  codPaid          Float    
+  remarks          String?  
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  orders           Order[] 
+  @@index([userId])  
 }
 
 
