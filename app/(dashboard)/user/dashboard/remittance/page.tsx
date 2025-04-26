@@ -4,6 +4,7 @@ import { Download, Search, Calendar, Home, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import axios from 'axios';
+import Loading from '@/app/loading';
 
 const PAGE_SIZE = 10;
 
@@ -205,7 +206,7 @@ const RemittancePage: React.FC = () => {
                       {loading ? (
                         <tr>
                           <td colSpan={10} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            Loading...
+                            <Loading/>
                           </td>
                         </tr>
                       ) : remittances.length === 0 ? (
@@ -259,7 +260,7 @@ const RemittancePage: React.FC = () => {
                       {loading ? (
                         <tr>
                           <td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            Loading...
+                            <Loading/>
                           </td>
                         </tr>
                       ) : remittances.length === 0 ? (
