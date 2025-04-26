@@ -8,15 +8,21 @@ interface TokenDetailsType {
     exp: number;
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest): Promise<Response> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const decoded = jwtDecode<TokenDetailsType>(token);
+    if (decoded.exp * 1000 < Date.now()) {
+      return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
+    }
 
     const data = await req.json();
-    const warehouseId = Number(params.id);
+    const url = new URL(req.url);
+    const id = Number(url.pathname.split("/").pop());
+    if (isNaN(id)) return new Response(JSON.stringify({ error: "Warehouse ID missing" }), { status: 400 });
+    // const warehouseId = Number(params.id);
  
     if (data.isPrimary === true) {
       await prisma.warehouse.updateMany({
@@ -26,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const updated = await prisma.warehouse.update({
-      where: { id: warehouseId, userId: decoded.userId },
+      where: { id, userId: decoded.userId },
       data,
     });
 
@@ -36,22 +42,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest): Promise<Response> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const decoded = jwtDecode<TokenDetailsType>(token);
-
-    const warehouseId = Number(params.id); 
+    if (decoded.exp * 1000 < Date.now()) {
+      return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
+    } 
+    const url = new URL(request.url);
+    const id = Number(url.pathname.split("/").pop());
+    if (isNaN(id)) return new Response(JSON.stringify({ error: "Warehouse ID missing" }), { status: 400 });
     
-    const warehouse = await prisma.warehouse.findUnique({ where: { id: warehouseId } });
+    const warehouse = await prisma.warehouse.findUnique({ where: { id: id } });
     if (!warehouse || warehouse.userId !== decoded.userId) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    await prisma.warehouse.delete({ where: { id: warehouseId } });
-    return NextResponse.json({ message: "Deleted successfully" });
+    await prisma.warehouse.delete({ where: { id, userId: decoded.userId } });
+    return NextResponse.json({ message: "Warehouse deleted successfully" });
   } catch (error) {
     return NextResponse.json({ error: "Failed to delete warehouse" }, { status: 500 });
   }
