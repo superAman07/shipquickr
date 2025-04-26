@@ -8,7 +8,7 @@ interface TokenDetailsType {
   exp: number;
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
@@ -19,13 +19,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Token expired" }, { status: 401 });
     }
 
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); 
+    if (!id) return NextResponse.json({ error: "Order ID missing" }, { status: 400 });
+
+
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
     if (!user || user.kycStatus !== "approved") {
       return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
     });
 
     if (!order || order.userId !== decoded.userId) {
@@ -33,7 +38,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.order.delete({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
     });
 
     return NextResponse.json({ message: "Order deleted successfully" }, { status: 200 });
@@ -42,7 +47,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request) {
     try{
         const cookieStore = await cookies();
         const token = cookieStore.get("userToken")?.value;
@@ -52,8 +57,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
         if (decoded.exp * 1000 < Date.now()) {
         return NextResponse.json({ error: "Token expired" }, { status: 401 });
         }
+
+        const url = new URL(request.url);
+        const id = url.pathname.split("/").pop();
+        if (!id) return NextResponse.json({ error: "Order ID missing" }, { status: 400 });
+
         const order = await prisma.order.findUnique({
-            where: { id: parseInt(params.id) },
+            where: { id: parseInt(id) },
         });
         if (!order || order.userId !== decoded.userId) {
             return NextResponse.json({ error: "Order not found" }, { status: 404 });
