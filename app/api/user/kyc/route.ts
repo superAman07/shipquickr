@@ -1,21 +1,32 @@
 import { prisma } from "@/lib/prisma"; 
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
-
-import formidable, { File as FormidableFile } from "formidable";
-import fs from "fs";
+import { NextRequest, NextResponse } from "next/server"; 
 import path from "path";
-
+import { S3Client } from "@aws-sdk/client-s3"; 
+import { Upload } from "@aws-sdk/lib-storage"; 
 
 interface TokenDetailsType {
-    userId: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: string;
-    exp: number;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  exp: number;
 }
+
+const s3Client = new S3Client({
+  // No region or credentials needed here.
+  // It automatically uses IAM role in Amplify/Lambda.
+  // Locally, it uses credentials from ~/.aws/credentials or environment variables (AWS_ACCESS_KEY_ID, etc. from .env).
+  // Ensure AWS_REGION is set in your local .env file for the SDK to pick up the region locally.
+});
+
+const BUCKET_NAME = process.env.S3_UPLOAD_BUCKET_NAME!;
+if (!BUCKET_NAME) {
+  console.error("Error: S3_UPLOAD_BUCKET_NAME environment variable is not set.");
+}
+
 export async function GET(){ 
     try{
         const cookiesStores = await cookies();
@@ -52,50 +63,102 @@ export const config = {
     },
   };
   
-function saveFile(file: FormidableFile, folder: string) {
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "kyc");
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-    const ext = path.extname(file.originalFilename || "");
-    const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
-    const filepath = path.join(uploadsDir, filename);
-    const fileData = fs.readFileSync(file.filepath);
-    fs.writeFileSync(filepath, fileData);
-    return `/uploads/kyc/${filename}`;
-}
   
 export async function POST(req: NextRequest) {
     try {
       const cookiesStores = await cookies();
       const token = cookiesStores.get("userToken")?.value;
       if (!token) return NextResponse.json({ error: "Token not found" }, { status: 401 });
-      const decoded = jwtDecode<any>(token);
+      const decoded = jwtDecode<TokenDetailsType>(token);
       if (decoded.exp * 1000 < Date.now()) return NextResponse.json({ error: "Token expired" }, { status: 401 });
    
       const formData = await req.formData();
    
-      async function saveFile(file: File | null, folder: string) {
+      // async function saveFile(file: File | null, folder: string) {
+      //   if (!file) return null;
+      //   if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+      //     throw new Error("Only images or PDF allowed");
+      //   }
+      //   const arrayBuffer = await file.arrayBuffer();
+      //   const buffer = Buffer.from(arrayBuffer);
+      //   const ext = path.extname(file.name);
+      //   const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
+      //   const uploadsDir = path.join(process.cwd(), "public", "uploads", "kyc");
+      //   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+      //   const filepath = path.join(uploadsDir, filename);
+      //   fs.writeFileSync(filepath, buffer);
+      //   return `/uploads/kyc/${filename}`;
+      // }
+      async function saveFile(file: File | null, folder: string): Promise<string | null> {
         if (!file) return null;
-        if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
-          throw new Error("Only images or PDF allowed");
+  
+        // Validate file type (optional but recommended)
+        const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+        if (!allowedTypes.includes(file.type)) {
+          console.error(`Invalid file type: ${file.type}. Allowed: ${allowedTypes.join(', ')}`);
+          throw new Error(`Invalid file type. Only ${allowedTypes.join(', ')} allowed.`);
         }
+  
+        // Validate file size (optional but recommended) - Example: 5MB limit
+        const maxSize = 5 * 1024 * 1024; // 5 MB in bytes
+        if (file.size > maxSize) {
+           console.error(`File size exceeds limit: ${file.size} bytes. Max: ${maxSize} bytes.`);
+           throw new Error(`File size exceeds the ${maxSize / 1024 / 1024}MB limit.`);
+        }
+  
+  
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const ext = path.extname(file.name);
-        const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
-        const uploadsDir = path.join(process.cwd(), "public", "uploads", "kyc");
-        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-        const filepath = path.join(uploadsDir, filename);
-        fs.writeFileSync(filepath, buffer);
-        return `/uploads/kyc/${filename}`;
+        // Create a unique filename for S3 within the specified folder
+        const filename = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
+  
+        if (!BUCKET_NAME) {
+           throw new Error("S3 Bucket name is not configured.");
+        }
+  
+        try {
+          console.log(`Uploading ${filename} to bucket ${BUCKET_NAME}...`);
+          const upload = new Upload({
+            client: s3Client,
+            params: {
+              Bucket: BUCKET_NAME,
+              Key: filename, // Use the generated filename as the S3 key
+              Body: buffer,
+              ContentType: file.type,
+              // ACL: 'public-read', // Optional: Only if you want files to be publicly accessible via direct S3 URL without pre-signed URLs. Requires bucket public access settings adjustment.
+            },
+          });
+  
+          // Optional: Track progress
+          upload.on("httpUploadProgress", (progress) => {
+            console.log(`Upload progress for ${filename}: ${progress.loaded}/${progress.total}`);
+          });
+  
+          await upload.done();
+          console.log(`Successfully uploaded ${filename} to ${BUCKET_NAME}.`);
+  
+          // Construct the S3 URL (consider using pre-signed URLs for private files)
+          // This standard URL format works if the object/bucket allows public reads.
+          // For local testing, ensure AWS_REGION is in .env
+          const region = process.env.AWS_REGION || 'us-east-1'; // Default or get from env
+          const fileUrl = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${filename}`;
+          return fileUrl;
+  
+        } catch (error) {
+          console.error(`Error uploading ${filename} to S3:`, error);
+          // Rethrow or handle the error appropriately
+          throw new Error(`Failed to upload file ${file.name} to S3.`);
+        }
       }
    
-      const gstCertificateUrl = await saveFile(formData.get("gstCertificate") as File, "kyc");
-      const signatureUrl = await saveFile(formData.get("signature") as File, "kyc");
-      const companyLogoUrl = await saveFile(formData.get("companyLogo") as File, "kyc");
-      const panCardUrl = await saveFile(formData.get("panCardFile") as File, "kyc");
-      const aadhaarFrontUrl = await saveFile(formData.get("aadhaarFront") as File, "kyc");
-      const aadhaarBackUrl = await saveFile(formData.get("aadhaarBack") as File, "kyc");
-      const chequeUrl = await saveFile(formData.get("cheque") as File, "kyc");
+      const gstCertificateUrl = await saveFile(formData.get("gstCertificate") as File|null, "kyc");
+      const signatureUrl = await saveFile(formData.get("signature") as File | null, "kyc");
+      const companyLogoUrl = await saveFile(formData.get("companyLogo") as File | null, "kyc");
+      const panCardUrl = await saveFile(formData.get("panCardFile") as File | null, "kyc");
+      const aadhaarFrontUrl = await saveFile(formData.get("aadhaarFront") as File | null, "kyc");
+      const aadhaarBackUrl = await saveFile(formData.get("aadhaarBack") as File | null, "kyc");
+      const chequeUrl = await saveFile(formData.get("cheque") as File | null, "kyc");
    
       const already = await prisma.kycDetail.findUnique({ where: { userId: parseInt(decoded.userId) } });
       if (already) return NextResponse.json({ error: "KYC already submitted" }, { status: 409 });
@@ -134,69 +197,11 @@ export async function POST(req: NextRequest) {
       });
   
       return NextResponse.json({ message: "KYC details submitted successfully", kyc }, { status: 201 });
-    } catch (err) {
+    } catch (err: any) { // Catch specific errors if needed
       console.error("KYC POST error:", err);
-      return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+      // Provide more specific error messages if possible
+      const errorMessage = err.message || "Something went wrong during KYC submission.";
+      const statusCode = err.status || 500; // Use a specific status code if available
+      return NextResponse.json({ error: errorMessage }, { status: statusCode });
     }
   }
-
-
-
-// export async function POST (req: NextRequest){
-//     try{
-//         const cookiesStores = await cookies();
-//         const token = cookiesStores.get('userToken')?.value;
-//         if(!token){
-//             return NextResponse.json({ error: "Token not found" }, { status: 401 });
-//         }
-//         const decoded = jwtDecode<TokenDetailsType>(token);
-//         if (decoded.exp * 1000 < Date.now()) {
-//             return NextResponse.json({ error: "Token expired" }, { status: 401 });
-//         }
-//         const already = await prisma.kycDetail.findUnique({ where: { userId: parseInt(decoded.userId) } });
-//         if (already) {
-//             return NextResponse.json({ error: "KYC already submitted" }, { status: 409 });
-//         }
-
-//         const {mobile,gst,gstNumber,gstCertificateUrl,shipments,companyName,companyEmail,companyContact,billingAddress,pincode, state, city,website,signatureUrl,companyLogoUrl,companyType,panCardNo,panCardUrl,aadhaarNo,aadhaarFrontUrl,aadhaarBackUrl,accountHolder,bankName,accountType,accountNo,ifsc,chequeUrl} = await req.json();
-//         if (gst=== undefined || !gstNumber || !gstCertificateUrl || !shipments || !companyName || !companyEmail || !companyContact || !billingAddress || !pincode || !state || !city || !website || !signatureUrl || !companyLogoUrl || !companyType) {
-//             return NextResponse.json({ error: "All fields must be filled" }, { status: 400 });
-//         }
-//         const kyc = await prisma.kycDetail.create({
-//             data: {
-//                 userId: parseInt(decoded.userId),
-//                 mobile,
-//                 gst,
-//                 gstNumber,
-//                 gstCertificateUrl,
-//                 shipments,
-//                 companyName,
-//                 companyEmail,
-//                 companyContact,
-//                 billingAddress,
-//                 pincode,
-//                 state,
-//                 city,
-//                 website,
-//                 signatureUrl,
-//                 companyLogoUrl,
-//                 companyType,
-//                 panCardNo: panCardNo || null, 
-//                 panCardUrl: panCardUrl || null, 
-//                 aadhaarNo: aadhaarNo || null, 
-//                 aadhaarFrontUrl: aadhaarFrontUrl || null, 
-//                 aadhaarBackUrl: aadhaarBackUrl || null, 
-//                 accountHolder: accountHolder || null, 
-//                 bankName: bankName || null, 
-//                 accountType: accountType || null, 
-//                 accountNo: accountNo || null, 
-//                 ifsc: ifsc || null, 
-//                 chequeUrl: chequeUrl || null, 
-//             }
-//         });
-//         return NextResponse.json({ message: "KYC details submitted successfully", kyc }, { status: 201 });
-//     }catch(err){
-//         console.error("KYC POST error:", err);
-//         return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
-//     }
-// }

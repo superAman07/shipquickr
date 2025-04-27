@@ -1,18 +1,26 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, Upload, Building2, User, CreditCard, FileText, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 import { toast } from "react-toastify"
 import ButtonLoading from "@/components/buttonLoading"
+import Cookies from 'js-cookie';
+import { jwtDecode } from "jwt-decode"
 
+interface UserDetails {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
-
-export default function KYC() {
-  // Extend Tailwind with custom colors if needed
-  const darkGray850 = "rgb(28, 32, 40)" // Darker shade for headers in dark mode
+export default function KYC() { 
+   
   const [accountError, setAccountError] = useState("");
   const [form, setForm] = useState({ 
+    firstName: "Loading...",
+    lastName: "Loading...",
+    email: "Loading...",
     mobile: "",
     companyType: "",
     panCardNo: "",
@@ -43,8 +51,48 @@ export default function KYC() {
     companyLogo: null as File | null,
   })
 
+  const [isUserDataLoading, setIsUserDataLoading] = useState(true);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setIsUserDataLoading(true);  
+      try {
+        const response = await axios.get<UserDetails>('/api/user/me');
+        const userData = response.data; 
+        setForm(prevForm => ({
+          ...prevForm,
+          firstName: userData.firstName || "",
+          lastName: userData.lastName || "",
+          email: userData.email || "",
+        }));
+      } catch (error) {
+        console.error("Failed to fetch user data:", error); 
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+           toast.error("Session expired or invalid. Please log in again."); 
+        } else {
+           toast.error("Could not load user details. Please refresh.");
+        } 
+         setForm(prevForm => ({
+          ...prevForm,
+          firstName: "",
+          lastName: "",
+          email: "",
+        }));
+      } finally {
+        setIsUserDataLoading(false); 
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+
+
   function isFormValid() {
+    if (isUserDataLoading) return false;
     return (
+      form.firstName.trim() &&
+      form.lastName.trim() &&
+      form.email.trim() &&
       form.mobile.trim() &&
       form.companyType !== "Select Company Type" &&
       form.panCardNo.trim() &&
@@ -59,7 +107,8 @@ export default function KYC() {
       form.reAccountNo.trim() &&
       form.ifsc.trim() &&
       form.cheque &&
-      form.gstNumber.trim() &&
+      // form.gstNumber.trim() &&
+      (form.gst === "no" || (form.gst === "yes" && form.gstNumber.trim() && form.gstCertificate)) &&
       form.gstCertificate &&
       form.shipments !== "Select" &&
       form.companyName.trim() &&
@@ -97,13 +146,11 @@ export default function KYC() {
       setLoading(false);
     }
   };
-
-  // Add a CSS utility class for required fields
+ 
   const requiredField = <span className="text-red-500 ml-1">*</span>
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-6">
-      {/* Section Header */}
+    <div className="max-w-6xl mx-auto p-4 space-y-6"> 
       <div className="flex items-center space-x-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">KYC Verification</h1>
         <span className="px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
@@ -163,7 +210,7 @@ export default function KYC() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
               <Input
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-                value="Aman"
+                value={form.firstName}
                 disabled
               />
             </div>
@@ -171,7 +218,7 @@ export default function KYC() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
               <Input
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-                value="vishwakarma"
+                value={form.lastName}
                 disabled
               />
             </div>
@@ -179,7 +226,7 @@ export default function KYC() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email ID</label>
               <Input
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-                value="amanvishwa2806@gmail.com"
+                value={form.email}
                 disabled
               />
             </div>
@@ -194,8 +241,7 @@ export default function KYC() {
           </div>
         </div>
       </section>
-
-      {/* Company Information */}
+ 
       <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all">
         <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
@@ -759,7 +805,7 @@ export default function KYC() {
       <button
         onClick={handler}
         type="button"
-        disabled={loading || !!accountError || !isFormValid()}
+        disabled={isUserDataLoading || loading || !!accountError || !isFormValid()}
         className={`px-6 cursor-pointer py-3 ${loading || !!accountError || !isFormValid()
           ? "bg-gray-400 cursor-not-allowed text-gray-200"
           : "bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"}   text-white font-medium rounded-lg shadow-sm transition-all flex items-center gap-2`}
