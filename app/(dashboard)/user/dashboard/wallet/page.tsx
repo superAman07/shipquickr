@@ -140,8 +140,7 @@ export default function WalletPage() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Add Money Modal */}
+ 
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-xs sm:max-w-sm relative">

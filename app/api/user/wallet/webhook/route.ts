@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
-// import { prisma } from "@/lib/prisma"; // Uncomment and use for wallet update
-
+import { prisma } from "@/lib/prisma"; 
 
 // bacha hua kaam 
 // Razorpay Dashboard Setting
@@ -26,21 +24,18 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(body);
-
-    // Example: payment.captured event
+ 
     if (event.event === "payment.captured") {
         const payment = event.payload.payment.entity;
         const userId = Number(payment.notes.userId);
         const amount = payment.amount / 100;
-      
-        // Wallet update
+       
         await prisma.wallet.upsert({
           where: { userId },
           update: { balance: { increment: amount } },
           create: { userId, balance: amount },
         });
-      
-        // Transaction log
+       
         await prisma.transaction.create({
           data: {
             userId,
