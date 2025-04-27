@@ -1,3 +1,4 @@
+# filepath: d:\users\ASUS\Codes\Web-Development\major project\shipquickr\amplify.yml
 version: 1.0
 frontend:
   phases:
@@ -5,13 +6,27 @@ frontend:
       commands:
         - echo "Environment Variables:"
         - printenv
+        # Add this check: Fail build if DATABASE_URL is empty or not set (Optional but recommended)
+        - '[ -z "$DATABASE_URL" ] && echo "Error: DATABASE_URL is not set!" && exit 1 || echo "DATABASE_URL is set."'
         - nvm install 20
         - nvm use 20
-        - npm ci 
+        - npm ci
+        # --- ADD THIS LINE ---
+        - echo "DATABASE_URL=$DATABASE_URL" >> .env.production
+        # --- Ensure other runtime vars are also added if needed ---
+        - echo "JWT_SECRET=$JWT_SECRET" >> .env.production
+        - echo "EMAIL_USER=$EMAIL_USER" >> .env.production
+        - echo "EMAIL_PASS=$EMAIL_PASS" >> .env.production
+        - echo "UPSTASH_REDIS_REST_URL=$UPSTASH_REDIS_REST_URL" >> .env.production
+        - echo "UPSTASH_REDIS_REST_TOKEN=$UPSTASH_REDIS_REST_TOKEN" >> .env.production
+        - echo "RAZORPAY_KEY_ID=$RAZORPAY_KEY_ID" >> .env.production
+        - echo "RAZORPAY_KEY_SECRET=$RAZORPAY_KEY_SECRET" >> .env.production
+        - echo "RAZORPAY_WEBHOOK_SECRET=$RAZORPAY_WEBHOOK_SECRET" >> .env.production
+        # --- Continue with prisma generate ---
         - npx prisma generate
     build:
       commands:
-        - npx prisma migrate deploy 
+        - npx prisma migrate deploy
         - npm run build
   artifacts:
     baseDirectory: .next
