@@ -55,8 +55,6 @@ export async function GET(){
     }
 }
 
-
-
 export const config = {
     api: {
       bodyParser: false,
@@ -73,34 +71,17 @@ export async function POST(req: NextRequest) {
       if (decoded.exp * 1000 < Date.now()) return NextResponse.json({ error: "Token expired" }, { status: 401 });
    
       const formData = await req.formData();
-   
-      // async function saveFile(file: File | null, folder: string) {
-      //   if (!file) return null;
-      //   if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
-      //     throw new Error("Only images or PDF allowed");
-      //   }
-      //   const arrayBuffer = await file.arrayBuffer();
-      //   const buffer = Buffer.from(arrayBuffer);
-      //   const ext = path.extname(file.name);
-      //   const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
-      //   const uploadsDir = path.join(process.cwd(), "public", "uploads", "kyc");
-      //   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-      //   const filepath = path.join(uploadsDir, filename);
-      //   fs.writeFileSync(filepath, buffer);
-      //   return `/uploads/kyc/${filename}`;
-      // }
+  
       async function saveFile(file: File | null, folder: string): Promise<string | null> {
         if (!file) return null;
-  
-        // Validate file type (optional but recommended)
+   
         const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
         if (!allowedTypes.includes(file.type)) {
           console.error(`Invalid file type: ${file.type}. Allowed: ${allowedTypes.join(', ')}`);
           throw new Error(`Invalid file type. Only ${allowedTypes.join(', ')} allowed.`);
         }
-  
-        // Validate file size (optional but recommended) - Example: 5MB limit
-        const maxSize = 5 * 1024 * 1024; // 5 MB in bytes
+   
+        const maxSize = 5 * 1024 * 1024;  
         if (file.size > maxSize) {
            console.error(`File size exceeds limit: ${file.size} bytes. Max: ${maxSize} bytes.`);
            throw new Error(`File size exceeds the ${maxSize / 1024 / 1024}MB limit.`);
@@ -109,8 +90,7 @@ export async function POST(req: NextRequest) {
   
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const ext = path.extname(file.name);
-        // Create a unique filename for S3 within the specified folder
+        const ext = path.extname(file.name); 
         const filename = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
   
         if (!BUCKET_NAME) {
@@ -123,7 +103,7 @@ export async function POST(req: NextRequest) {
             client: s3Client,
             params: {
               Bucket: BUCKET_NAME,
-              Key: filename, // Use the generated filename as the S3 key
+              Key: filename,  
               Body: buffer,
               ContentType: file.type,
               // ACL: 'public-read', // Optional: Only if you want files to be publicly accessible via direct S3 URL without pre-signed URLs. Requires bucket public access settings adjustment.
@@ -137,17 +117,13 @@ export async function POST(req: NextRequest) {
   
           await upload.done();
           console.log(`Successfully uploaded ${filename} to ${BUCKET_NAME}.`);
-  
-          // Construct the S3 URL (consider using pre-signed URLs for private files)
-          // This standard URL format works if the object/bucket allows public reads.
-          // For local testing, ensure AWS_REGION is in .env
-          const region = process.env.AWS_REGION || 'us-east-1'; // Default or get from env
+   
+          const region = process.env.AWS_REGION || 'us-east-1';  
           const fileUrl = `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${filename}`;
           return fileUrl;
   
         } catch (error) {
-          console.error(`Error uploading ${filename} to S3:`, error);
-          // Rethrow or handle the error appropriately
+          console.error(`Error uploading ${filename} to S3:`, error); 
           throw new Error(`Failed to upload file ${file.name} to S3.`);
         }
       }
