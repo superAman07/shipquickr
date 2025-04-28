@@ -49,26 +49,9 @@ const RechargePage: React.FC = () => {
         }; 
         const res = await axios.get('/api/user/billing', { params });
         setBalance(res.data.balance || 0);
-        const allLogs = res.data.rechargeLogs || [];
+        setRechargeLogs(res.data.rechargeLogs || []);
+        setTotal(res.data.totalCount || 0); 
 
-        const filteredLogs = allLogs.filter((log: RechargeLog) => {
-            const logDate = new Date(log.date);
-            const matchesSearch = !searchTerm ||
-                log.transactionId.toString().includes(searchTerm) ||
-                log.bankTransactionId?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesDate =
-                !dateRange ||
-                !dateRange.from ||
-                !dateRange.to ||
-                (logDate >= dateRange.from && logDate <= dateRange.to);
-
-            return matchesSearch && matchesDate; 
-        });
-
-        setTotal(filteredLogs.length);
-        const paginatedLogs = filteredLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-        setRechargeLogs(paginatedLogs);
-        
       } catch (err) {
         console.error("Failed to fetch recharge logs:", err);
         setRechargeLogs([]);
@@ -86,23 +69,10 @@ const RechargePage: React.FC = () => {
   };
 
   const downloadCSV = () => { 
-     const filteredLogsForDownload = (rechargeLogs || []).filter((log: RechargeLog) => { // Use rechargeLogs state which is already filtered/paginated OR re-fetch all filtered data
-            const logDate = new Date(log.date);
-            const matchesSearch = !searchTerm ||
-                log.transactionId.toString().includes(searchTerm) ||
-                log.bankTransactionId?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesDate =
-                !dateRange ||
-                !dateRange.from ||
-                !dateRange.to ||
-                (logDate >= dateRange.from && logDate <= dateRange.to);
-            return matchesSearch && matchesDate;
-        });
-
-    const headers = ["Date And Time", "Amount(Rs.)", "Transaction ID", "Bank's Transaction ID", "Type", "Status"];
+     const headers = ["Date And Time", "Amount(Rs.)", "Transaction ID", "Bank's Transaction ID", "Type", "Status"];
     const csvContent = [
         headers.join(','),
-        ...filteredLogsForDownload.map(log => [ 
+        ...(rechargeLogs || []).map(log => [  
             format(new Date(log.date), "yyyy-MM-dd HH:mm:ss"),
             log.amount,
             log.transactionId,
@@ -115,7 +85,7 @@ const RechargePage: React.FC = () => {
     const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'recharge_logs.csv');
+    link.setAttribute('download', `recharge_logs_page_${page}.csv`);  
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
