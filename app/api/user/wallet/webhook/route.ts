@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
             userId,
             amount,
             type: "recharge",
+            status: "Success",
+            razorpayPaymentId: payment.id, 
+            razorpayOrderId: payment.order_id,
           },
         });
       }

@@ -70,12 +70,19 @@ model Wallet {
 }
 
 model Transaction {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  amount    Float
-  type      String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  amount            Float
+  type              String
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id])
+  razorpayPaymentId String?  
+  razorpayOrderId   String? 
+  orderId           Int?     // Link to the Order for shipping charges
+  order             Order?   @relation(fields: [orderId], references: [id])
+  status            String?
+  @@index([userId]) 
+  @@index([orderId]) 
 }
 
 model Order {
@@ -118,8 +125,9 @@ model Order {
   remittanceId    Int?
   remittance      Remittance? @relation(fields: [remittanceId], references: [id])
   user            User        @relation(fields: [userId], references: [id])
-
+  transactions    Transaction[]
   @@index([remittanceId])
+  @@index([userId])
 }
 
 model Warehouse {
