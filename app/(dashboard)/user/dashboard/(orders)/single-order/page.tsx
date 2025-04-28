@@ -68,8 +68,15 @@ export default function SingleOrderPage() {
       })
       setForm(initialForm)
       toast.success("Order added successfully")
-    } catch (err) {
-      toast.error("Failed to add order")
+    } catch (err: any) { 
+      let errorMessage = "Failed to add order. Please try again.";  
+      if (axios.isAxiosError(err) && err.response?.data?.error) { 
+        errorMessage = err.response.data.error;
+      } else if (err instanceof Error) { 
+        errorMessage = err.message;
+      }
+      console.error("Order submission error:", err.response?.data || err); 
+      toast.error(errorMessage); 
     } finally {
       setSubmitting(false)
     }
