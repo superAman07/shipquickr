@@ -115,8 +115,6 @@ const RechargePage: React.FC = () => {
               ₹{balance.toFixed(2)}
             </p>
           </div>
-
-          
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-4">
               <Popover>

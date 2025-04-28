@@ -3,7 +3,7 @@ import Link from "next/link"
 import type React from "react"
 
 import { usePathname } from "next/navigation"
-import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw, Banknote } from "lucide-react"
+import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw, Banknote, Wallet2Icon, Wallet2, IndianRupee } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
@@ -177,6 +177,13 @@ export default function DashboardSidebarUser() {
           label="Remittance"
           href="/user/dashboard/remittance"
           active={pathname === "/user/dashboard/remittance"}
+          collapsed={sidebarCollapsed}
+        />
+        <NavItem
+          icon={<IndianRupee className="h-5 w-5" />}
+          label="Billings"
+          href="/user/dashboard/recharge"
+          active={pathname === "/user/dashboard/recharge"}
           collapsed={sidebarCollapsed}
         />
       </nav>

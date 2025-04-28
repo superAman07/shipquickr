@@ -32,8 +32,8 @@ function Calendar({
         ),
         nav_button_previous: "absolute left-1", // Styles the previous button
         nav_button_next: "absolute right-1", // Styles the next button
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
+        table: "w-full border-collapse space-y-1 table-fixed",
+        head_row: " ",
         head_cell:
           "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
@@ -54,11 +54,6 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      // --- Remove the components prop for icons ---
-      // components={{
-      //   IconLeft: ({ ...props }) => <ChevronLeft className="size-4" {...props} />,
-      //   IconRight: ({ ...props }) => <ChevronRight className="size-4" {...props} />,
-      // }}
       {...props}
     />
   )
