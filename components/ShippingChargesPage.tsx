@@ -117,8 +117,6 @@ const ShippingChargesPage: React.FC = () => {
               <Home className="h-4 w-4" />
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <span>Billings</span>
-            <ChevronRight className="h-4 w-4" />
             <span>Shipping Charges</span>
           </div>
 

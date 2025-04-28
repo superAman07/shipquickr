@@ -103,8 +103,6 @@ const RechargePage: React.FC = () => {
             <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
               <Home className="h-4 w-4" />
             </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span>Billings</span>
              <ChevronRight className="h-4 w-4" />
             <span>Recharge Logs</span>
           </div>
