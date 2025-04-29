@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
+import { ComplaintStatus } from "@prisma/client";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -99,5 +100,69 @@ export async function POST(req: NextRequest){
              return NextResponse.json({ error: "Could not upload file. Please try again." }, { status: 500 });
         }
         return NextResponse.json({ error: "Something went wrong during complaint submission." }, { status: 500 });
+    }
+}
+
+
+export async function GET(req: NextRequest) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('userToken')?.value;
+        if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        const decoded = jwtDecode<TokenDetailsType>(token);
+        if (decoded.exp * 1000 < Date.now()) return NextResponse.json({ error: "Token expired" }, { status: 401 });
+
+        const userId = parseInt(decoded.userId);
+
+        const { searchParams } = new URL(req.url);
+        const page = parseInt(searchParams.get("page") || "1");
+        const pageSize = parseInt(searchParams.get("pageSize") || "10");
+        const status = searchParams.get("status") as ComplaintStatus | null;
+        const searchQuery = searchParams.get("search") || ""; 
+
+        const skip = (page - 1) * pageSize;
+ 
+        const whereClause: any = {
+            userId: userId,
+        };
+
+        if (status && Object.values(ComplaintStatus).includes(status)) {
+            whereClause.status = status;
+        }
+
+        if (searchQuery) {
+            whereClause.OR = [
+                { awbNumber: { contains: searchQuery, mode: 'insensitive' } },
+                { issue: { contains: searchQuery, mode: 'insensitive' } }, 
+            ];
+        }
+ 
+        const [complaints, total] = await prisma.$transaction([
+            prisma.complaint.findMany({
+                where: whereClause,
+                orderBy: { createdAt: "desc" },  
+                skip: skip,
+                take: pageSize,
+            }),
+            prisma.complaint.count({
+                where: whereClause,
+            }),
+        ]);
+
+        return NextResponse.json({
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+            complaints,
+        });
+
+    } catch (error: any) {
+        console.error("Error fetching raised complaints:", error);
+        if (error.message.includes("Invalid enum value")) {
+             return NextResponse.json({ error: "Invalid status filter provided." }, { status: 400 });
+        }
+        return NextResponse.json({ error: "Something went wrong while fetching complaints." }, { status: 500 });
     }
 }
