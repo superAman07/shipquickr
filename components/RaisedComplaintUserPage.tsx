@@ -140,9 +140,7 @@ export default function RaisedComplaintUserPage() {
             <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                     <Home className="h-4 w-4" />
-                </Link>
-                <ChevronRight className="h-4 w-4" />
-                <span>Complaints</span>
+                </Link> 
                 <ChevronRight className="h-4 w-4" />
                 <span className="font-medium text-gray-700 dark:text-gray-200">Raised Complaints</span>
             </div>

@@ -80,7 +80,7 @@ export default function ComplaintUserPage() {
                     <Home className="h-4 w-4" />
                 </Link>
                 <ChevronRight className="h-4 w-4" />
-                <span>Raise Complaints</span>
+                <span>Raise Complaint</span>
             </div>
             <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Raise Complaints</h1>
             <Card className="w-full max-w-2xl mx-auto bg-card text-card-foreground">
