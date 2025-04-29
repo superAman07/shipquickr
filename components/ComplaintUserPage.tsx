@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react'; 
+import { ChevronRight, Home,  Loader2 } from 'lucide-react'; 
 import { useRouter } from 'next/navigation'; 
+import Link from 'next/link';
 
 export default function ComplaintUserPage() {
     const [awb, setAwb] = useState('');
@@ -74,6 +75,14 @@ export default function ComplaintUserPage() {
 
     return (
         <div className="p-4 md:p-6 lg:p-8"> 
+            <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                    <Home className="h-4 w-4" />
+                </Link>
+                <ChevronRight className="h-4 w-4" />
+                <span>Raise Complaints</span>
+            </div>
+            <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Raise Complaints</h1>
             <Card className="w-full max-w-2xl mx-auto bg-card text-card-foreground">
                 <CardHeader>
                     <CardTitle className="text-2xl font-semibold">Raise Complaint</CardTitle>
