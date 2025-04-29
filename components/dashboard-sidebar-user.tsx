@@ -3,7 +3,7 @@ import Link from "next/link"
 import type React from "react"
 
 import { usePathname } from "next/navigation"
-import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw, Banknote, Wallet2Icon, Wallet2, IndianRupee } from "lucide-react"
+import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw, Banknote, Wallet2Icon, Wallet2, IndianRupee, MessageSquareWarning } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
@@ -115,7 +115,7 @@ function ComplaintsNavItem({ collapsed }: { collapsed: boolean }) {
         )}
       >
         <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
-          <Truck className="h-5 w-5" />
+          <MessageSquareWarning className="h-5 w-5" />
 
           <span
             className={cn(
