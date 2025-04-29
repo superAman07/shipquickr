@@ -100,6 +100,60 @@ function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
     </div>
   )
 }
+function ComplaintsNavItem({ collapsed }: { collapsed: boolean }) {
+  const pathname = usePathname()
+  const [showSubMenu, setShowSubMenu] = useState(false)
+  const active = pathname.includes("/user/dashboard/complaints")
+
+  return (
+    <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
+      <div
+        className={cn(
+          "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
+          active ? "bg-indigo-900" : "hover:bg-indigo-900",
+          collapsed ? "justify-center" : "",
+        )}
+      >
+        <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
+          <Truck className="h-5 w-5" />
+
+          <span
+            className={cn(
+              "ml-3 whitespace-nowrap transition-all duration-300",
+              collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs",
+            )}
+          >
+            Complaints
+          </span>
+        </div>
+      </div>
+ 
+      <div
+        className={cn(
+          "absolute left-full top-0 bg-indigo-800 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
+          showSubMenu ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible",
+          collapsed ? "mt-3" : "mt-3 ml-0",
+          "submenu"
+        )}
+      >
+        <Link
+          href="/user/dashboard/complaints"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">Complaints</span>
+        </Link>
+        <Link
+          href="/user/dashboard/raised_complaints"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <ListFilter className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">Raised Complaints</span>
+        </Link>
+      </div>
+    </div> 
+  )
+}
 
 export default function DashboardSidebarUser() {
   const pathname = usePathname()
@@ -186,6 +240,7 @@ export default function DashboardSidebarUser() {
           active={pathname === "/user/dashboard/recharge"}
           collapsed={sidebarCollapsed}
         />
+        <ComplaintsNavItem collapsed={sidebarCollapsed}/>
       </nav>
       <div className="p-4 border-t border-indigo-900">
         <Button
