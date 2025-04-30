@@ -205,7 +205,7 @@ function SettingNavItem({ collapsed }: { collapsed: boolean }) {
           <span className="ml-3 whitespace-nowrap">COD</span>
         </Link>
         <Link
-          href="/user/dashboard/raised_complaints"
+          href="/user/dashboard/courier_serviceability"
           className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
         >
           <LocateIcon className="h-4 w-4" />
