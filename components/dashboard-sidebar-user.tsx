@@ -3,7 +3,7 @@ import Link from "next/link"
 import type React from "react"
 
 import { usePathname } from "next/navigation"
-import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, TruckIcon, RefreshCw, Banknote, Wallet2Icon, Wallet2, IndianRupee, MessageSquareWarning } from "lucide-react"
+import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, RefreshCw, Banknote, IndianRupee, MessageSquareWarning, Settings, House, LocateIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
@@ -154,6 +154,67 @@ function ComplaintsNavItem({ collapsed }: { collapsed: boolean }) {
     </div> 
   )
 }
+function SettingNavItem({ collapsed }: { collapsed: boolean }) {
+  const pathname = usePathname()
+  const [showSubMenu, setShowSubMenu] = useState(false)
+  const active = pathname.includes("/user/dashboard/settings")
+
+  return (
+    <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
+      <div
+        className={cn(
+          "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
+          active ? "bg-indigo-900" : "hover:bg-indigo-900",
+          collapsed ? "justify-center" : "",
+        )}
+      >
+        <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
+          <Settings className="h-5 w-5" />
+
+          <span
+            className={cn(
+              "ml-3 whitespace-nowrap transition-all duration-300",
+              collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs",
+            )}
+          >
+            Settings
+          </span>
+        </div>
+      </div>
+ 
+      <div
+        className={cn(
+          "absolute left-full top-0 bg-indigo-800 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
+          showSubMenu ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible",
+          collapsed ? "mt-3" : "mt-3 ml-0",
+          "submenu"
+        )}
+      >
+        <Link
+          href="/user/dashboard/warehouse"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <House className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">Warehouse List</span>
+        </Link>
+        <Link
+          href="/user/dashboard/cod"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <IndianRupee className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">COD</span>
+        </Link>
+        <Link
+          href="/user/dashboard/raised_complaints"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <LocateIcon className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">Pincode Serviceability</span>
+        </Link>
+      </div>
+    </div> 
+  )
+}
 
 export default function DashboardSidebarUser() {
   const pathname = usePathname()
@@ -241,6 +302,7 @@ export default function DashboardSidebarUser() {
           collapsed={sidebarCollapsed}
         />
         <ComplaintsNavItem collapsed={sidebarCollapsed}/>
+        <SettingNavItem collapsed={sidebarCollapsed}/>
       </nav>
       <div className="p-4 border-t border-indigo-900">
         <Button
