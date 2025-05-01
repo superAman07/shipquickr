@@ -3,12 +3,13 @@ import axios from "axios"
 import { useRouter } from "next/navigation"
 import { useState } from "react" 
 import ButtonLoading from "./buttonLoading";
+import { cn } from "@/lib/utils";
 
 interface Styling{
   color?: string;
 }
 
-export default function LogoutButton({propUser,propStyle}:{ propUser: string; propStyle?:Styling;}) {
+export default function LogoutButton({propUser,propStyle, className}:{ propUser: string; propStyle?:Styling; className?: string }) {
   const [loading,setLoading] = useState(false);
   const router = useRouter()
 
@@ -31,7 +32,12 @@ export default function LogoutButton({propUser,propStyle}:{ propUser: string; pr
       type="button"
       disabled={loading}
       onClick={handleLogout}
-      className={`px-[1px] cursor-pointer py-2 ${propStyle?.color || "text-white"} rounded`}
+      className={cn(
+        "px-[1px] py-2 w-full cursor-pointer text-left", 
+        propStyle?.color || "text-white",
+        "disabled:opacity-50",
+        className 
+      )}
     >
       {loading ? <ButtonLoading name="Logging out..."/>:"Logout"}
     </button>

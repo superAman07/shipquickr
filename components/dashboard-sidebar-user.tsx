@@ -3,10 +3,11 @@ import Link from "next/link"
 import type React from "react"
 
 import { usePathname } from "next/navigation"
-import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, RefreshCw, Banknote, IndianRupee, MessageSquareWarning, Settings, House, LocateIcon } from "lucide-react"
+import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, RefreshCw, Banknote, IndianRupee, MessageSquareWarning, Settings, House, LocateIcon, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
+import LogoutButton from "./logout"
 
 function NavItem({
   icon,
@@ -25,7 +26,7 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
+        "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
         active ? "bg-indigo-900" : "hover:bg-indigo-900",
         collapsed ? "justify-center" : "",
       )}
@@ -55,7 +56,7 @@ function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
     <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
       <div
         className={cn(
-          "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
+          "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
           active ? "bg-indigo-900" : "hover:bg-indigo-900",
           collapsed ? "justify-center" : "",
         )}
@@ -303,6 +304,27 @@ export default function DashboardSidebarUser() {
         />
         <ComplaintsNavItem collapsed={sidebarCollapsed}/>
         <SettingNavItem collapsed={sidebarCollapsed}/>
+        <div
+          className={cn(
+            "flex items-center px-4 py-1 mt-2 cursor-pointer rounded-l-full transition-colors hover:bg-indigo-900",
+            sidebarCollapsed ? "justify-center" : "",
+          )}
+        >
+          <div className={cn("flex font-bold items-center w-full", sidebarCollapsed ? "justify-center" : "")}>
+            <LogOut className="h-5 w-5 flex-shrink-0 cursor-pointer" />
+            <div
+              className={cn(
+                "ml-3 whitespace-nowrap transition-all duration-300 w-full",
+                sidebarCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
+              )}
+            > 
+              <LogoutButton
+                propUser="user"
+                propStyle={{ color: "text-white"}} 
+              />
+            </div>
+          </div>
+        </div>
       </nav>
       <div className="p-4 border-t border-indigo-900">
         <Button
