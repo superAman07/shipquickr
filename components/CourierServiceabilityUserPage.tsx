@@ -81,7 +81,7 @@ export default function CourierServiceabilityUserPage() {
         <div className="flex items-center justify-between">
           <button
             type="submit"
-            className="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50"
+            className="px-6 py-2 cursor-pointer leading-5 text-white transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Checking..." : "Submit"}
@@ -94,7 +94,7 @@ export default function CourierServiceabilityUserPage() {
               setServices([]);
               setError("");
             }}
-            className="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-700"
+            className="px-6 py-2 cursor-pointer leading-5 text-white transition-colors duration-200 transform bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:bg-red-700"
           >
             Cancel
           </button>
