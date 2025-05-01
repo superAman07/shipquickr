@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { ecomExpressClient } from "@/lib/services/ecom-express";
 
 interface TokenDetailsType {
     userId: number;
@@ -10,19 +11,19 @@ interface TokenDetailsType {
 
 async function calculateShippingCost(orderData: any): Promise<number> { 
   const rates = await prisma.shippingRates.findFirst({ orderBy: { createdAt: "desc" } });
-  const baseRatePerKg = rates?.courierChargesAmount ?? 50; // Default: ₹50 per kg if not set
-  const chargeType = rates?.courierChargesType ?? "fixed"; // Default: fixed
+  const baseRatePerKg = rates?.courierChargesAmount ?? 50; 
+  const chargeType = rates?.courierChargesType ?? "fixed";  
  
-  const actualWeight = parseFloat(orderData.physicalWeight) || 0.5; // Default 0.5kg
+  const actualWeight = parseFloat(orderData.physicalWeight) || 0.5; 
   const volumetricWeight =
       ((parseFloat(orderData.length) || 10) * (parseFloat(orderData.breadth) || 10) * (parseFloat(orderData.height) || 10)) / 6000; // Default 10x10x10
-  const finalWeight = Math.max(actualWeight, volumetricWeight, 0.5); // Minimum 0.5kg charge
+  const finalWeight = Math.max(actualWeight, volumetricWeight, 0.5);  
  
   let shippingCost = 0;
   if (chargeType === "fixed") { 
       if (finalWeight <= 0.5) shippingCost = baseRatePerKg * 0.5;
       else if (finalWeight <= 1) shippingCost = baseRatePerKg * 1;
-      else shippingCost = baseRatePerKg * Math.ceil(finalWeight * 2) / 2; // Round up to next 0.5kg
+      else shippingCost = baseRatePerKg * Math.ceil(finalWeight * 2) / 2; 
   } else {
       
        if (finalWeight <= 0.5) shippingCost = baseRatePerKg * 0.5;
@@ -32,7 +33,7 @@ async function calculateShippingCost(orderData: any): Promise<number> {
  
   let codCharge = 0;
   if (orderData.paymentMode === "COD") {
-      const codRate = rates?.codChargesAmount ?? 30; // Default ₹30 fixed COD
+      const codRate = rates?.codChargesAmount ?? 30;  
       const codType = rates?.codChargesType ?? "fixed";
       if (codType === 'fixed') {
           codCharge = codRate;
@@ -90,8 +91,7 @@ export async function POST(req: NextRequest){
         const order = await prisma.order.create({
             data: {
                 ...data,
-                userId: decoded.userId,
-                // ensure numeric fields are converted if necessary
+                userId: decoded.userId, 
                 quantity: parseInt(data.quantity) || 1,
                 orderValue: parseFloat(data.orderValue) || 0,
                 codAmount: data.paymentMode === "COD" ? (parseFloat(data.codAmount) || 0) : null, // Only set COD amount if paymentMode is COD
@@ -103,6 +103,69 @@ export async function POST(req: NextRequest){
             }
         });
 
+        //
+
+        try { 
+            const warehouse = await prisma.warehouse.findFirst({
+                where: { 
+                  warehouseName: data.pickupLocation,
+                  userId: decoded.userId
+                }
+              });
+            const ecomShipment = {
+                pickup_location: {
+                    name: data.pickupLocation,
+                    pin: data.pickupPincode || "",
+                    address: warehouse?.address1 || "",
+                    phone: warehouse?.mobile || "",
+                    city: warehouse?.city || "", 
+                    state: warehouse?.state || "",
+                  },
+              shipments: [{
+                item_name: data.productName,
+                order_id: data.orderId,
+                payment_mode: data.paymentMode === "COD" ? "COD" : "PPD", 
+                customer: {
+                  name: data.customerName,
+                  address: data.address,
+                  pin: data.pincode,
+                  phone: data.mobile,
+                  city: data.city,
+                  state: data.state,
+                },
+                dimensions: {
+                  length: parseFloat(data.length) || 10,
+                  breadth: parseFloat(data.breadth) || 10,
+                  height: parseFloat(data.height) || 10,
+                  weight: parseFloat(data.physicalWeight) || 0.5,
+                },
+                cod_amount: data.paymentMode === "COD" ? parseFloat(data.orderValue) : 0,
+              }]
+            };
+
+            console.log("Calling Ecom Express API with:", JSON.stringify(ecomShipment));
+
+
+            const ecomResponse = await ecomExpressClient.generateAWB(ecomShipment);
+             
+            console.log("Ecom Express Response:", JSON.stringify(ecomResponse));
+
+            if (ecomResponse?.awb_number) {
+              await prisma.order.update({
+                where: { id: order.id },
+                data: {
+                  awbNumber: ecomResponse.awb_number,
+                  courierName: "Ecom Express",
+                  status: "shipped", 
+                  shippingDetails: `Shipped via Ecom Express on ${new Date().toLocaleString()}`,
+                }
+              });
+            }
+          } catch (ecomError) {
+            console.error("Failed to generate AWB:", ecomError); 
+          }
+
+        //
         if (data.paymentMode === "Prepaid") { 
             const updatedWallet = await prisma.wallet.update({
                 where: { userId: decoded.userId },
