@@ -1,6 +1,8 @@
 'use client'
 import Loading from "@/app/loading";
 import axios from "axios";
+import { ChevronRight, Home } from "lucide-react";
+import Link from "next/link";
 import React, { useState } from "react"; 
 
 export default function CourierServiceabilityUserPage() {
@@ -48,6 +50,13 @@ export default function CourierServiceabilityUserPage() {
 
   return (
     <div className="container mx-auto p-4">
+      <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
+              <Home className="h-4 w-4" />
+          </Link> 
+          <ChevronRight className="h-4 w-4" />
+          <span className="font-medium text-gray-700 dark:text-gray-200">Courier Serviceability</span>
+      </div>
       <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Courier Serviceability</h1>
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <div className="mb-6"> 
