@@ -274,11 +274,11 @@ export default function RateCalculator() {
           {!loading && rates.length > 0 && rates.map((rate, idx) => {
             const logo = getCourierLogo(rate.courierName);
             return (
-              <Card key={idx} className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+              <Card key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <CardContent className="p-4 grid grid-cols-3 sm:grid-cols-5 gap-2 items-center">
                   <div className="col-span-1 flex flex-col items-start">
                      {logo && (
-                       <div className="relative h-6 w-20 mb-1"> 
+                       <div className="relative h-6 w-20 bg-gray-300 rounded-[2px]  dark:bg-gray-800 mb-1"> 
                          <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
                        </div>
                      )}
