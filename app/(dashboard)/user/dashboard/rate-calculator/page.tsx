@@ -278,14 +278,14 @@ export default function RateCalculator() {
                 <CardContent className="p-4 grid grid-cols-3 sm:grid-cols-5 gap-2 items-center">
                   <div className="col-span-1 flex flex-col items-start">
                      {logo && (
-                       <div className="relative h-6 w-20 bg-gray-300 rounded-[2px]  dark:bg-gray-800 mb-1"> 
+                       <div className="relative h-10 w-20 rounded-[2px] mb-1"> 
                          <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
                        </div>
                      )}
                      {!logo && (
                         <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{rate.courierName}</span>
                      )}
-                     <span className="text-sm font-medium text-gray-900 dark:text-white">{rate.serviceType || 'Standard'}</span>
+                     <span className="text-sm font-medium text-gray-900 dark:text-white ml-3">{rate.serviceType || 'Standard'}</span>
                   </div>
  
                   <div className="col-span-1 text-center sm:text-left">
