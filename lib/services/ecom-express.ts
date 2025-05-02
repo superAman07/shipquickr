@@ -1,87 +1,55 @@
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 
+const PROD_URLS = {
+  manifest: 'https://api.ecomexpress.in/apiv2/manifest_awb/',
+  track: 'https://plapi.ecomexpress.in/track_me/api/mawbd/',
+  cancel: 'https://api.ecomexpress.in/apiv2/cancel_awb/',
+  ndr: 'https://api.ecomexpress.in/apiv2/ndr_resolutions/',
+  label: 'https://shipment.ecomexpress.in/services/expp/shipping_label', 
+};
+
 class EcomExpressClient {
   private username: string;
-  private password: string;
-  private baseUrl: string;
+  private password: string; 
 
   constructor() {
     this.username = process.env.ECOM_EXPRESS_USERNAME || '';
-    this.password = process.env.ECOM_EXPRESS_PASSWORD || '';
-    this.baseUrl = 'https://clbeta.ecomexpress.in'; // Staging base URL
+    this.password = process.env.ECOM_EXPRESS_PASSWORD || ''; 
+    console.log(`Credentials Read: User='${this.username}', Pass='${this.password}'`);
+    if (!this.username || !this.password) {
+        console.warn("Ecom Express credentials missing in environment variables!");
+    }
   }
 
-  /**
-   * Generate AWB/Waybill using Forward Manifest API
-   */
+   
   async generateAWB(shipment: any) {
-    try {
-      console.log("Using credentials:", {
-        username: this.username ? "present" : "missing",
-        password: this.password ? "present" : "missing", 
-        baseUrl: this.baseUrl
-      });
-
-      const formData = new URLSearchParams();
-      formData.append('username', this.username);
-      formData.append('password', this.password);
-
-      console.log("FormData created:", formData.toString());
-
-      
-      // Format the shipment data according to Ecom Express requirements
-      const manifestData = {
-        pickup_location: {
-          name: shipment.pickupLocation,
-          pin: shipment.pickupPincode,
-          address: shipment.pickupAddress,
-          phone: shipment.pickupPhone,
-          city: shipment.pickupCity,
-          state: shipment.pickupState,
-        },
-        shipments: [
-          {
-            item_name: shipment.productName,
-            order_id: shipment.orderId,
-            payment_mode: shipment.paymentMode === 'COD' ? 'COD' : 'PPD',
-            customer: {
-              name: shipment.customerName,
-              address: shipment.address,
-              pin: shipment.destinationPincode,
-              phone: shipment.mobile,
-              city: shipment.city,
-              state: shipment.state,
-            },
-            dimensions: {
-              length: parseFloat(shipment.length) || 10,
-              breadth: parseFloat(shipment.breadth) || 10,
-              height: parseFloat(shipment.height) || 10,
-              weight: parseFloat(shipment.physicalWeight) || 0.5,
-            },
-            cod_amount: shipment.paymentMode === 'COD' ? parseFloat(shipment.orderValue) : 0,
-          }
-        ]
+    try { 
+      const requestBody = {
+        username: this.username,
+        password: this.password,
+        json_input: shipment // Send the shipment object directly
       };
-      
-      formData.append('json_input', JSON.stringify(manifestData));
 
+      console.log("Sending Raw JSON Body:", JSON.stringify(requestBody, null, 2));
       const { data } = await axios.post(
-        `${this.baseUrl}/apiv2/manifest_awb/`,
-        formData
+        PROD_URLS.manifest,  
+        requestBody,         
+        {
+          headers: {
+            'Content-Type': 'application/json'  
+          }
+        }
       );
-      console.log("API Response:", data);
-      
+      console.log("API Response (AWB):", data);
       return data;
     } catch (error: any) {
+      console.error('Request Data causing error:', JSON.stringify(shipment, null, 2));
       console.error('Ecom Express AWB Generation Error:', error.response?.data || error.message);
       throw error;
     }
   }
-
-  /**
-   * Track shipment status
-   */
+ 
   async trackShipment(awbNumber: string) {
     try {
       const formData = new URLSearchParams();
@@ -90,9 +58,10 @@ class EcomExpressClient {
       formData.append('awb', awbNumber);
 
       const { data } = await axios.post(
-        `${this.baseUrl}/track_me/api/mawbd/`,
+        PROD_URLS.track,  
         formData
       );
+      console.log("API Response (Track):", data);
       
       return data;
     } catch (error: any) {
@@ -101,9 +70,6 @@ class EcomExpressClient {
     }
   }
 
-  /**
-   * Get NDR (Non-Delivery Report) data
-   */
   async getNDRData(awbNumber: string) {
     try {
       const formData = new URLSearchParams();
@@ -112,9 +78,10 @@ class EcomExpressClient {
       formData.append('awb', awbNumber);
 
       const { data } = await axios.post(
-        `${this.baseUrl}/apiv2/ndr_resolutions/`,
+        PROD_URLS.ndr,  
         formData
       );
+      console.log("API Response (NDR):", data);
       
       return data;
     } catch (error: any) {
@@ -122,10 +89,7 @@ class EcomExpressClient {
       throw error;
     }
   }
-  
-  /**
-   * Cancel a shipment
-   */
+   
   async cancelShipment(awbNumber: string) {
     try {
       const formData = new URLSearchParams();
@@ -134,9 +98,10 @@ class EcomExpressClient {
       formData.append('awb', awbNumber);
 
       const { data } = await axios.post(
-        `${this.baseUrl}/apiv2/cancel_awb/`,
+        PROD_URLS.cancel,  
         formData
       );
+      console.log("API Response (Cancel):", data);
       
       return data;
     } catch (error: any) {
