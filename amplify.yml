@@ -23,8 +23,10 @@ frontend:
         - echo "RAZORPAY_KEY_SECRET=$RAZORPAY_KEY_SECRET" >> .env.production
         - echo "RAZORPAY_WEBHOOK_SECRET=$RAZORPAY_WEBHOOK_SECRET" >> .env.production
         - echo "NEXT_PUBLIC_RAZORPAY_KEY_ID=$NEXT_PUBLIC_RAZORPAY_KEY_ID" >> .env.production
-
         - echo "S3_UPLOAD_BUCKET_NAME=$S3_UPLOAD_BUCKET_NAME" >> .env.production
+        - echo "ECOM_EXPRESS_USERNAME=$ECOM_EXPRESS_USERNAME" >> .env.production
+        - echo "ECOM_EXPRESS_PASSWORD=$ECOM_EXPRESS_PASSWORD" >> .env.production
+        - echo "ECOM_EXPRESS_RATE_API_URL=$ECOM_EXPRESS_RATE_API_URL" >> .env.production
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
