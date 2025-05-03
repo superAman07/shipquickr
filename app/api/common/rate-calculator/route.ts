@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       if (body.paymentMode === "COD") {
           // const collectableValue = parseFloat(body.collectableValue) || 0;
           if (adminCodType === 'fixed') {
-            finalCodCharge = adminCodRate;
+            finalCodCharge = adminCodRate + rate.codCharges;
           }else if (adminCodType === 'percentage' && rate.codCharges > 0) {
             const codMarkup = rate.codCharges * (adminCodRate / 100);
             finalCodCharge = rate.codCharges + codMarkup;
