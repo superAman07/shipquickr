@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronRight, Home } from "lucide-react"
 import Link from "next/link"
 
@@ -15,6 +15,21 @@ export default function ShippingRates() {
   const [courierChargesAmount, setCourierChargesAmount] = useState("")
   const [codChargesType, setCodChargesType] = useState("percentage")
   const [codChargesAmount, setCodChargesAmount] = useState("")
+  useEffect(()=>{
+    const fetchShippingRates = async () => {
+      try {
+        const response = await axios.get("/api/admin/shipping-rates")
+        const data = response.data
+        setCourierChargesType(data.courierChargesType)
+        setCourierChargesAmount(data.courierChargesAmount)
+        setCodChargesType(data.codChargesType)
+        setCodChargesAmount(data.codChargesAmount)
+      } catch (error) {
+        console.error("Error fetching shipping rates:", error)
+      }
+    }
+    fetchShippingRates()
+  },[])
 
   const handleSubmit= async ()=>{
     try {
