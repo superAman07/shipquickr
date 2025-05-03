@@ -86,14 +86,14 @@ export default function RateCalculator() {
     }
   };
  
-  const getCourierLogo = (courierName: string) => {
-    if (courierName.toLowerCase().includes("ecom express")) {
-      return "/ecom-express.png"; 
-      
+  const getCourierLogo = (courierName: string): string | null => {
+    const nameLower = courierName.toLowerCase();
+    if (nameLower.includes("ecom express")) {
+      return "/ecom-express.png";
     }
-    if (courierName.toLowerCase().includes("xpressbees")) { 
-      return "/xpressbees.png"; 
-    } 
+    if (nameLower.includes("xpressbees")) { 
+      return "/xpressbees.png";
+    }
     return null;
   };
 
