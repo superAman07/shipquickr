@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { URLSearchParams } from "url";
+import { prisma } from "@/lib/prisma";
 
 interface RateResult {
   courierName: string;
@@ -47,6 +48,16 @@ export async function POST(req: NextRequest) {
     console.log("Common Shipment Data:", commonShipmentData);
     console.log("Dimensions:", dimensions);
 
+    const adminRates = await prisma.shippingRates.findFirst({ orderBy: { createdAt: "desc" } });
+    if (!adminRates) {
+      console.error("Admin shipping rates not found in database. Using defaults.");
+    }
+    const adminBaseRatePerKg = adminRates?.courierChargesAmount ?? 0; 
+    const adminChargeType = adminRates?.courierChargesType ?? "fixed";
+    const adminCodRate = adminRates?.codChargesAmount ?? 30; 
+    const adminCodType = adminRates?.codChargesType ?? "fixed";
+    // const minCodCharge = 30; 
+
     const promises = [
       fetchEcomRates(commonShipmentData, cw),
       fetchXpressbeesRates(commonShipmentData, cw, dimensions),
@@ -75,7 +86,40 @@ export async function POST(req: NextRequest) {
     if (allRates.length === 0) {
       return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });
     }
-    return NextResponse.json({ rates: allRates });
+    const finalRates = allRates.map(rate => {
+      let finalCourierCharge = rate.courierCharges;
+      let finalCodCharge = 0; 
+      let courierMarkup = 0;
+      if (adminChargeType === 'fixed') {
+          courierMarkup = adminBaseRatePerKg;
+      } else if (adminChargeType === 'percentage') {
+          courierMarkup = rate.courierCharges * (adminBaseRatePerKg / 100);
+      }
+      finalCourierCharge += courierMarkup;
+
+      if (body.paymentMode === "COD") {
+          // const collectableValue = parseFloat(body.collectableValue) || 0;
+          if (adminCodType === 'fixed') {
+            finalCodCharge = adminCodRate;
+          }else if (adminCodType === 'percentage' && rate.codCharges > 0) {
+            const codMarkup = rate.codCharges * (adminCodRate / 100);
+            finalCodCharge = rate.codCharges + codMarkup;
+        } else {
+          finalCodCharge = rate.codCharges; 
+        }  
+      } 
+
+      const finalTotalPrice = finalCourierCharge + finalCodCharge;
+
+
+      return {
+          ...rate, 
+          courierCharges: Math.round(finalCourierCharge * 100) / 100,
+          codCharges: Math.round(finalCodCharge * 100) / 100,
+          totalPrice: Math.round(finalTotalPrice * 100) / 100,
+      };
+  });
+    return NextResponse.json({ rates: finalRates });
 
   } catch (error: any) { 
     console.error("Rate Calculator Main Error:", error);
