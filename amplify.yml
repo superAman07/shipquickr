@@ -27,6 +27,8 @@ frontend:
         - echo "ECOM_EXPRESS_USERNAME=$ECOM_EXPRESS_USERNAME" >> .env.production
         - echo "ECOM_EXPRESS_PASSWORD=$ECOM_EXPRESS_PASSWORD" >> .env.production
         - echo "ECOM_EXPRESS_RATE_API_URL=$ECOM_EXPRESS_RATE_API_URL" >> .env.production
+        - echo "XPRESSBEES_RATE_API_URL=$XPRESSBEES_RATE_API_URL" >> .env.production
+        - echo "XPRESSBEES_BEARER_TOKEN=$XPRESSBEES_BEARER_TOKEN" >> .env.production
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
