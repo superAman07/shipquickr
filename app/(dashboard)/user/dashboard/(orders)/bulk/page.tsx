@@ -187,7 +187,7 @@ const BulkOrdersPage: React.FC = () => {
                       <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
-                      <td className="px-1 py-2 text-xs align-top break-words"> 
+                      <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]"> 
                         {order.items && order.items.length > 0 ? (
                           <div className="space-y-1">
                             {order.items.map((item: OrderItem, index: number) => ( 
