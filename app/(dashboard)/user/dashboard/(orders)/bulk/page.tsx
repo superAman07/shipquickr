@@ -181,10 +181,10 @@ const BulkOrdersPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-blue-700 dark:text-blue-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
                       <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]"> 
