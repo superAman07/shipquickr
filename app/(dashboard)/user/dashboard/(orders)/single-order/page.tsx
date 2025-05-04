@@ -417,8 +417,16 @@ export default function SingleOrderPage() {
                           <label htmlFor={`category-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                           <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
                             <option value="">Select</option>
+                            <option value="Electronics">Accessories</option>
+                            <option value="Fashion & Clothing">Fashion & Clothing</option>
+                            <option value="Book & Stationary">Book & Stationary</option>
                             <option value="Electronics">Electronics</option>
-                            <option value="Clothing">Clothing</option>
+                            <option value="FMCG">FMCG</option>
+                            <option value="Footwear">Footwear</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Toys">Toys</option>
+                            <option value="Sports Equipment">Sports Equipment</option>
+                            <option value="Wellness">Wellness</option>
                             <option value="Other">Other</option>
                           </select>
                         </div>
@@ -445,7 +453,7 @@ export default function SingleOrderPage() {
                     onClick={addItem} 
                     className="inline-flex items-center px-4 py-2 border border-dashed border-blue-500 text-sm font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                   >
-                    <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" /> {/* Make sure Plus is imported */}
+                    <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" /> 
                     Add More Item
                   </button>
                 </div>
