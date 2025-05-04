@@ -1,47 +1,104 @@
 "use client"
 import { useEffect, useState } from "react"
 import type React from "react"
-
 import axios from "axios"
 import AddWarehouseModal from "@/components/AddWarehouse"
 import KycGuard from "@/components/isKycDone"
 import { toast } from "react-toastify"
-import { ChevronRight, FileCheck, Home } from "lucide-react"
+import { ChevronRight, FileCheck, Home, Loader2, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 
-const initialForm = {
-  customerName: "",
-  mobile: "",
-  email: "",
-  address: "",
-  landmark: "",
-  pincode: "",
-  state: "",
-  city: "",
-  orderId: "",
-  orderDate: "",
-  paymentMode: "",
-  productName: "",
-  category: "",
-  quantity: 1,
-  orderValue: "",
-  hsn: "",
-  codAmount: "",
-  physicalWeight: "",
-  length: "",
-  breadth: "",
-  height: "",
-  pickupLocation: "",
+interface OrderItem {
+  id?: number;
+  productName: string;
+  category: string;
+  quantity: number|string;
+  orderValue: number|string;
+  hsn: string;
 }
 
-export default function SingleOrderPage() {
-  const [form, setForm] = useState(initialForm)
-  const [submitting, setSubmitting] = useState(false)
-  const [orders, setOrders] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+interface FormState {
+  orderId: string;
+  orderDate: string;
+  paymentMode: string;
+  items: OrderItem[];  
+  physicalWeight: number | string;
+  length: number | string;
+  breadth: number | string;
+  height: number | string;
+  pickupLocation: string;
+  customerName: string;
+  mobile: string;
+  email: string;
+  address: string;
+  pincode: string;
+  state: string;
+  city: string;
+  landmark: string;
+  codAmount?: number | string; 
+}
+interface Order {
+  id: number;
+  orderId: string;
+  orderDate: string;
+  paymentMode: string;  
+  items: OrderItem[];  
+  physicalWeight: number;
+  length: number;
+  breadth: number;
+  height: number;
+  pickupLocation: string;
+  customerName: string;
+  mobile: string;
+  email: string | null;
+  address: string;
+  pincode: string;
+  state: string;
+  city: string;
+  landmark: string | null;
+  status: string;
+  codAmount?: number | null;
+  awbNumber?: string | null;
+  courierName?: string | null;
+  createdAt: string;
+}
 
-  const [showWarehouseModal, setShowWarehouseModal] = useState(false)
+export default function SingleOrderPage() { 
+  const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState<any[]>([])
+  
   const [warehouses, setWarehouses] = useState<any[]>([])
+  const [showWarehouseModal, setShowWarehouseModal] = useState(false)
+
+  const initialItem: OrderItem = {
+    productName: "",
+    category: "",
+    quantity: 1,  
+    orderValue: "",
+    hsn: "",
+  };
+  const initialForm: FormState = {
+    orderId: "",
+    orderDate: new Date().toISOString().split("T")[0], 
+    paymentMode: "",
+    items: [initialItem],  
+    physicalWeight: "",
+    length: "",
+    breadth: "",
+    height: "",
+    pickupLocation: "",
+    customerName: "",
+    mobile: "",
+    email: "",
+    address: "",
+    pincode: "",
+    state: "",
+    city: "",
+    landmark: "",
+    codAmount: "", 
+  };
+  const [form, setForm] = useState<FormState>(initialForm);
 
   useEffect(() => {
     setLoading(true)
@@ -50,36 +107,112 @@ export default function SingleOrderPage() {
       .then((res) => setOrders(res.data.orders || []))
       .finally(() => setLoading(false))
   }, [submitting])
+  const handleWarehouseFromDB = async () => {
+    try {
+      const response = await axios.get("/api/user/warehouses")
+      const data = response.data.warehouses || []
+      setWarehouses(data)
+    } catch {}
+  }
 
-  const handleSubmit = async (e: any) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+    index?: number 
+  ) => {
+    const { name, value } = e.target;
+
+    if (index !== undefined && ['productName', 'category', 'quantity', 'orderValue', 'hsn'].includes(name)) { // Check if the change is for an item field
+      setForm((prev) => {
+        const newItems = [...prev.items];
+        if (newItems[index]) {
+            newItems[index] = {
+                ...newItems[index],
+                [name]: value,
+            };
+        }
+        return { ...prev, items: newItems };
+      });
+    } else { 
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+  const addItem = () => {
+    setForm((prev) => ({
+      ...prev,
+      items: [...prev.items, { ...initialItem }], 
+    }));
+  };
+  const removeItem = (index: number) => { 
+    if (form.items.length <= 1) {
+        toast.error("You must have at least one item in the order.");
+        return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index),  
+    }));
+  };
+  const generateOrderId = () => {
+    const prefix = "SQ"; 
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setForm(prev => ({ ...prev, orderId: `${prefix}-${timestamp}-${randomSuffix}` }));
+  };
+  
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
-    try {
-      await axios.post("/api/user/orders/single-order", {
-        ...form,
-        quantity: Number(form.quantity),
-        orderValue: Number(form.orderValue),
-        codAmount: Number(form.codAmount),
-        physicalWeight: Number(form.physicalWeight),
-        length: Number(form.length),
-        breadth: Number(form.breadth),
-        height: Number(form.height),
-        orderDate: new Date(form.orderDate),
-      })
-      setForm(initialForm)
-      toast.success("Order added successfully")
-    } catch (err: any) { 
-      let errorMessage = "Failed to add order. Please try again.";  
-      if (axios.isAxiosError(err) && err.response?.data?.error) { 
-        errorMessage = err.response.data.error;
-      } else if (err instanceof Error) { 
-        errorMessage = err.message;
-      }
-      console.error("Order submission error:", err.response?.data || err); 
-      toast.error(errorMessage); 
-    } finally {
-      setSubmitting(false)
+    const toastId = toast.loading("Adding order...");
+    if (!form.orderId || !form.orderDate || !form.paymentMode || !form.pickupLocation || !form.customerName || !form.mobile || !form.address || !form.pincode || !form.state || !form.city || !form.physicalWeight || !form.length || !form.breadth || !form.height) {
+      toast.error("Please fill all required fields marked with *");
+      setSubmitting(false);
+      return;
+    } 
+    if (form.items.some(item => !item.productName || !item.category || !item.quantity || !item.orderValue)) {
+        toast.error("Please fill all required fields for each item.");
+        setSubmitting(false);
+        return;
     }
+    if (form.paymentMode === "COD" && (!form.codAmount || isNaN(Number(form.codAmount)) || Number(form.codAmount) <= 0)) {
+        toast.error("Please enter a valid COD Amount for COD orders.");
+        setSubmitting(false);
+        return;
+    }
+    const apiData = {
+      ...form,
+      items: form.items.map(item => ({
+          ...item,
+          quantity: parseInt(String(item.quantity)) || 0, 
+          orderValue: parseFloat(String(item.orderValue)) || 0, 
+      })),
+      physicalWeight: parseFloat(String(form.physicalWeight)) || 0,
+      length: parseFloat(String(form.length)) || 0,
+      breadth: parseFloat(String(form.breadth)) || 0,
+      height: parseFloat(String(form.height)) || 0,
+      codAmount: form.paymentMode === "COD" ? parseFloat(String(form.codAmount)) || 0 : undefined,
+    };
+
+    if (apiData.paymentMode !== "COD") {
+        delete apiData.codAmount;
+    }
+      try {
+        const response = await axios.post("/api/user/orders/single-order", apiData ,{
+          headers: { "Content-Type": "application/json" }, 
+        });
+        toast.update(toastId, { render: "Order added successfully!", type: "success", isLoading: false, autoClose: 5000 });
+        setForm(initialForm)
+      } catch (error: any) {
+        console.error("Failed to add order:", error);
+        const errorMessage = error.response?.data?.error || error.message || "An unknown error occurred";
+        toast.update(toastId, { render: `Failed to add order: ${errorMessage}`, type: "error", isLoading: false, autoClose: 5000 });
+      } finally {
+        setSubmitting(false);
+
+      }
   }
 
   const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,13 +233,7 @@ export default function SingleOrderPage() {
     }
   }
 
-  const handleWarehouseFromDB = async () => {
-    try {
-      const response = await axios.get("/api/user/warehouses")
-      const data = response.data.warehouses || []
-      setWarehouses(data)
-    } catch {}
-  }
+  
 
   return (
     <>
@@ -141,7 +268,6 @@ export default function SingleOrderPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 mb-8 transition-colors duration-200">
           <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Add Single Order</h2>
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Consignee Details */}
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -173,7 +299,6 @@ export default function SingleOrderPage() {
               </div>
             </section>
 
-            {/* Customer Address */}
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -221,185 +346,140 @@ export default function SingleOrderPage() {
               </div>
             </section>
 
-            {/* Order Details */}
-            <section className="transition-all duration-200">
-              <div className="flex items-center mb-4">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
-                  3
-                </span>
-                <span className="font-semibold text-lg text-gray-900 dark:text-white">Order Details</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="relative">
-                  <input
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                    placeholder="Order Id *"
-                    required
-                    value={form.orderId}
-                    onChange={(e) => setForm((f) => ({ ...f, orderId: e.target.value }))}
-                  />
+            <section>
+                <h2 className="text-lg font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-gray-200 flex items-center">
+                    <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 text-sm">3</span>
+                    Order Details
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
+                    <div className="flex">
+                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="flex-grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-blue-600 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-r-md text-xs hover:bg-blue-200 dark:hover:bg-blue-800/60 transition-colors">
+                            Auto Generate ID
+                        </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="orderDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Date <span className="text-red-500">*</span></label>
+                    <input type="date" id="orderDate" name="orderDate" value={form.orderDate} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                  </div>
+                  <div>
+                    <label htmlFor="paymentMode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Mode <span className="text-red-500">*</span></label>
+                    <select id="paymentMode" name="paymentMode" value={form.paymentMode} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                      <option value="">Select</option>
+                      <option value="Prepaid">Prepaid</option>
+                      <option value="COD">COD</option>
+                    </select>
+                  </div>
+                   {form.paymentMode === 'COD' && (
+                    <div className="md:col-start-2"> 
+                        <label htmlFor="codAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">COD Amount (₹) <span className="text-red-500">*</span></label>
+                        <input
+                        type="number"
+                        id="codAmount"
+                        name="codAmount"
+                        value={form.codAmount}
+                        onChange={handleChange} 
+                        required={form.paymentMode === 'COD'}
+                        min="0"
+                        step="0.01"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        placeholder="Total amount to collect"
+                        />
+                    </div>
+                    )}
+                </div>
+
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Items <span className="text-red-500">*</span></label>
+                  {form.items.map((item, index) => (
+                    <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-md relative transition-all duration-200">
+                      {form.items.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeItem(index)} 
+                          className="absolute top-2 right-2 p-1 text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                          aria-label="Remove Item"
+                        >
+                          <Trash2 size={18} /> 
+                        </button>
+                      )}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="md:col-span-2">
+                          <label htmlFor={`productName-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
+                          <input type="text" id={`productName-${index}`} name="productName" value={item.productName} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                        </div>
+                        <div>
+                          <label htmlFor={`category-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                          <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
+                            <option value="">Select</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor={`quantity-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                          <input type="number" id={`quantity-${index}`} name="quantity" value={item.quantity} onChange={(e) => handleChange(e, index)} required min="1" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                        </div>
+                        <div>
+                          <label htmlFor={`orderValue-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Value (per item)</label>
+                          <input type="number" id={`orderValue-${index}`} name="orderValue" value={item.orderValue} onChange={(e) => handleChange(e, index)} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                        </div>
+                        <div className="md:col-span-1">
+                          <label htmlFor={`hsn-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">HSN</label>
+                          <input type="text" id={`hsn-${index}`} name="hsn" value={item.hsn} onChange={(e) => handleChange(e, index)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4">
                   <button
                     type="button"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-indigo-600 dark:text-indigo-400 text-xs underline"
-                    onClick={() => setForm((f) => ({ ...f, orderId: `ORD-${Date.now()}` }))}
+                    onClick={addItem} 
+                    className="inline-flex items-center px-4 py-2 border border-dashed border-blue-500 text-sm font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                   >
-                    Auto Generate ID
+                    <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" /> {/* Make sure Plus is imported */}
+                    Add More Item
                   </button>
                 </div>
-                <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  type="date"
-                  placeholder="Order Date *"
-                  required
-                  value={form.orderDate}
-                  onChange={(e) => setForm((f) => ({ ...f, orderDate: e.target.value }))}
-                />
-                <label htmlFor="paymentMode" className="sr-only">
-                  Payment Mode
-                </label>
-                <select
-                  id="paymentMode"
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  required
-                  value={form.paymentMode}
-                  onChange={(e) => setForm((f) => ({ ...f, paymentMode: e.target.value }))}
-                  aria-label="Payment Mode"
-                >
-                  <option value="">Payment Mode *</option>
-                  <option value="COD">COD</option>
-                  <option value="Prepaid">Prepaid</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
-                <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  placeholder="Product Name *"
-                  required
-                  value={form.productName}
-                  onChange={(e) => setForm((f) => ({ ...f, productName: e.target.value }))}
-                />
-                <label htmlFor="category" className="sr-only">
-                  Product Category
-                </label>
-                <select
-                  id="category"
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  required
-                  value={form.category}
-                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  aria-label="Product Category"
-                >
-                  <option value="">Category</option>
-                  <option value="Accessories">Accessories</option>
-                  <option value="Fashion & Clothing">Fashion & Clothing</option>
-                  <option value="Book & Stationary">Book & Stationary</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="FMCG">FMCG</option>
-                  <option value="Footwear">Footwear</option>
-                  <option value="Toys">Toys</option>
-                  <option value="Sports Equipment">Sports Equipment</option>
-                  <option value="Others">Others</option>
-                  <option value="Wellness">Wellness</option>
-                  <option value="Medicines">Medicines</option>
-                </select>
-                <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  type="number"
-                  min={1}
-                  placeholder="Quantity *"
-                  required
-                  value={form.quantity}
-                  onChange={(e) => setForm((f) => ({ ...f, quantity: Number(e.target.value) }))}
-                />
-                <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  type="number"
-                  min={0}
-                  placeholder="Order Value *"
-                  required
-                  value={form.orderValue}
-                  onChange={(e) => setForm((f) => ({ ...f, orderValue: e.target.value }))}
-                />
-                <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  placeholder="HSN"
-                  value={form.hsn}
-                  onChange={(e) => setForm((f) => ({ ...f, hsn: e.target.value }))}
-                />
-                {form.paymentMode === "COD" && (
-                  <input
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                    type="number"
-                    min={0}
-                    placeholder="COD Amount (in Rs.) *"
-                    required
-                    value={form.codAmount}
-                    onChange={(e) => setForm((f) => ({ ...f, codAmount: e.target.value }))}
-                  />
-                )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                <div className="flex">
-                  <input
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-l-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Physical Weight *"
-                    required
-                    value={form.physicalWeight}
-                    onChange={(e) => setForm((f) => ({ ...f, physicalWeight: e.target.value }))}
-                  />
-                  <span className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 border-l-0 rounded-r-md px-3 flex items-center text-gray-700 dark:text-gray-200 transition-colors duration-200">
-                    KG
-                  </span>
+
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                   <div>
+                      <label htmlFor="physicalWeight" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Physical Weight <span className="text-red-500">*</span></label>
+                      <div className="relative">
+                        <input type="number" id="physicalWeight" name="physicalWeight" value={form.physicalWeight} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">KG</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="length" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Length <span className="text-red-500">*</span></label>
+                       <div className="relative">
+                        <input type="number" id="length" name="length" value={form.length} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="breadth" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breadth <span className="text-red-500">*</span></label>
+                       <div className="relative">
+                        <input type="number" id="breadth" name="breadth" value={form.breadth} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="height" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Height <span className="text-red-500">*</span></label>
+                       <div className="relative">
+                        <input type="number" id="height" name="height" value={form.height} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
+                      </div>
+                    </div>
                 </div>
-                <div className="flex">
-                  <input
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-l-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Length *"
-                    required
-                    value={form.length}
-                    onChange={(e) => setForm((f) => ({ ...f, length: e.target.value }))}
-                  />
-                  <span className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 border-l-0 rounded-r-md px-3 flex items-center text-gray-700 dark:text-gray-200 transition-colors duration-200">
-                    CM
-                  </span>
-                </div>
-                <div className="flex">
-                  <input
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-l-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Breadth *"
-                    required
-                    value={form.breadth}
-                    onChange={(e) => setForm((f) => ({ ...f, breadth: e.target.value }))}
-                  />
-                  <span className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 border-l-0 rounded-r-md px-3 flex items-center text-gray-700 dark:text-gray-200 transition-colors duration-200">
-                    CM
-                  </span>
-                </div>
-                <div className="flex">
-                  <input
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-l-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    placeholder="Height *"
-                    required
-                    value={form.height}
-                    onChange={(e) => setForm((f) => ({ ...f, height: e.target.value }))}
-                  />
-                  <span className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 border-l-0 rounded-r-md px-3 flex items-center text-gray-700 dark:text-gray-200 transition-colors duration-200">
-                    CM
-                  </span>
-                </div>
-              </div>
             </section>
  
             <section className="transition-all duration-200">
@@ -416,7 +496,6 @@ export default function SingleOrderPage() {
                   value={form.pickupLocation}
                   onChange={(e) => {
                     setForm((f) => ({ ...f, pickupLocation: e.target.value }))
-                    // Optionally filter warehouses here
                   }}
                   onFocus={handleWarehouseFromDB}
                   required
@@ -498,91 +577,74 @@ export default function SingleOrderPage() {
           />
         </div>
 
-        {/* Orders Table */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 transition-colors duration-200">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">My Orders</h2>
-          {loading ? (
-            <div className="flex justify-center items-center py-8 text-gray-600 dark:text-gray-300">
-              <div className="animate-pulse flex space-x-2">
-                <div>Loading</div>
-                <div className="flex space-x-1">
-                  <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div>
-                  <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div>
-                  <div className="w-1 h-1 rounded-full bg-gray-600 dark:bg-gray-300"></div>
-                </div>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">My Orders</h2>
+            {loading ? (
+              <div className="flex justify-center items-center py-8 text-gray-600 dark:text-gray-300">
+                <Loader2 className="animate-spin mr-2 h-5 w-5" /> Loading orders...
               </div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-md border border-gray-300 dark:border-gray-600 transition-colors duration-200">
-              <table className="min-w-full text-xs md:text-sm">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-700 transition-colors duration-200">
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Order ID
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Product
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Qty
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Value
-                    </th>
-                    <th className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Status
-                    </th>
-                    <th className="p-2 border-b border-gray-300 dark:border-gray-600 text-left text-gray-900 dark:text-white font-semibold">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o, i) => (
-                    <tr
-                      key={o.id || i}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
-                    >
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {o.orderId}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {o.productName}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {o.quantity}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        ₹{o.orderValue}
-                      </td>
-                      <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            o.status === "Delivered"
-                              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
-                              : o.status === "Unshipped"
-                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
-                                : "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
-                          }`}
-                        >
-                          {o.status || "Processing"}
-                        </span>
-                      </td>
-                      <td className="p-2 border-b border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200">
-                        {new Date(o.orderDate).toLocaleDateString()}
-                      </td>
+            ) : (
+              <div className="overflow-x-auto rounded-md border border-gray-300 dark:border-gray-600 transition-colors duration-200">
+                <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+                  <thead className="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Order ID</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Product Details</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Total Qty</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Total Value</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Status</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Order Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {orders.length === 0 && (
-                <div className="text-gray-500 dark:text-gray-400 text-center py-6 border-b border-gray-300 dark:border-gray-600">
-                  No orders yet.
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {orders.length === 0 && (
+                       <tr>
+                         <td colSpan={6} className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                           No orders found.
+                         </td>
+                       </tr>
+                    )}
+                    {orders.map((o: Order) => (
+                      <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-xs font-mono">{o.orderId}</td>
+                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 align-top text-xs">
+                          {o.items && o.items.length > 0 ? (
+                            o.items.map((item: OrderItem, index: number) => (
+                              <div key={index} className={index > 0 ? "mt-1 pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
+                                {item.productName} ({item.quantity}x) - ₹{item.orderValue}
+                                {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-gray-400">No items</span>
+                          )}
+                        </td>
+                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center text-sm">
+                          {o.items ? o.items.reduce((sum: number, item: OrderItem) => sum + Number(item.quantity || 0), 0) : 0}
+                        </td>
+                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-right text-sm">
+                          ₹{o.items ? (o.items.reduce((sum: number, item: OrderItem) => sum + (Number(item.orderValue || 0) * Number(item.quantity || 0)), 0)).toFixed(2) : '0.00'}
+                        </td>
+                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              o.status === "delivered" ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300" :
+                              "bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300"
+                            }`}
+                          >
+                            {o.status ? o.status.replace(/_/g, ' ').toUpperCase() : "PENDING"}
+                          </span>
+                        </td>
+                        <td className="p-2 border-b border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center text-sm">
+                          {new Date(o.orderDate).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
       </div>
     </KycGuard>
     </>

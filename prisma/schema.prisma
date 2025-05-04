@@ -92,11 +92,12 @@ model Order {
   orderId         String      @unique
   orderDate       DateTime
   paymentMode     String
-  productName     String
-  category        String
-  quantity        Int
-  orderValue      Float
-  hsn             String?
+  // productName     String
+  // category        String
+  // quantity        Int
+  // orderValue      Float
+  // hsn             String?
+  items           OrderItem[]
   physicalWeight  Float
   length          Float
   breadth         Float
@@ -129,6 +130,19 @@ model Order {
   transactions    Transaction[]
   @@index([remittanceId])
   @@index([userId])
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade) // Cascade delete items if order is deleted
+  productName String
+  category    String
+  quantity    Int
+  orderValue  Float    
+  hsn         String?
+
+  @@index([orderId])
 }
 
 model Warehouse {

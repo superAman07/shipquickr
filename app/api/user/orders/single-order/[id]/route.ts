@@ -64,12 +64,16 @@ export async function GET(request: Request) {
 
         const order = await prisma.order.findUnique({
             where: { id: parseInt(id) },
+            include: {
+              items: true,
+            }
         });
         if (!order || order.userId !== decoded.userId) {
             return NextResponse.json({ error: "Order not found" }, { status: 404 });
         }
         return NextResponse.json({ order }, { status: 200 });
     }catch(e){
+        console.error("Error fetching single order:", e);
         return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
     }
 }
