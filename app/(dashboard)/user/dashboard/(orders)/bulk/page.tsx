@@ -164,30 +164,30 @@ const BulkOrdersPage: React.FC = () => {
 
           <div className="rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 table-fixed">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800  ">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
                   <tr>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Date</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-2/13">Order ID</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-4/13">Product Details</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Payment</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Customer</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Address</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Pickup Location</th>
-                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Status</th>
-                    <th className="px-3 py-4 text-center text-xs font-bold uppercase tracking-wider w-1/13">Actions</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Date</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Order ID</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider min-w-[250px]">Product Details</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Payment</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Customer</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Address</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Pickup Location</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider ">Status</th>
+                    <th className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wider ">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                      <td className="px-3 py-4 whitespace-nowrap text-xs">
+                      <td className="px-3 py-2 whitespace-nowrap text-xs">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-xs font-semibold text-blue-700 dark:text-blue-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
-                      <td className="px-1 py-4 text-xs align-top break-words"> 
+                      <td className="px-1 py-2 text-xs align-top break-words"> 
                         {order.items && order.items.length > 0 ? (
                           <div className="space-y-1">
                             {order.items.map((item: OrderItem, index: number) => ( 
@@ -209,25 +209,25 @@ const BulkOrdersPage: React.FC = () => {
                           <span className="text-gray-400">No items</span>
                         )}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">
+                      <td className="px-3 text-center py-2 whitespace-nowrap text-xs font-semibold">
                         {order.paymentMode}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         <div className="text-sm font-medium">{order.customerName}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
                       </td>
-                      <td className="px-3 py-4 text-sm max-w-xs truncate">
+                      <td className="px-3 py-2 text-sm max-w-xs truncate">
                         {order.address}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {order.pickupLocation || "-"}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-center">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-center">
                         <div className="flex justify-center gap-3">
                           <button
                             type="button"
