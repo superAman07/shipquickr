@@ -7,11 +7,19 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "@/components/orderTabs";
 
+interface OrderItem {
+  id?: number;
+  productName: string;
+  category: string; 
+  quantity: number;
+  orderValue: number;
+  hsn: string;
+}
+
 interface Order {
   id: string;
   orderId: string;
-  orderDate: string;
-  productName: string;
+  orderDate: string; 
   paymentMode: string;
   customerName: string;
   mobile: string;
@@ -22,6 +30,7 @@ interface Order {
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
+  items: OrderItem[]; 
 }
 
 const tabs = [
@@ -36,8 +45,7 @@ const BulkOrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const pathname = usePathname();
-  const router = useRouter();
+  const pathname = usePathname(); 
 
 
   useEffect(() => {
@@ -48,9 +56,14 @@ const BulkOrdersPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get("/api/user/orders/single-order");
-      setOrders(response.data.orders || []);
+      const ordersWithItems = response.data.orders.map((order: any) => ({
+        ...order,
+        items: order.items || [], 
+      }));
+      setOrders(ordersWithItems);
     } catch (error) {
       console.error("Error fetching orders:", error);
+      toast.error("Failed to load orders.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +87,7 @@ const BulkOrdersPage: React.FC = () => {
   const filteredOrders = orders.filter(order =>
     order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.productName.toLowerCase().includes(searchTerm.toLowerCase())
+    order.items.some(item => item.productName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getStatusColor = (status: string) => {
@@ -151,57 +164,70 @@ const BulkOrdersPage: React.FC = () => {
 
           <div className="rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 table-fixed">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Order ID</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Product Details</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Payment</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Address</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Pickup Location</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Actions</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Date</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-2/13">Order ID</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-4/13">Product Details</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Payment</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Customer</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Address</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Pickup Location</th>
+                    <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider w-1/13">Status</th>
+                    <th className="px-3 py-4 text-center text-xs font-bold uppercase tracking-wider w-1/13">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-3 py-4 whitespace-nowrap text-xs">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      <td className="px-3 py-4 whitespace-nowrap text-xs font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {order.productName}
-                        {order.length && order.breadth && order.height
-                          ? ` (${order.length}x${order.breadth}x${order.height})`
-                          : ""}
-                        {order.physicalWeight
-                          ? ` Weight : ${order.physicalWeight}Kg`
-                          : ""}
+                      <td className="px-1 py-4 text-xs align-top break-words"> 
+                        {order.items && order.items.length > 0 ? (
+                          <div className="space-y-1">
+                            {order.items.map((item: OrderItem, index: number) => ( 
+                              <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
+                                <span className="font-medium">{item.productName}</span> ({item.quantity}x)
+                                {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                              </div>
+                            ))} 
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
+                              {(order.length && order.breadth && order.height)
+                                ? `Dims: ${order.length}x${order.breadth}x${order.height} cm | `
+                                : ""}
+                              {order.physicalWeight
+                                ? `Wt: ${order.physicalWeight} Kg`
+                                : ""}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">No items</span>
+                        )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm">
                         {order.paymentMode}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium">{order.customerName}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm max-w-xs truncate">
+                      <td className="px-3 py-4 text-sm max-w-xs truncate">
                         {order.address}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm">
                         {order.pickupLocation || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-center">
                         <div className="flex justify-center gap-3">
                           <button
                             type="button"
