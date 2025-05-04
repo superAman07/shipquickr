@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
         userId: decoded.userId,
         },
         orderBy: { createdAt: "desc" },
+        include: {
+            items: true,
+        }
     });
     
     const ordersWithCourier = orders.map(order => ({

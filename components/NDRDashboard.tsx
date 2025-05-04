@@ -3,20 +3,25 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Download } from "lucide-react";
 import { toast } from "react-toastify";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; 
+import Link from "next/link"; 
+
+interface OrderItem {
+  productName: string;
+  quantity: number;
+  orderValue: number; 
+  hsn?: string;
+}
 
 interface Order {
   id: string;
   courierName?: string; 
-  productName: string;
-  orderValue: number;
+  items: OrderItem[];
   mobile: string;
   awbNumber: string;  
   customerName: string;
   attempts?: number | string;  
-  paymentMode?: string; // type
-  orderDate?: string;  // picked on
+  paymentMode?: string; 
+  orderDate?: string; 
   ageing?: number | string;
   remarks?: string;
   status: string;
@@ -28,7 +33,12 @@ interface Order {
   billableWeight?: number | string;
   shippingDetails?: string;
   physicalWeight?: number | string;
-  updatedAt?: string;  
+  updatedAt?: string;
+  address?: string; 
+  pickupLocation?: string; 
+  ndrReason?: string;
+  ndrAction?: string;
+  labelUrl?: string;  
 }
 
 
@@ -38,35 +48,45 @@ const NDRUserDashboardPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
  
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;  
+  const itemsPerPage = 10;  
   
-
-
-  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     fetchOrders();
-  }, [activeTab]);
+  }, []);
   
   const fetchOrders = async () => {
     setLoading(true);
     try { 
       const url = "/api/user/orders/ndr";
       const response = await axios.get(url);
-      setOrders(response.data.orders || []);
+      const ordersWithItems = (response.data.orders || []).map((order: any) => ({
+        ...order,
+        items: order.items || [],
+      }));
+      setOrders(ordersWithItems);
     } catch (error) {
       console.error("Error fetching ndr:", error);
+      toast.error("Failed to load NDR orders."); 
     } finally {
       setLoading(false);
     }
   };
    
+  const calculateTotalOrderValue = (items: OrderItem[]): number => {
+    if (!items || items.length === 0) {
+      return 0;
+    }
+    return items.reduce((sum, item) => sum + (item.orderValue * item.quantity), 0);
+  };
 
   const filteredOrders = orders.filter(order =>
     (order.orderId ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.productName.toLowerCase().includes(searchTerm.toLowerCase())||
-    order.mobile.toLowerCase().includes(searchTerm.toLowerCase())
+    order.items.some(item => item.productName.toLowerCase().includes(searchTerm.toLowerCase())) || // Search within items
+    order.mobile.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.awbNumber && order.awbNumber.toLowerCase().includes(searchTerm.toLowerCase())) || // Search AWB
+    (order.ndrReason && order.ndrReason.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -118,54 +138,61 @@ const NDRUserDashboardPage: React.FC = () => {
     );
   }
 
-  function downloadCSV(orders: Order[]) {
-    if (!orders.length) return;
-  
+  function downloadCSV(ordersToDownload: Order[]) {
+    if (!ordersToDownload.length) return;
+
     const headers = [
-      "Courier Name",
-      "Product Name",
-      "Order Value",
-      "Mobile Number",
-      "Waybill",
-      "Consignee",
-      "Count",
-      "Type",
-      "Picked On",
-      "Ageing",
-      "Remarks",
-      "Last Updated",
+      "Courier Name", "Order Date", "Order ID", "AWB Number",
+      "Product Details", "Payment", "Order Value",
+      "Customer", "Mobile", "Address",  
+      "Attempts", "NDR Reason",  
+      "Ageing", "Remarks", "Status", "Last Updated",
     ];
-  
-    const rows = orders.map(order => [
-      order.courierName || "DemoCourier",
-      `${order.productName || ""}` +
-        ((order.length && order.breadth && order.height)
-          ? ` (${order.length}x${order.breadth}x${order.height})`
-          : "") +
-        (order.physicalWeight ? ` Weight: ${order.physicalWeight}Kg` : ""),
-      order.orderValue?.toFixed(2) ?? "0.00",
-      order.mobile || "-",
-      order.awbNumber || "-",
-      order.customerName || "-",
-      order.attempts ?? "0",
-      order.paymentMode || "-",
-      order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-",
-      order.ageing ?? "0",
-      order.remarks || "-",
-      order.updatedAt ? new Date(order.updatedAt).toLocaleString() : "-",
-    ]);
-  
+
+    const rows = ordersToDownload.map(order => {
+
+      const productDetails = order.items.map(item => `${item.productName} (${item.quantity}x)`).join('; ');
+      const dims = (order.length && order.breadth && order.height) ? `Dims: ${order.length}x${order.breadth}x${order.height}cm` : '';
+      const wt = order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : '';
+      const fullProductDetails = `${productDetails}${dims || wt ? ` | ${[dims, wt].filter(Boolean).join(' | ')}` : ''}`;
+   
+      const totalValue = calculateTotalOrderValue(order.items);
+
+      return [
+        order.courierName || "DemoCourier",
+        order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-",
+        order.orderId || "-", 
+        order.awbNumber || "-",
+        fullProductDetails,  
+        order.paymentMode || "-",  
+        totalValue.toFixed(2),  
+        order.customerName || "-",
+        order.mobile || "-",
+        order.address || "-",  
+        order.attempts ?? "0",
+        order.ndrReason || "-", 
+        order.ageing ?? "0",
+        order.remarks || "-",
+        order.status || "-",  
+        order.updatedAt ? new Date(order.updatedAt).toLocaleString() : "-",
+      ];
+    });
+
+
     const csvContent =
       [headers, ...rows]
         .map(e => e.map(x => `"${(x ?? "").toString().replace(/"/g, '""')}"`).join(","))
         .join("\n");
-  
-    const blob = new Blob([csvContent], { type: "text/csv" });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" }); // Ensure UTF-8
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "ndr-orders.csv";
+    a.style.visibility = 'hidden';  
+    document.body.appendChild(a);  
     a.click();
+    document.body.removeChild(a);  
     URL.revokeObjectURL(url);
   }
 
@@ -237,27 +264,51 @@ const NDRUserDashboardPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
-                    {paginatedOrders.map((order, idx) => (
+                    {paginatedOrders.map((order) => { 
+                        const totalValue = calculateTotalOrderValue(order.items);
+                        return (
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                             <td className="px-4 py-3">{order.courierName}</td>
-                            <td className="px-4 py-3">{`${order.productName} (${order.length}x${order.breadth}x${order.height}) Weight: ${order.physicalWeight}Kg`}</td>
-                            <td className="px-4 py-3">₹{order.orderValue?.toFixed(2) ?? "0.00"}</td>
-                            <td className="px-4 py-3">{order.mobile}</td>
-                            <td className="px-4 py-3">{order.awbNumber}</td>
-                            <td className="px-4 py-3">{order.customerName || "DemoCourier"}</td>
-                            <td className="px-4 py-3">{order.attempts ?? "0"}</td>
-                            <td className="px-4 py-3">{order.paymentMode}</td>
-                            <td className="px-4 py-3">{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-"}</td>
-                            <td className="px-4 py-3">{order.ageing ?? "0"}</td>
-                            <td className="px-4 py-3">{order.remarks ?? "-"}</td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                {order.status}
-                              </span>
-                            </td>                        
-                        </tr>
-                    ))}
-                    </tbody>
+                            <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
+                                {order.items && order.items.length > 0 ? (
+                                  <div className="space-y-1">
+                                    {order.items.map((item: OrderItem, index: number) => (
+                                      <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
+                                        <span className="font-medium">{item.productName}</span> ({item.quantity}x)
+                                        {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                                      </div>
+                                    ))}
+                                    <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
+                                      {(order.length && order.breadth && order.height)
+                                        ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
+                                        : ""}
+                                      {order.physicalWeight
+                                        ? `Wt: ${order.physicalWeight}Kg`
+                                        : ""}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">No items</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">₹{totalValue.toFixed(2)}</td>
+                              <td className="px-4 py-3">{order.mobile}</td>
+                              <td className="px-4 py-3">{order.awbNumber}</td>
+                              <td className="px-4 py-3">{order.customerName || "DemoCourier"}</td>
+                              <td className="px-4 py-3">{order.attempts ?? "0"}</td>
+                              <td className="px-4 py-3">{order.paymentMode}</td>
+                              <td className="px-4 py-3">{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : "-"}</td>
+                              <td className="px-4 py-3">{order.ageing ?? "0"}</td>
+                              <td className="px-4 py-3">{order.remarks ?? "-"}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                  {order.status}
+                                </span>
+                              </td>                        
+                          </tr>
+                        );
+                      })}
+                  </tbody>
               </table>
             </div>
 
