@@ -105,20 +105,6 @@ export async function POST(req: NextRequest){
             return NextResponse.json({ error: "Invalid payment mode specified" }, { status: 400 });
         }
 
-        // const order = await prisma.order.create({
-        //     data: {
-        //         ...data,
-        //         userId: decoded.userId, 
-        //         quantity: parseInt(data.quantity) || 1,
-        //         orderValue: parseFloat(data.orderValue) || 0,
-        //         codAmount: data.paymentMode === "COD" ? (parseFloat(data.codAmount) || 0) : null, // Only set COD amount if paymentMode is COD
-        //         physicalWeight: parseFloat(data.physicalWeight) || 0,
-        //         length: parseFloat(data.length) || 0,
-        //         breadth: parseFloat(data.breadth) || 0,
-        //         height: parseFloat(data.height) || 0,
-        //         orderDate: data.orderDate ? new Date(data.orderDate) : new Date(), // Ensure date is valid 
-        //     }
-        // });
         const result = await prisma.$transaction(async (tx) => {
           const order = await tx.order.create({
               data: { 
@@ -157,8 +143,7 @@ export async function POST(req: NextRequest){
           await tx.orderItem.createMany({
               data: orderItemsData,
           });
-
-          // 3. Handle Wallet Deduction and Transaction for Prepaid
+ 
           let updatedWallet;
           if (data.paymentMode === "Prepaid" && calculatedShippingCharge > 0) {
               updatedWallet = await tx.wallet.update({
@@ -221,14 +206,12 @@ export async function POST(req: NextRequest){
                   height: parseFloat(data.height) || 10,
                   weight: parseFloat(data.physicalWeight) || 0.5,
                 },
-                // cod_amount: data.paymentMode === "COD" ? parseFloat(data.orderValue) : 0,
                 cod_amount: data.paymentMode === "COD" ? (parseFloat(data.codAmount)||0) : 0,
               }]
             };
 
             console.log("Calling Ecom Express API with:", JSON.stringify(ecomShipment));
 
-            // const ecomExpressClient = new EcomExpressClient(process.env.ECOM_EXPRESS_USERNAME!, process.env.ECOM_EXPRESS_PASSWORD!);
             const ecomResponse = await ecomExpressClient.generateAWB(ecomShipment);
              
             console.log("Ecom Express Response:", JSON.stringify(ecomResponse));
@@ -250,28 +233,7 @@ export async function POST(req: NextRequest){
             console.error(`Failed to generate AWB for Order ID ${order.id}:`, ecomError);
           }
 
-        //
-        // if (data.paymentMode === "Prepaid") { 
-        //     const updatedWallet = await prisma.wallet.update({
-        //         where: { userId: decoded.userId },
-        //         data: { balance: { decrement: calculatedShippingCharge } },
-        //     });
-   
-        //     await prisma.transaction.create({
-        //         data: {
-        //             userId: decoded.userId,
-        //             amount: calculatedShippingCharge, 
-        //             type: "debit",
-        //             status: "Success",
-        //             orderId: order.id,
-        //         },
-        //     });
-        //     console.log(`Prepaid Order ${order.id} created. Deducted ₹${calculatedShippingCharge}. New balance: ₹${updatedWallet.balance.toFixed(2)}`);
-        // } else {
-        //      console.log(`COD Order ${order.id} created. No wallet deduction.`);
-        // }
         return { ...order, items: orderItemsData, newBalance: updatedWallet?.balance };  
-        // return NextResponse.json(order, { status: 201 });
       });  
       return NextResponse.json(result, { status: 201 });
     }catch (error: any) {
