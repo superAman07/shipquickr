@@ -171,16 +171,48 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
   }
 }
 
+// yaha se expressbees ka code shuru hota hai
+
+let currentXpressbeesToken: string | null = null;
+async function getNewXpressbeesToken(): Promise<string | null> {
+  const loginUrl = process.env.XPRESSBEES_LOGIN_API_URL;
+  const email = process.env.XPRESSBEES_EMAIL;
+  const password = process.env.XPRESSBEES_PASSWORD;
+
+  if (!loginUrl || !email || !password) {
+      console.error("Xpressbees login credentials or URL are not configured in environment variables.");
+      return null;
+  }
+  try {
+      console.log("Attempting to fetch new Xpressbees token...");
+      const response = await axios.post(loginUrl, { email, password });
+      if (response.data && response.data.status === true && response.data.data) {
+          console.log("Successfully fetched new Xpressbees token.");
+          return response.data.data;  
+      } else {
+          console.error("Failed to fetch new Xpressbees token. Response:", response.data);
+          return null;
+      }
+  } catch (error: any) {
+      console.error("Error fetching new Xpressbees token:", error.response?.data || error.message);
+      return null;
+  }
+}
 
 async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: { l: number, w: number, h: number }): Promise<RateResult[] | null> {
-  const apiUrl = process.env.XPRESSBEES_RATE_API_URL;
-  const bearerToken = process.env.XPRESSBEES_BEARER_TOKEN;
+  const apiUrl = process.env.XPRESSBEES_RATE_API_URL; 
 
-  if (!apiUrl || !bearerToken) {
+  if (!apiUrl) {
       console.error("Xpressbees API URL or Bearer Token is not configured.");
       return null;
   }
-
+  if (!currentXpressbeesToken) {
+    currentXpressbeesToken = await getNewXpressbeesToken();
+    if (!currentXpressbeesToken) {
+        console.error("Failed to obtain Xpressbees token initially.");
+        return null; 
+    }
+  }
   const xpressbeesPayload = {
       order_type_user: "ecom",
       origin: String(shipmentData.originPincode), 
@@ -197,7 +229,7 @@ async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: {
       console.log("Xpressbees Request Payload:", xpressbeesPayload);
       const { data } = await axios.post(apiUrl, xpressbeesPayload, {
           headers: {
-              'Authorization': `Bearer ${bearerToken}`,
+              'Authorization': `Bearer ${currentXpressbeesToken}`,
               'Content-Type': 'application/json'
           }
       });
