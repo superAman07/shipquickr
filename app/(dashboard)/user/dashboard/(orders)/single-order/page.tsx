@@ -427,6 +427,7 @@ export default function SingleOrderPage() {
                             <option value="Toys">Toys</option>
                             <option value="Sports Equipment">Sports Equipment</option>
                             <option value="Wellness">Wellness</option>
+                            <option value="Medicines">Medicines</option>
                             <option value="Other">Other</option>
                           </select>
                         </div>
