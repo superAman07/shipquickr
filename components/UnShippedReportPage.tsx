@@ -7,24 +7,35 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "@/components/orderTabs";
 
+interface OrderItem {
+  productName: string;
+  quantity: number;
+  orderValue: number;
+  hsn?: string;
+}
+
 interface Order {
   id: string;
   orderId: string;
-  orderDate: string;
-  productName: string; 
-  orderValue: number ;
+  orderDate: string; 
+  items: OrderItem[];
   customerName: string;
   mobile: string;
+  address?: string; 
+  pickupLocation?: string;
+  paymentMode?: string; 
   billableWeight?: number | string;
   ageing?: number | string;
   attempts?: number | string;
-  shippingDetails?: string;  
+  shippingDetails?: string;
+  remarks?: string;
   status: string;
   length?: number | string;
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
-  remarks?: string;
+  awbNumber?: string;
+  labelUrl?: string; 
   lastUpdate?: string;
 }
 
@@ -46,7 +57,7 @@ const UnShippedPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1;
+  const itemsPerPage = 10;
 
   const pathname = usePathname(); 
 
@@ -73,9 +84,14 @@ const UnShippedPage: React.FC = () => {
         ? `/api/user/orders/single-order?status=${status}`
         : `/api/user/orders/single-order`;
       const response = await axios.get(url);
-      setOrders(response.data.orders || []);
+      const ordersWithItems = response.data.orders.map((order: any) => ({
+        ...order,
+        items: order.items || [],
+      }));
+      setOrders(ordersWithItems);
     } catch (error) {
       console.error("Error fetching orders:", error);
+      toast.error(`Failed to load Unshipped orders.`);
     } finally {
       setLoading(false);
     }
@@ -100,7 +116,8 @@ const UnShippedPage: React.FC = () => {
     undeliveredStatuses.includes(order.status) && (
       order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      order.items.some(item => item.productName.toLowerCase().includes(searchTerm.toLowerCase())) || // Search within items
+      order.mobile.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -155,50 +172,55 @@ const UnShippedPage: React.FC = () => {
       </div>
     );
   }
+  const calculateTotalOrderValue = (items: OrderItem[]): number => {
+    if (!items || items.length === 0) {
+      return 0;
+    }
+    return items.reduce((sum, item) => sum + (item.orderValue * item.quantity), 0);
+  };
 
-  function downloadCSV(orders: Order[]) {
-    if (!orders.length) return;
+  function downloadCSV(ordersToDownload: Order[]) {
+    if (!ordersToDownload.length) return;  
     const headers = [
-      "Order ID",
-      "Product Details",
-      "Order Value",
-      "Customer Details",
-      "Billable Weight",
-      "Ageing",
-      "Attempts",
-      "Shipping Details",
-      "Remarks",
-      "Status",
-      "Last Update"
+      "Order Date", "Order ID",  
+      "Product Details", "Payment", "Order Value",
+      "Customer", "Address", "Pickup Location", "Status", "Remarks"  
     ];
-    const rows = orders.map(order => [
-      order.orderId, 
-      `${order.productName || ""}` +
-        ((order.length && order.breadth && order.height)
-          ? ` (${order.length}x${order.breadth}x${order.height})`
-          : "") +
-        (order.physicalWeight ? ` Weight : ${order.physicalWeight}Kg` : ""),
-      order.orderValue,
-      order.customerName,
-      order.billableWeight,
-      order.ageing,
-      order.attempts,
-      order.shippingDetails,
-      order.remarks,
-      order.status,
-      order.lastUpdate
-    ]);
-    const csvContent =
-      [headers, ...rows]
-        .map(e => e.map(x => `"${(x ?? "").toString().replace(/"/g, '""')}"`).join(","))
-        .join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const rows = ordersToDownload.map(order => {
+      const productDetails = order.items.map(item => `${item.productName} (${item.quantity}x)`).join('; ');
+      const dims = (order.length && order.breadth && order.height) ? `Dims: ${order.length}x${order.breadth}x${order.height}cm` : '';
+      const wt = order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : '';
+      const fullProductDetails = `${productDetails}${dims || wt ? ` | ${[dims, wt].filter(Boolean).join(' | ')}` : ''}`;
+    
+      const totalValue = calculateTotalOrderValue(order.items);
+      return [
+        new Date(order.orderDate).toLocaleDateString(),
+        order.orderId, 
+        fullProductDetails, 
+        order.paymentMode || "-",
+        totalValue.toFixed(2),
+        `${order.customerName} (${order.mobile})`,
+        order.address || "-",
+        order.pickupLocation || "-",
+        order.status,
+        order.remarks || "-", 
+      ];
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(field => `"${(field ?? "").toString().replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "unshipped-orders.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `unshipped-orders.csv`); 
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
@@ -253,51 +275,66 @@ const UnShippedPage: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">S.No</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Order ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Product Details</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Order Value</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Customer Details</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Billable Weight</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Ageing</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Attempts</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Shipping Details</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Remarks</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Last Update</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider">Action</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">S.No</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Order ID</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider min-w-[250px]">Product Details</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Order Value</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Customer Details</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Billable Weight</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Ageing</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Attempts</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Shipping Details</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Remarks</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Last Update</th>
+                    <th className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
-                    {paginatedOrders.map((order, idx) => (
+                    {paginatedOrders.map((order, idx) =>{ 
+                        const totalValue = calculateTotalOrderValue(order.items);
+                        return(
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                            <td className="px-4 py-3">{idx + 1}</td>
-                            <td className="px-4 py-3">{order.orderId}</td>
-                            <td className="px-4 py-3">
-                                {order.productName}
-                                {(order.length && order.breadth && order.height)
-                                    ? ` (${order.length}x${order.breadth}x${order.height})`
+                            <td className="px-3 py-2">{idx + 1}</td>
+                            <td className="px-3 py-2">{order.orderId}</td>
+                            <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
+                            {order.items && order.items.length > 0 ? (
+                              <div className="space-y-1">
+                                {order.items.map((item: OrderItem, index: number) => (
+                                  <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
+                                    <span className="font-medium">{item.productName}</span> ({item.quantity}x)
+                                    {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                                  </div>
+                                ))}
+                                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
+                                  {(order.length && order.breadth && order.height)
+                                    ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
                                     : ""}
-                                {order.physicalWeight
-                                    ? ` Weight : ${order.physicalWeight}Kg`
+                                  {order.physicalWeight
+                                    ? `Wt: ${order.physicalWeight}Kg`
                                     : ""}
-                            </td>
-                            <td className="px-4 py-3">₹{order.orderValue?.toFixed(2) ?? "0.00"}</td>
-                            <td className="px-4 py-3">
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">No items</span>
+                            )}
+                          </td>
+                            <td className="px-3 py-2">₹{totalValue.toFixed(2)}</td>
+                            <td className="px-3 py-2">
                                 {order.customerName}
                                 <br />
                                 <span className="text-xs text-gray-500">{order.mobile}</span>
                             </td>
-                            <td className="px-4 py-3">{order.billableWeight ?? "N/A"}</td>
-                            <td className="px-4 py-3">{order.ageing ?? "0"}</td>
-                            <td className="px-4 py-3">{order.attempts ?? "0"}</td>
-                            <td className="px-4 py-3">{order.shippingDetails ?? "-"}</td>
-                            <td className="px-4 py-3">{order.remarks ?? "-"}</td>
-                            <td className="px-4 py-3">
+                            <td className="px-3 py-2">{order.billableWeight ?? "N/A"}</td>
+                            <td className="px-3 py-2">{order.ageing ?? "0"}</td>
+                            <td className="px-3 py-2">{order.attempts ?? "0"}</td>
+                            <td className="px-3 py-2">{order.shippingDetails ?? "-"}</td>
+                            <td className="px-3 py-2">{order.remarks ?? "-"}</td>
+                            <td className="px-3 py-2">
                               <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
                                 {order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-center"> 
+                            <td className="px-3 py-2 text-center"> 
                                 <div className="flex justify-center gap-3">
                                 <button
                                     type="button"
@@ -310,7 +347,8 @@ const UnShippedPage: React.FC = () => {
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                      );
+                    })}
                     </tbody>
               </table>
             </div>
