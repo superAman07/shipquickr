@@ -18,8 +18,7 @@ interface Order {
   id: string;
   orderId: string;
   orderDate: string;
-  items: OrderItem[];
-  orderValue: number ;
+  items: OrderItem[]; 
   customerName: string;
   mobile: string;
   paymentMode?: string;
@@ -161,6 +160,12 @@ const ReportsPage: React.FC = () => {
       </div>
     );
   }
+  const calculateTotalOrderValue = (items: OrderItem[]): number => {
+    if (!items || items.length === 0) {
+      return 0;
+    }
+    return items.reduce((sum, item) => sum + (item.orderValue * item.quantity), 0);
+  };
 
   function downloadCSV(ordersToDownload: Order[]) {
     if (!orders.length) return;
@@ -173,13 +178,14 @@ const ReportsPage: React.FC = () => {
       const dims = (order.length && order.breadth && order.height) ? `Dims: ${order.length}x${order.breadth}x${order.height}cm` : '';
       const wt = order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : '';
       const fullProductDetails = `${productDetails}${dims || wt ? ` | ${[dims, wt].filter(Boolean).join(' | ')}` : ''}`;
+      const totalValue = calculateTotalOrderValue(order.items);
       return [
         new Date(order.orderDate).toLocaleDateString(),
         order.orderId,
         order.awbNumber || "-",
         fullProductDetails,
         order.paymentMode || "-", 
-        order.orderValue?.toFixed(2) ?? "0.00",
+        totalValue.toFixed(2),
         `${order.customerName} (${order.mobile})`,
         order.address,
         order.pickupLocation || "-",
@@ -271,7 +277,9 @@ const ReportsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
-                    {paginatedOrders.map((order, idx) => (
+                    {paginatedOrders.map((order, idx) => {
+                      const totalValue = calculateTotalOrderValue(order.items);
+                      return (
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                             <td className="px-3 py-2">{idx + 1}</td>
                             <td className="px-3 py-2">{order.orderId}</td>
@@ -297,7 +305,7 @@ const ReportsPage: React.FC = () => {
                                 <span className="text-gray-400">No items</span>
                               )}
                             </td>
-                            <td className="px-3 py-2">₹{order.orderValue?.toFixed(2) ?? "0.00"}</td>
+                            <td className="px-3 py-2">₹{totalValue.toFixed(2)}</td>
                             <td className="px-3 py-2">
                                 {order.customerName}
                                 <br />
@@ -325,7 +333,8 @@ const ReportsPage: React.FC = () => {
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                      );
+                    })}
                     </tbody>
               </table>
             </div>
