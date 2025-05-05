@@ -214,13 +214,9 @@ export default function ShipOrderPage() {
       setIsShipping(true);
       const toastId = toast.loading("Creating shipment...");
       try {
-          const response = await axios.post('/api/shipment/create', {
+          const response = await axios.post('/api/user/shipment/confirm', {
               orderId: order.id,
-              courierDetails: {
-                  courierName: selectedCourier.name,
-                  serviceName: selectedCourier.serviceName,
-                  totalCharge: selectedCourier.totalPrice,
-              },  
+              selectedCourier: selectedCourier
           });
 
           if (response.status === 200 || response.status === 201) {

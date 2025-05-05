@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 interface Warehouse {
   id: string;
+  warehouseCode: string;
   warehouseName: string;
   contactName: string;
   address1: string;
@@ -49,6 +50,7 @@ export default function WarehousesPage() {
 
   const filteredWarehouses = warehouses.filter(w =>
     w.warehouseName?.toLowerCase().includes(search.toLowerCase()) ||
+    w.warehouseCode?.toLowerCase().includes(search.toLowerCase()) ||
     w.city?.toLowerCase().includes(search.toLowerCase()) ||
     w.state?.toLowerCase().includes(search.toLowerCase())
   );
@@ -156,15 +158,15 @@ export default function WarehousesPage() {
                     <tr key={warehouse.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
                       <td className="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium cursor-pointer hover:underline">
-                        {warehouse.warehouseName}
+                      <div>{warehouse.warehouseName}</div>
+                      <div className="text-xs text-green-600 dark:text-green-400">{warehouse.warehouseCode}</div>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{warehouse.contactName}</td>
                       <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                         {warehouse.address1}
                         {warehouse.address2 ? `, ${warehouse.address2}` : ''}, 
                         {warehouse.city}, {warehouse.state} - {warehouse.pincode}
-                      </td>
-                      {/* Make Primary Toggle */}
+                      </td> 
                       <td className="px-4 py-3 text-sm text-center">
                         <button
                           type="button"
@@ -259,7 +261,7 @@ export default function WarehousesPage() {
           editData={
             editWarehouse
               ? {
-                  id: editWarehouse.id,  
+                  id: editWarehouse.id,   
                   warehouseName: editWarehouse.warehouseName || "",
                   pincode: editWarehouse.pincode || "",
                   address1: editWarehouse.address1 || "",

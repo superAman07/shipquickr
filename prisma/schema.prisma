@@ -91,12 +91,7 @@ model Order {
   userId          Int
   orderId         String      @unique
   orderDate       DateTime
-  paymentMode     String
-  // productName     String
-  // category        String
-  // quantity        Int
-  // orderValue      Float
-  // hsn             String?
+  paymentMode     String 
   items           OrderItem[]
   physicalWeight  Float
   length          Float
@@ -128,8 +123,12 @@ model Order {
   remittance      Remittance? @relation(fields: [remittanceId], references: [id])
   user            User        @relation(fields: [userId], references: [id])
   transactions    Transaction[]
+  warehouseId     Int?
+  warehouse       Warehouse? @relation(fields: [warehouseId], references: [id])
+
   @@index([remittanceId])
   @@index([userId])
+  @@index([warehouseId])
 }
 
 model OrderItem {
@@ -148,6 +147,7 @@ model OrderItem {
 model Warehouse {
   id            Int      @id @default(autoincrement())
   userId        Int
+  warehouseCode String   @unique
   warehouseName String
   pincode       String
   address1      String
@@ -161,6 +161,7 @@ model Warehouse {
   isPrimary     Boolean? @default(false)
   status        Boolean? @default(true)
   user          User     @relation(fields: [userId], references: [id])
+  orders        Order[] 
 }
 
 model ShippingRates {

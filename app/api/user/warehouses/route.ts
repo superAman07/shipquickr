@@ -19,10 +19,13 @@ export async function POST(req: NextRequest){
             return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
         }
         const data = await req.json();
+        const warehouseCode = await generateUniqueWarehouseCode(decoded.userId);
         const warehouse = await prisma.warehouse.create({
             data: {
                 ...data,
-                userId: decoded.userId
+                userId: decoded.userId,
+                warehouseCode: warehouseCode,
+                id: undefined
             }
         })
         return NextResponse.json({ message: "Warehouse added successfully", warehouse }, { status: 201 });
@@ -69,3 +72,8 @@ export async function GET(req: NextRequest) {
 }
  
 
+async function generateUniqueWarehouseCode(userId: number): Promise<string> {
+    const timestampSuffix = Date.now().toString().slice(-6);
+    const code = `SQW${userId}${timestampSuffix}`;
+    return code;
+}
