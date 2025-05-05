@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { URLSearchParams } from "url";
-import { prisma } from "@/lib/prisma";
+import { URLSearchParams } from "url"; 
 
 interface RateResult {
   courierName: string;
@@ -20,9 +19,6 @@ export async function POST(req: NextRequest) {
     const missingFields = requiredFields.filter(field => !(field in body) || !body[field]);
     if (missingFields.length > 0) {
       return NextResponse.json({ error: `Missing required fields: ${missingFields.join(', ')}` }, { status: 400 });
-    }
-    if (body.paymentMode === 'COD' && (!('collectableValue' in body) || !body.collectableValue)) {
-        return NextResponse.json({ error: "Missing required field: collectableValue for COD" }, { status: 400 });
     }
  
     const l = parseFloat(body.length) || 1;  
@@ -45,17 +41,6 @@ export async function POST(req: NextRequest) {
         : 0,
         declaredValue: Math.max(parseFloat(body.declaredValue) || 0, body.paymentMode === "COD" ? (parseFloat(body.collectableValue) || 0) : 0, 50)
     };
-    console.log("Common Shipment Data:", commonShipmentData);
-    console.log("Dimensions:", dimensions);
-
-    const adminRates = await prisma.shippingRates.findFirst({ orderBy: { createdAt: "desc" } });
-    if (!adminRates) {
-      console.error("Admin shipping rates not found in database. Using defaults.");
-    }
-    const adminBaseRatePerKg = adminRates?.courierChargesAmount ?? 0; 
-    const adminChargeType = adminRates?.courierChargesType ?? "fixed";
-    const adminCodRate = adminRates?.codChargesAmount ?? 0; 
-    const adminCodType = adminRates?.codChargesType ?? "fixed"; 
 
     const promises = [
       fetchEcomRates(commonShipmentData, cw),
@@ -85,45 +70,17 @@ export async function POST(req: NextRequest) {
     if (allRates.length === 0) {
       return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });
     }
-    const finalRates = allRates.map(rate => {
-      let finalCourierCharge = rate.courierCharges;
-      let finalCodCharge = 0; 
-      let courierMarkup = 0;
-      if (adminChargeType === 'fixed') {
-          courierMarkup = adminBaseRatePerKg;
-      } else if (adminChargeType === 'percentage') {
-          courierMarkup = rate.courierCharges * (adminBaseRatePerKg / 100);
-      }
-      finalCourierCharge += courierMarkup;
+    const rawRatesWithTotal = allRates.map(rate => ({
+      ...rate,
+      totalPrice: Math.round((rate.courierCharges + rate.codCharges) * 100) / 100
+    }));
+    return NextResponse.json({ rates: rawRatesWithTotal });
 
-      if (body.paymentMode === "COD") { 
-          if (adminCodType === 'fixed') {
-            finalCodCharge = adminCodRate + rate.codCharges;
-          }else if (adminCodType === 'percentage' && rate.codCharges > 0) {
-            const codMarkup = rate.codCharges * (adminCodRate / 100);
-            finalCodCharge = rate.codCharges + codMarkup;
-        } else {
-          finalCodCharge = rate.codCharges; 
-        }  
-      } 
-
-      const finalTotalPrice = finalCourierCharge + finalCodCharge;
-
-
-      return {
-          ...rate, 
-          courierCharges: Math.round(finalCourierCharge * 100) / 100,
-          codCharges: Math.round(finalCodCharge * 100) / 100,
-          totalPrice: Math.round(finalTotalPrice * 100) / 100,
-      };
-  });
-    return NextResponse.json({ rates: finalRates });
-
-  } catch (error: any) { 
-    console.error("Rate Calculator Main Error:", error);
-    if (error instanceof SyntaxError) {  
+  } catch (error: any) {
+    console.error("Admin Rate Calculator Main Error:", error);
+    if (error instanceof SyntaxError) {
         return NextResponse.json({ error: "Invalid request format. Please send valid JSON." }, { status: 400 });
-    } 
+    }
     return NextResponse.json({ error: "Failed to fetch rates due to an internal server error." }, { status: 500 });
   }
 }
