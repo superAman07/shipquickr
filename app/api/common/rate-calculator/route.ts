@@ -54,9 +54,8 @@ export async function POST(req: NextRequest) {
     }
     const adminBaseRatePerKg = adminRates?.courierChargesAmount ?? 0; 
     const adminChargeType = adminRates?.courierChargesType ?? "fixed";
-    const adminCodRate = adminRates?.codChargesAmount ?? 30; 
-    const adminCodType = adminRates?.codChargesType ?? "fixed";
-    // const minCodCharge = 30; 
+    const adminCodRate = adminRates?.codChargesAmount ?? 0; 
+    const adminCodType = adminRates?.codChargesType ?? "fixed"; 
 
     const promises = [
       fetchEcomRates(commonShipmentData, cw),
@@ -97,8 +96,7 @@ export async function POST(req: NextRequest) {
       }
       finalCourierCharge += courierMarkup;
 
-      if (body.paymentMode === "COD") {
-          // const collectableValue = parseFloat(body.collectableValue) || 0;
+      if (body.paymentMode === "COD") { 
           if (adminCodType === 'fixed') {
             finalCodCharge = adminCodRate + rate.codCharges;
           }else if (adminCodType === 'percentage' && rate.codCharges > 0) {
