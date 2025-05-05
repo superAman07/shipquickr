@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
       codAmount: body.paymentMode === "COD"
         ? parseFloat(body.collectableValue) || 0
         : 0,
-      declaredValue: parseFloat(body.declaredValue) || parseFloat(body.collectableValue) || 50  
+        declaredValue: Math.max(parseFloat(body.declaredValue) || 0, body.paymentMode === "COD" ? (parseFloat(body.collectableValue) || 0) : 0, 50)
+
+      // declaredValue: parseFloat(body.declaredValue) || parseFloat(body.collectableValue) || 50  
     };
     console.log("Common Shipment Data:", commonShipmentData);
     console.log("Dimensions:", dimensions);
@@ -153,13 +155,15 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
 
     if (Array.isArray(data) && data.length > 0 && data[0].success) {
       const breakup = data[0].chargesBreakup || {};
+      const rawCourierCharge = (parseFloat(breakup.FRT) || 0) + (parseFloat(breakup.FUEL) || 0); // Combine Freight and Fuel Surcharge
+      const rawCodCharge = parseFloat(breakup.COD) || 0;
       return {
         courierName: "Ecom Express",
         serviceType: "Standard", 
-        weight: cw,
-        courierCharges: parseFloat(breakup.FRT) || 0, 
-        codCharges: parseFloat(breakup.COD) || 0,  
-        totalPrice: parseFloat(breakup.total_charge) || 0,  
+        weight: cw, 
+        courierCharges: rawCourierCharge, 
+        codCharges: rawCodCharge,     
+        totalPrice: rawCourierCharge + rawCodCharge,  
       };
     } else { 
       console.error("Ecom API returned error or unexpected format:", data[0]?.errors?.reason || data);
