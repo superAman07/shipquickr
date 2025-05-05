@@ -44,8 +44,6 @@ export async function POST(req: NextRequest) {
         ? parseFloat(body.collectableValue) || 0
         : 0,
         declaredValue: Math.max(parseFloat(body.declaredValue) || 0, body.paymentMode === "COD" ? (parseFloat(body.collectableValue) || 0) : 0, 50)
-
-      // declaredValue: parseFloat(body.declaredValue) || parseFloat(body.collectableValue) || 50  
     };
     console.log("Common Shipment Data:", commonShipmentData);
     console.log("Dimensions:", dimensions);
@@ -155,7 +153,7 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
 
     if (Array.isArray(data) && data.length > 0 && data[0].success) {
       const breakup = data[0].chargesBreakup || {};
-      const rawCourierCharge = (parseFloat(breakup.FRT) || 0) + (parseFloat(breakup.FUEL) || 0); // Combine Freight and Fuel Surcharge
+      const rawCourierCharge = (parseFloat(breakup.FRT) || 0) + (parseFloat(breakup.FUEL) || 0);  
       const rawCodCharge = parseFloat(breakup.COD) || 0;
       return {
         courierName: "Ecom Express",
@@ -178,6 +176,21 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
 // yaha se expressbees ka code shuru hota hai
 
 let currentXpressbeesToken: string | null = null;
+
+let tokenExpiryTime: number | null = null;
+const TOKEN_BUFFER_SECONDS = 300;  
+
+async function getValidXpressbeesToken(): Promise<string | null> {
+  const now = Date.now();
+  if (currentXpressbeesToken && tokenExpiryTime && (tokenExpiryTime - TOKEN_BUFFER_SECONDS * 1000) > now) {
+      console.log("Using existing valid Xpressbees token.");
+      return currentXpressbeesToken;
+  }
+  console.log("Xpressbees token is invalid or expired, fetching new one...");
+  currentXpressbeesToken = await getNewXpressbeesToken();  
+  return currentXpressbeesToken;
+}
+
 async function getNewXpressbeesToken(): Promise<string | null> {
   const loginUrl = process.env.XPRESSBEES_LOGIN_API_URL;
   const email = process.env.XPRESSBEES_EMAIL;
@@ -192,30 +205,27 @@ async function getNewXpressbeesToken(): Promise<string | null> {
       const response = await axios.post(loginUrl, { email, password });
       if (response.data && response.data.status === true && response.data.data) {
           console.log("Successfully fetched new Xpressbees token.");
+          tokenExpiryTime = Date.now() + (60 * 60 * 1000);
           return response.data.data;  
       } else {
           console.error("Failed to fetch new Xpressbees token. Response:", response.data);
+          tokenExpiryTime = null;
           return null;
       }
   } catch (error: any) {
-      console.error("Error fetching new Xpressbees token:", error.response?.data || error.message);
-      return null;
+    console.error("Error fetching new Xpressbees token:", error.response?.data || error.message);
+    tokenExpiryTime = null;
+    return null;
   }
 }
 
 async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: { l: number, w: number, h: number }): Promise<RateResult[] | null> {
   const apiUrl = process.env.XPRESSBEES_RATE_API_URL; 
+  const token = await getValidXpressbeesToken();
 
   if (!apiUrl) {
       console.error("Xpressbees API URL or Bearer Token is not configured.");
       return null;
-  }
-  if (!currentXpressbeesToken) {
-    currentXpressbeesToken = await getNewXpressbeesToken();
-    if (!currentXpressbeesToken) {
-        console.error("Failed to obtain Xpressbees token initially.");
-        return null; 
-    }
   }
   const xpressbeesPayload = {
       order_type_user: "ecom",
@@ -227,6 +237,7 @@ async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: {
       breadth: String(dimensions.w), 
       cod_amount: String(shipmentData.codAmount), 
       cod: shipmentData.productType === "cod" ? "yes" : "no",
+      product_value: String(shipmentData.declaredValue)
   };
 
   try {
@@ -240,23 +251,38 @@ async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: {
       console.log("Xpressbees API Response:", data);
  
       if (data && data.status === true && Array.isArray(data.message)) {
-        return data.message.map((rate: any) => ({
-            courierName: "Xpressbees",
-            serviceType: rate.name || "Standard",
-            weight: cw, 
-            courierCharges: parseFloat(rate.courier_charges) || 0,
-            codCharges: parseFloat(rate.cod_charges) || 0,
-            totalPrice: parseFloat(rate.total_price) || 0,
-        }));
+        const validRates = data.message
+            .map((rate: any) => {
+                const courierCharges = parseFloat(rate.courier_charges);
+                const codCharges = parseFloat(rate.cod_charges); 
+                const calculatedTotal = (isNaN(courierCharges) ? 0 : courierCharges) + (isNaN(codCharges) ? 0 : codCharges);
+ 
+                if (!isNaN(courierCharges)) {
+                    return {
+                        courierName: "Xpressbees",
+                        serviceType: rate.name || "Standard",  
+                        weight: cw,
+                        courierCharges: courierCharges,  
+                        codCharges: isNaN(codCharges) ? 0 : codCharges,  
+                        totalPrice: calculatedTotal  
+                    };
+                }
+                return null;  
+            })
+            .filter((rate: RateResult | null): rate is RateResult => rate !== null);  
+
+        return validRates.length > 0 ? validRates : null;
     } else { 
         console.error("Xpressbees API returned unexpected format or status false:", data);
         return null;
     }
   } catch (error: any) {
-      console.error("Xpressbees API Call Error:", error.response?.data || error.message);
-      if (error.response?.status) {
-          console.error("Xpressbees API Error Status:", error.response.status);
-      }
-      return null;
+    console.error("Xpressbees API Call Error:", error.response?.data || error.message);
+    if (error.response?.status === 401) {  
+        console.log("Xpressbees token might have expired. Invalidating.");
+        currentXpressbeesToken = null;  
+        tokenExpiryTime = null;
+    }
+    return null;
   }
 }

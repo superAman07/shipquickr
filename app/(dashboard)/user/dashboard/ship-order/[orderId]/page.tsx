@@ -141,7 +141,7 @@ export default function ShipOrderPage() {
                 width: fetchedOrder.breadth || 10,
                 height: fetchedOrder.height || 10,
                 paymentMode: fetchedOrder.paymentMode,
-                collectableValue: fetchedOrder.paymentMode === "COD" ? (fetchedOrder.codAmount || calculateTotalOrderValue(fetchedOrder.items)) : 0,
+                collectableValue: fetchedOrder.paymentMode === "COD" ? (calculateTotalOrderValue(fetchedOrder.items)) : 0,
                 declaredValue: calculateTotalOrderValue(fetchedOrder.items) || 50, 
               };
               console.log("Rate Payload:", ratePayload);
