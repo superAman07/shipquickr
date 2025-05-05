@@ -34,6 +34,7 @@ interface FormState {
   breadth: number | string;
   height: number | string;
   pickupLocation: string;
+  warehouseId: number | null; 
 }
 
 const initialItem: OrderItem = {
@@ -63,6 +64,7 @@ const initialForm: FormState = {
   breadth: "",
   height: "",
   pickupLocation: "",
+  warehouseId: null,
 };
 
 
@@ -71,7 +73,9 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
   const [loading, setLoading] = useState(true);
   const [showWarehouseModal, setShowWarehouseModal] = useState(false);
   const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [warehouseSearch, setWarehouseSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
 
   useEffect(() => {
     setLoading(true);
@@ -195,6 +199,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
         quantity: parseInt(String(item.quantity), 10) || 1,  
         orderValue: parseFloat(String(item.orderValue)) || 0,  
       })),
+      warehouseId: form.warehouseId,
       physicalWeight: parseFloat(String(form.physicalWeight)) || 0,
       length: parseFloat(String(form.length)) || 0,
       breadth: parseFloat(String(form.breadth)) || 0,
@@ -487,12 +492,16 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                 <input
                   className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
                   placeholder="Search or Select Pickup Location *" required
-                  value={form.pickupLocation}
+                  value={warehouseSearch} 
                   onChange={(e) => {
-                    setForm((f) => ({ ...f, pickupLocation: e.target.value }))
+                      setWarehouseSearch(e.target.value); 
+                      const selectedW = warehouses.find(w => w.id === form.warehouseId);
+                      if (selectedW && selectedW.warehouseName !== e.target.value) {
+                          setForm(f => ({ ...f, warehouseId: null }));
+                      }
                   }}
-                  onFocus={handleWarehouseFromDB} 
-                  name="pickupLocation"
+                  onFocus={handleWarehouseFromDB}
+                  name="pickupLocationDisplay"  
                 />
                 <button
                   type="button"
@@ -502,55 +511,42 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                   Add Warehouse
                 </button>
               </div> 
+              {form.warehouseId && (
+                <div className="text-sm text-green-700 dark:text-green-400 mt-1">
+                    Selected: {warehouses.find(w => w.id === form.warehouseId)?.warehouseName}
+                </div>
+              )}
               <div className="mt-2">
                 {warehouses.length === 0 ? (
-                  <div className="text-gray-500 dark:text-gray-400 text-sm p-2">No warehouses found. Click 'Add Warehouse' or ensure KYC is complete.</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-sm p-2">No warehouses found...</div>
                 ) : (
-                  <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 transition-colors duration-200">
-                    {(form.pickupLocation
-                      ? warehouses.filter(
-                          (w) =>
-                            w.warehouseName.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
-                            w.city.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
-                            w.state.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
-                            w.pincode.includes(form.pickupLocation),
+                  warehouseSearch && !form.warehouseId && (
+                    <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 transition-colors duration-200">
+                      {warehouses
+                        .filter(w =>
+                            w.warehouseName.toLowerCase().includes(warehouseSearch.toLowerCase()) ||
+                            w.city.toLowerCase().includes(warehouseSearch.toLowerCase()) ||
+                            w.pincode.includes(warehouseSearch)
                         )
-                      : warehouses
-                    )
-                      .slice(0, 2) 
-                      .map((w) => (
-                        <div
-                          key={w.id}
-                          className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-b border-gray-300 dark:border-gray-600 last:border-b-0 transition-colors duration-200"
-                          onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName }))}
-                        >
-                          <div className="font-semibold text-gray-900 dark:text-white">{w.warehouseName}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {w.address1}, {w.city}, {w.state} - {w.pincode}
-                          </div>
-                        </div>
-                      ))}
-                      
-                    {warehouses.length > 2 && (
-                      <details>
-                        <summary className="p-2 text-indigo-700 dark:text-indigo-400 cursor-pointer select-none hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors duration-200">
-                          Show more...
-                        </summary>
-                        {warehouses.slice(2).map((w) => (
+                        .slice(0, 5)  
+                        .map((w) => (
                           <div
                             key={w.id}
                             className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-b border-gray-300 dark:border-gray-600 last:border-b-0 transition-colors duration-200"
-                            onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName }))}
+                           
+                            onClick={() => {
+                                setForm((f) => ({ ...f, warehouseId: w.id }));  
+                                setWarehouseSearch(w.warehouseName);  
+                            }} 
                           >
                             <div className="font-semibold text-gray-900 dark:text-white">{w.warehouseName}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {w.address1}, {w.city}, {w.state} - {w.pincode}
                             </div>
                           </div>
-                        ))}
-                      </details>
-                    )}
-                  </div>
+                        ))} 
+                    </div>
+                  )
                 )}
               </div>
             </section>
