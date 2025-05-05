@@ -146,7 +146,7 @@ export default function ShipOrderPage() {
               };
               console.log("Rate Payload:", ratePayload);
   
-              const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/common/rate-calculator', ratePayload);
+              const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/user/rate-calculator', ratePayload);
               console.log("Rate API Response:", ratesRes.data);
 
               if (ratesRes.data && Array.isArray(ratesRes.data.rates)) {

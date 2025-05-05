@@ -37,7 +37,7 @@ export default function RateCalculator() {
     e.preventDefault();
     setLoading(true);
     try { 
-      const res = await axios.post("/api/common/rate-calculator", form);
+      const res = await axios.post("/api/user/rate-calculator", form);
       setRates(res.data.rates || []);
     } catch {
       setRates([]);

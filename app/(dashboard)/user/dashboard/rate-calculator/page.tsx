@@ -62,7 +62,7 @@ export default function RateCalculator() {
       const payload = {
         ...form,
       };
-      const res = await axios.post("/api/common/rate-calculator", payload);  
+      const res = await axios.post("/api/user/rate-calculator", payload);  
       if (res.status === 200 && Array.isArray(res.data.rates)) {
         setRates(res.data.rates);
         if (res.data.rates.length === 0) {
