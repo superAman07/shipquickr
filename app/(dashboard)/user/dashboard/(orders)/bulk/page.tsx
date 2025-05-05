@@ -1,11 +1,12 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "@/components/orderTabs";
+import { Router } from "next/router";
 
 interface OrderItem {
   id?: number;
@@ -120,6 +121,12 @@ const BulkOrdersPage: React.FC = () => {
     );
   }
 
+  const router = useRouter();
+  const handleShipOrder = (orderId: string) => {
+    router.push(`/user/dashboard/ship-order/${orderId}`);
+  };
+
+
   return (
       <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
         <div className="max-w-7xl mx-auto">
@@ -228,22 +235,32 @@ const BulkOrdersPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-center">
-                        <div className="flex justify-center gap-3">
+                        <div className="flex justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleCloneOrder(order.id)}
                             className="p-2 rounded-full border border-transparent text-blue-700 hover:bg-blue-100 hover:border-blue-400 transition dark:text-blue-300 dark:hover:bg-blue-900 dark:hover:border-blue-700"
                             title="Clone Order"
                           >
-                            <Copy className="h-5 w-5" />
+                            <Copy className="h-5 w-5 cursor-pointer" />
                           </button>
+                          {order.status === 'unshipped' && ( 
+                            <button
+                              type="button"
+                              onClick={() => handleShipOrder(order.id)}
+                              className="p-2 rounded-full border border-transparent text-green-700 hover:bg-green-100 hover:border-green-400 transition dark:text-green-300 dark:hover:bg-green-900 dark:hover:border-green-700"
+                              title="Ship Order"
+                            >
+                              <Truck className="h-5 w-5 cursor-pointer" />
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => handleDeleteOrder(order.id)}
                             className="p-2 rounded-full border border-transparent text-red-600 hover:bg-red-100 hover:border-red-400 transition dark:text-red-300 dark:hover:bg-red-900 dark:hover:border-red-700"
                             title="Delete Order"
                           >
-                            <Trash2 className="h-5 w-5" />
+                            <Trash2 className="h-5 w-5 cursor-pointer" />
                           </button>
                         </div>
                       </td>
