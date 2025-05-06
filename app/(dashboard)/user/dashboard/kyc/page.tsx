@@ -264,71 +264,75 @@ export default function KYC() {
                     type="radio"
                     name="gst"
                     value="yes"
-                    onChange={(e) => setForm({ ...form, gst: e.target.value })}
-                    checked={form.gst === "yes"}
-                    defaultChecked
+                    onChange={(e) => setForm({ ...form, gst: e.target.value, gstNumber: "", gstCertificate: null })} 
+                    checked={form.gst === "yes"} 
                     className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                   />
                   <span className="text-gray-700 dark:text-gray-300">Yes</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <Input
-                    required
-
+                  <Input 
                     type="radio"
                     name="gst"
                     value="no"
+                    onChange={(e) => setForm({ ...form, gst: e.target.value, gstNumber: "", gstCertificate: null })} 
+                    checked={form.gst === "no"}
                     className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                   />
                   <span className="text-gray-700 dark:text-gray-300">No</span>
                 </label>
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                GST Number{requiredField}
-              </label>
-              <Input
-                value={form.gstNumber}
-                onChange={(e) => setForm({ ...form, gstNumber: e.target.value })}
-                required
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                placeholder="Enter GST number"
-              />
-            </div>
-            <div className="space-y-2">
-              <label  className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Upload GST Certificate{requiredField}
-              </label>
-              <div className="relative">
-                <Input 
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={e=>{
-                      const file = e.target.files?.[0];
-                      if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
-                        toast.error("Only images or PDF allowed!");
-                        return;
-                      }
-                      setForm({...form,gstCertificate:e.target.files?.[0]||null})
-                    }
-                  } 
-                  required  className="sr-only" id="gst-certificate" 
-                />
-                <label
-                  htmlFor="gst-certificate"
-                  className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
-                >
-                  <div className="flex items-center gap-2">
-                    <Upload size={18} />
-                    {form.gstCertificate ? form.gstCertificate.name : "Upload Certificate"}
+            {form.gst === "yes" && (
+              <>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    GST Number{requiredField}
+                  </label>
+                  <Input
+                    value={form.gstNumber}
+                    onChange={(e) => setForm({ ...form, gstNumber: e.target.value })}
+                    required={form.gst === "yes"}  
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                    placeholder="Enter GST number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label  className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Upload GST Certificate{requiredField}
+                  </label>
+                  <div className="relative">
+                    <Input 
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={e=>{
+                          const file = e.target.files?.[0];
+                          if (file && !["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+                            toast.error("Only images or PDF allowed!");
+                            return;
+                          }
+                          setForm({...form,gstCertificate:e.target.files?.[0]||null})
+                        }
+                      } 
+                      required={form.gst === "yes"}  
+                      className="sr-only" id="gst-certificate" 
+                    />
+                    <label
+                      htmlFor="gst-certificate"
+                      className="flex items-center justify-center w-full px-4 py-2.5 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-650 transition-all"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Upload size={18} />
+                        {form.gstCertificate ? form.gstCertificate.name : "Upload Certificate"}
+                      </div>
+                    </label>
+                    {form.gstCertificate && (
+                      <p className="text-xs text-green-600 mt-1 truncate">{form.gstCertificate.name}</p>
+                    )}
                   </div>
-                </label>
-                {form.gstCertificate && (
-                  <p className="text-xs text-green-600 mt-1 truncate">{form.gstCertificate.name}</p>
-                )}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Number Of Shipments {requiredField}</label>
               <select

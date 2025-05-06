@@ -132,6 +132,13 @@ export async function POST(req: NextRequest) {
             if (!warehouse) {
                 return NextResponse.json("Pickup warehouse details not found for this order.");
             }
+            const formatDate_DDMMYYYY = (date: Date): string => {
+                const d = new Date(date);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+                const year = d.getFullYear();
+                return `${day}-${month}-${year}`;
+            };
             
             const ecomShipmentDetails = {
                 // AWB_NUMBER: preAllocatedAwb || "", // Only if required
@@ -155,27 +162,46 @@ export async function POST(req: NextRequest) {
                 LENGTH: order.length || 1,  
                 BREADTH: order.breadth || 1,
                 HEIGHT: order.height || 1,
-                PICKUP_NAME: warehouse.warehouseName,
+                PICKUP_NAME: warehouse.contactName || warehouse.warehouseName, 
                 PICKUP_ADDRESS_LINE1: warehouse.address1,
                 PICKUP_ADDRESS_LINE2: warehouse.address2 || "",
                 PICKUP_PINCODE: warehouse.pincode,
                 PICKUP_PHONE: warehouse.mobile,
                 PICKUP_MOBILE: warehouse.mobile,
-                RETURN_NAME: warehouse.warehouseName,
+                RETURN_NAME: warehouse.contactName || warehouse.warehouseName,
                 RETURN_ADDRESS_LINE1: warehouse.address1,
                 RETURN_ADDRESS_LINE2: warehouse.address2 || "",
                 RETURN_PINCODE: warehouse.pincode,
                 RETURN_PHONE: warehouse.mobile,
                 RETURN_MOBILE: warehouse.mobile,
-                // --- Add other MANDATORY fields based on documentation ---
-                // Fetch GSTIN from KYC if available
-                // const kyc = await tx.kyc.findUnique({ where: { userId: userId } });
-                // SELLER_GSTIN: kyc?.gstNumber || "YOUR_DEFAULT_GSTIN_IF_APPLICABLE",
-                SELLER_GSTIN: "", // Placeholder - Fetch from KYC
-                HSN_CODE: order.items[0]?.hsn || "", // Use HSN from first item
-                INVOICE_NUMBER: `INV-${order.orderId}`,
-                INVOICE_DATE: new Date(order.orderDate).toISOString().split('T')[0], // YYYY-MM-DD
-                // ... any other mandatory fields ...
+                DG_SHIPMENT: "false",
+                ADDITIONAL_INFORMATION: {
+                    GST_TAX_CGSTN:"",
+                    GST_TAX_IGSTN:"",
+                    GST_TAX_SGSTN:"",
+                    SELLER_GSTIN: "GISTN988787", // <<--- YAHAN VALID GSTIN DAALEIN (e.g., from KYC)
+                    INVOICE_DATE: formatDate_DDMMYYYY(new Date(order.orderDate)), // <<--- FORMAT CHANGED
+                    INVOICE_NUMBER: `INV-${order.orderId}`,
+                    GST_TAX_RATE_SGSTN:"",
+                    GST_TAX_RATE_IGSTN:"",
+                    GST_TAX_RATE_CGSTN:"",
+                    GST_HSN: order.items[0]?.hsn || "12345678", // <<--- YAHAN VALID HSN DAALEIN (e.g., 4, 6, ya 8 digit)
+                    GST_TAX_BASE:"",
+                    GST_ERN:"", // E-way bill number if applicable
+                    ESUGAM_NUMBER:"", 
+                    ITEM_CATEGORY: order.items[0]?.category || "General", // Product category (e.g., "Electronics", "Clothes")
+                    GST_TAX_NAME:"",
+                    ESSENTIALPRODUCT: "N", // "Y" if essential, else "N"
+                    PICKUP_TYPE: "WH", // "WH" for warehouse pickup
+                    OTP_REQUIRED_FOR_DELIVERY: "N", // "Y" or "N"
+                    RETURN_TYPE: "WH", // "WH" for warehouse return
+                    GST_TAX_TOTAL:"",
+                    SELLER_TIN:"", // Old TIN, likely not needed if GSTIN provided
+                    CONSIGNEE_ADDRESS_TYPE: "HOME", // Or "OFFICE" etc.
+                    CONSIGNEE_LONG: "",  
+                    CONSIGNEE_LAT: "",   
+                    what3words: ""      
+                }
             };
 
             const formData = new URLSearchParams();
@@ -189,23 +215,14 @@ export async function POST(req: NextRequest) {
             const apiResponse = await axios.post(courierApiUrl, courierPayload);
             console.log("Ecom Express Manifest API Response:", apiResponse.data);
 
-            // Check response and extract AWB
             if (apiResponse.data && Array.isArray(apiResponse.data.shipments) && apiResponse.data.shipments.length > 0 && apiResponse.data.shipments[0].success === true) {
                 generatedAwb = apiResponse.data.shipments[0].awb;
                 console.log(`Ecom Express AWB Generated: ${generatedAwb}`);
-                // Optionally, try to fetch the label URL right away
-                // labelUrl = await fetchEcomLabel(generatedAwb);
             } else { 
                 return NextResponse.json(`Ecom Express AWB generation failed: ${apiResponse.data?.shipments?.[0]?.reason || JSON.stringify(apiResponse.data)}`);
             }
 
-        } else if (selectedCourier.name === "Xpressbees") {
-            // TODO: Implement Xpressbees AWB generation logic here
-            // 1. Find Xpressbees AWB API endpoint and payload structure
-            // 2. Prepare payload using order and warehouse data
-            // 3. Call Xpressbees API (using Bearer token from getValidXpressbeesToken)
-            // 4. Extract AWB from response
-            // 5. Handle errors
+        } else if (selectedCourier.name === "Xpressbees") { 
             console.warn("Xpressbees shipment confirmation not implemented yet.");
             return NextResponse.json("Xpressbees integration not ready.");  
 
