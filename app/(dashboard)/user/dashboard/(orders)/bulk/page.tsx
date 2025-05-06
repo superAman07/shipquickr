@@ -21,6 +21,7 @@ interface Order {
   id: string;
   orderId: string;
   orderDate: string; 
+  items: OrderItem[]; 
   paymentMode: string;
   customerName: string;
   mobile: string;
@@ -31,7 +32,11 @@ interface Order {
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
-  items: OrderItem[]; 
+  warehouseId?: number | string;
+  warehouse?: {
+    warehouseName: string;
+    warehouseCode: string;
+  }| null;
 }
 
 const tabs = [
@@ -227,7 +232,12 @@ const BulkOrdersPage: React.FC = () => {
                         {order.address}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        {order.pickupLocation || "-"}
+                        <div>{order.warehouse?.warehouseName || "-"}</div>
+                        {order.warehouse?.warehouseCode && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            ({order.warehouse.warehouseCode})  
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
