@@ -28,6 +28,11 @@ interface Order {
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
+  warehouseId?: number | string;
+  warehouse?: {
+    warehouseName: string;
+    warehouseCode: string;
+  }| null;
 }
 const tabs = [
   { label: "All Orders", href: "/user/dashboard/bulk" },
@@ -217,7 +222,12 @@ const CancelledOrdersPage: React.FC = () => {
                         {order.address}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        {order.pickupLocation || "-"}
+                        <div>{order.warehouse?.warehouseName || "-"}</div>
+                          {order.warehouse?.warehouseCode && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              ({order.warehouse.warehouseCode})  
+                            </div>
+                          )}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>

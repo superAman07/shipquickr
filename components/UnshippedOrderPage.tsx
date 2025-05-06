@@ -29,8 +29,11 @@ interface Order {
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
-  warehouseCode?: string;
-  warehouse?: {warehouseName: string} | null;
+  warehouseId?: number | string;
+  warehouse?: {
+    warehouseName: string;
+    warehouseCode: string;
+  }| null;
 }
 const tabs = [
   { label: "All Orders", href: "/user/dashboard/bulk" },
@@ -224,7 +227,12 @@ const UnshippedOrdersPage: React.FC = () => {
                         {order.address}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        {order.pickupLocation || "-"} 
+                        <div>{order.warehouse?.warehouseName || "-"}</div>
+                        {order.warehouse?.warehouseCode && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            ({order.warehouse.warehouseCode})  
+                          </div>
+                        )} 
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
@@ -285,12 +293,14 @@ const UnshippedOrdersPage: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                   disabled={true}
                 >
                   Previous
                 </button>
                 <button
+                  type="button"
                   className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
                 >
                   1
