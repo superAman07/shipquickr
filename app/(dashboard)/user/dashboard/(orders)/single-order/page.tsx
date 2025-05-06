@@ -27,6 +27,7 @@ interface FormState {
   breadth: number | string;
   height: number | string;
   pickupLocation: string;
+  warehouseId?: number | null;
   customerName: string;
   mobile: string;
   email: string;
@@ -538,7 +539,7 @@ export default function SingleOrderPage() {
                         <div
                           key={w.id}
                           className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-b border-gray-300 dark:border-gray-600 last:border-b-0 transition-colors duration-200"
-                          onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName }))}
+                          onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName,warehouseId: w.id  }))}
                         >
                           <div className="font-semibold text-gray-900 dark:text-white">{w.warehouseName}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -625,7 +626,9 @@ export default function SingleOrderPage() {
                               </div>
                             ))
                           ) : (
-                            <span className="text-gray-400">No items</span>
+                            <>
+                              <span className="text-gray-400">No items</span>
+                            </>
                           )}
                         </td>
                         <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center text-sm">

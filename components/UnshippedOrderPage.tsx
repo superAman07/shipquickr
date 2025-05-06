@@ -20,15 +20,17 @@ interface Order {
   orderDate: string; 
   items: OrderItem[];
   paymentMode: string;
+  pickupLocation: string;
   customerName: string;
   mobile: string;
-  address: string;
-  pickupLocation?: string;
+  address: string; 
   status: string;
   length?: number | string;
   breadth?: number | string;
   height?: number | string;
   physicalWeight?: number | string;
+  warehouseCode?: string;
+  warehouse?: {warehouseName: string} | null;
 }
 const tabs = [
   { label: "All Orders", href: "/user/dashboard/bulk" },
@@ -53,6 +55,7 @@ const UnshippedOrdersPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get("/api/user/orders/single-order?status=unshipped");
+      console.log("Fetched orders from API:", response.data.orders); 
       const ordersWithItems = response.data.orders.map((order: any) => ({
         ...order,
         items: order.items || [],
@@ -221,7 +224,7 @@ const UnshippedOrdersPage: React.FC = () => {
                         {order.address}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
-                        {order.pickupLocation || "-"}
+                        {order.pickupLocation || "-"} 
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>

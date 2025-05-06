@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
         const decoded = jwtDecode<TokenDetailsType>(token);
         if (decoded.exp * 1000 < Date.now()) {
-        return NextResponse.json({ error: "Token expired" }, { status: 401 });
+          return NextResponse.json({ error: "Token expired" }, { status: 401 });
         }
 
         const url = new URL(request.url);
@@ -66,7 +66,8 @@ export async function GET(request: Request) {
             where: { id: parseInt(id) },
             include: {
               items: true,
-            }
+              warehouse: true,
+            }, 
         });
         if (!order || order.userId !== decoded.userId) {
             return NextResponse.json({ error: "Order not found" }, { status: 404 });

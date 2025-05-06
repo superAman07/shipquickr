@@ -38,6 +38,27 @@ export async function POST(req: NextRequest){
                return NextResponse.json({ error: `Invalid orderValue for item: ${item.productName}` }, { status: 400 });
           }
         }
+        const userId = decoded.userId;
+
+        let numericWarehouseId: number | null = null;
+        if (data.warehouseId !== undefined && data.warehouseId !== null) {
+            numericWarehouseId = parseInt(String(data.warehouseId));
+            if (isNaN(numericWarehouseId)) {
+                return NextResponse.json({ error: "Invalid Warehouse ID format. Must be a number." }, { status: 400 });
+            }
+            const warehouseExists = await prisma.warehouse.findFirst({
+                where: {
+                    id: numericWarehouseId,
+                    userId: userId,
+                }
+            });
+            if (!warehouseExists) {
+                return NextResponse.json({ error: "Selected pickup warehouse not found or does not belong to you." }, { status: 404 });
+            } 
+        } else {
+             return NextResponse.json({ error: "Warehouse ID is required to create an order." }, { status: 400 });
+        }
+        
         const totalOrderValue = data.items.reduce((sum: number, item: any) => sum + (Number(item.orderValue) * Number(item.quantity)), 0);
 
         const result = await prisma.$transaction(async (tx) => {
@@ -52,8 +73,8 @@ export async function POST(req: NextRequest){
                   breadth: parseFloat(data.breadth) || 0,
                   height: parseFloat(data.height) || 0,
                   pickupLocation: data.pickupLocation,  
+                  warehouseId: numericWarehouseId,
                   codAmount: data.paymentMode === "COD" ? (parseFloat(data.codAmount) || 0) : null,
- 
                   customerName: data.customerName,
                   mobile: data.mobile,
                   email: data.email,
@@ -116,6 +137,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
       include: {
         items: true,  
+        warehouse: true,
       },
     });
 
