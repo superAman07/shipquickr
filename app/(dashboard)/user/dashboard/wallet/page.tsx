@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { useWallet } from "@/contexts/WalletContext";
 
 declare global {
   interface Window {
@@ -15,25 +16,32 @@ declare global {
   }
 }
 
+interface Transaction {  
+  id: number;
+  createdAt: string;
+  type: "recharge" | "debit" | "credit";
+  amount: number;
+}
+
 export default function WalletPage() {
   const title = "My Wallet", subtitle = "Manage your wallet balance and transactions"
-  const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState("");
   const [adding, setAdding] = useState(false);
 
+  const { balance: contextBalance, isLoadingBalance: isContextLoading, refreshBalance } = useWallet(); 
+
   useEffect(() => {
     setLoading(true);
     axios.get("/api/user/wallet")
-      .then(res => {
-        setBalance(res.data.balance);
+      .then(res => { 
         setTransactions(res.data.transactions || []);
       })
       .catch(() => toast.error("Failed to load wallet info"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [contextBalance]);
 
   const handleAddMoney = async () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) < 1) {
@@ -43,45 +51,59 @@ export default function WalletPage() {
     setAdding(true);
     try {
       const res = await axios.post("/api/user/wallet", { amount: Number(amount) });
-      const { orderId } = res.data;
+      const { orderId, keyId } = res.data;
 
       if (!window.Razorpay) {
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => { 
           const script = document.createElement("script");
           script.src = "https://checkout.razorpay.com/v1/checkout.js";
-          script.onload = resolve;
-          script.onerror = reject;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
           document.body.appendChild(script);
         });
       }
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: Number(amount) * 100,
         currency: "INR",
         name: "ShipQuickr Wallet Recharge",
         description: "Add money to your wallet",
         order_id: orderId,
-        handler: function (response: any) {
-          toast.success("Payment successful! Balance will update soon.");
-          setShowModal(false);
-          setAmount("");
-          setTimeout(() => {
-            axios.get("/api/user/wallet").then(res => {
-              setBalance(res.data.balance);
-              setTransactions(res.data.transactions || []);
+        handler: async function (response: any) {
+          try {
+            await axios.post("/api/user/wallet/verify", {  
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              amount: Number(amount)
             });
-          }, 2000);
+            toast.success("Payment successful! Balance updated.");
+            setShowModal(false);
+            setAmount("");
+            await refreshBalance(); 
+            const transRes = await axios.get("/api/user/wallet");
+            setTransactions(transRes.data.transactions || []);
+
+          } catch (verifyError) {
+            toast.error("Payment verification failed. Please contact support.");
+            console.error("Payment verification error:", verifyError);
+          }
+        },
+        prefill: {
+            // name: "User Name", // Optional
+            // email: "user@example.com",
         },
         theme: {
-          color: "#7c3aed",
+          color: "#7c3aed", 
           hide_topbar: false,
         },
       };
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
-      toast.error("Failed to initiate payment");
+      toast.error("Failed to initiate payment. Please try again.");
+      console.error("handleAddMoney error:", err);
     } finally {
       setAdding(false);
     }
@@ -122,7 +144,7 @@ export default function WalletPage() {
                 My Wallet
               </CardTitle>
               <span className="ml-auto text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                {loading ? <Loader2 className="animate-spin" /> : <>₹ {balance?.toFixed(2) ?? "--"}</>}
+                {isContextLoading ? <Loader2 className="animate-spin" /> : <>₹ {contextBalance !== null ? contextBalance.toFixed(2) : "--"}</>}
               </span>
             </div>
             <Button
