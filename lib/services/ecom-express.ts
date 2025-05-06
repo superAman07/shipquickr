@@ -114,7 +114,7 @@ class EcomExpressClient {
         formData.append("username", this.username);
         formData.append("password", this.password);
         formData.append("count", "1");  
-        formData.append("type", "PPD");
+        formData.append("type", "EXPP");
  
         console.log("Calling Ecom Express Fetch AWB API...");
         const response = await axios.post<EcomFetchAwbResponseItem[]>(PROD_URLS.fetch_awb, formData, {
@@ -122,12 +122,20 @@ class EcomExpressClient {
         });
         console.log("Ecom Express Fetch AWB API Response:", response.data);
  
-        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+          const apiResponse = response.data as any; 
+          if (apiResponse.success === "yes" && Array.isArray(apiResponse.awb) && apiResponse.awb.length > 0) {
+              return apiResponse.awb[0]; 
+          } else {
+              console.error("Failed to fetch AWB from Ecom Express:", apiResponse.reason || apiResponse.error || response.data);
+              return null;
+          }
+        } else if (response.data && Array.isArray(response.data) && response.data.length > 0) {
             const firstAwbData = response.data[0];
-            if (firstAwbData.success === "true" && firstAwbData.AWB) { 
+            if (firstAwbData.success === "true" && firstAwbData.AWB) {  
                 return firstAwbData.AWB;
             } else {
-                console.error("Failed to fetch AWB from Ecom Express:", firstAwbData.reason || response.data);
+                console.error("Failed to fetch AWB from Ecom Express (array response):", firstAwbData.reason || response.data);
                 return null;
             }
         }
@@ -149,7 +157,7 @@ class EcomExpressClient {
         const formData = new URLSearchParams();
         formData.append("username", this.username);
         formData.append("password", this.password);
-        formData.append("json_input", JSON.stringify([shipmentDetails])); // API array expect karti hai
+        formData.append("json_input", JSON.stringify([shipmentDetails]));  
 
         console.log(`Calling Ecom Express Manifest API with AWB: ${shipmentDetails.AWB_NUMBER}`);
         const response = await axios.post<EcomManifestApiResponse>(PROD_URLS.manifest, formData, {
