@@ -187,7 +187,7 @@ export default function SingleOrderPage() {
       ...form,
       items: form.items.map(item => ({
           ...item,
-          quantity: parseInt(String(item.quantity)) || 0, 
+          quantity: parseInt(String(item.quantity),10) || 1, 
           orderValue: parseFloat(String(item.orderValue)) || 0, 
       })),
       physicalWeight: parseFloat(String(form.physicalWeight)) || 0,
@@ -200,6 +200,7 @@ export default function SingleOrderPage() {
     if (apiData.paymentMode !== "COD") {
         delete apiData.codAmount;
     }
+ 
       try {
         const response = await axios.post("/api/user/orders/single-order", apiData ,{
           headers: { "Content-Type": "application/json" }, 

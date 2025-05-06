@@ -95,7 +95,7 @@ export async function POST(req: NextRequest){
               orderValue: parseFloat(item.orderValue),
               hsn: item.hsn,
           }));
-
+          console.log("Order items quantity:", orderItemsData.map((item: any) => item.quantity));
           await tx.orderItem.createMany({
               data: orderItemsData,
           });
