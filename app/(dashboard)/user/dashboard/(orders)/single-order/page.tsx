@@ -418,7 +418,7 @@ export default function SingleOrderPage() {
                           <label htmlFor={`category-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                           <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
                             <option value="">Select</option>
-                            <option value="Electronics">Accessories</option>
+                            <option value="Accessories">Accessories</option>
                             <option value="Fashion & Clothing">Fashion & Clothing</option>
                             <option value="Book & Stationary">Book & Stationary</option>
                             <option value="Electronics">Electronics</option>

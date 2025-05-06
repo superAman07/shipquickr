@@ -120,6 +120,18 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json("Ecom Express Manifest API URL is not configured.");
             }
 
+            if (!order.warehouseId) {
+                throw new Error("Warehouse ID not linked to this order.");
+            }
+            const warehouse = await tx.warehouse.findUnique({
+                where: {
+                    id: order.warehouseId, 
+                    userId: userId
+                }
+            });
+            if (!warehouse) {
+                return NextResponse.json("Pickup warehouse details not found for this order.");
+            }
             
             const ecomShipmentDetails = {
                 // AWB_NUMBER: preAllocatedAwb || "", // Only if required
@@ -143,18 +155,18 @@ export async function POST(req: NextRequest) {
                 LENGTH: order.length || 1,  
                 BREADTH: order.breadth || 1,
                 HEIGHT: order.height || 1,
-                // PICKUP_NAME: warehouse.name,
+                PICKUP_NAME: warehouse.warehouseName,
                 PICKUP_ADDRESS_LINE1: warehouse.address1,
                 PICKUP_ADDRESS_LINE2: warehouse.address2 || "",
                 PICKUP_PINCODE: warehouse.pincode,
-                // PICKUP_PHONE: warehouse.phone,
-                // PICKUP_MOBILE: warehouse.phone,
-                // RETURN_NAME: warehouse.name,
+                PICKUP_PHONE: warehouse.mobile,
+                PICKUP_MOBILE: warehouse.mobile,
+                RETURN_NAME: warehouse.warehouseName,
                 RETURN_ADDRESS_LINE1: warehouse.address1,
                 RETURN_ADDRESS_LINE2: warehouse.address2 || "",
                 RETURN_PINCODE: warehouse.pincode,
-                // RETURN_PHONE: warehouse.phone,
-                // RETURN_MOBILE: warehouse.phone,
+                RETURN_PHONE: warehouse.mobile,
+                RETURN_MOBILE: warehouse.mobile,
                 // --- Add other MANDATORY fields based on documentation ---
                 // Fetch GSTIN from KYC if available
                 // const kyc = await tx.kyc.findUnique({ where: { userId: userId } });
