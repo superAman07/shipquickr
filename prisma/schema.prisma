@@ -117,6 +117,7 @@ model Order {
   billableWeight  Float?
   remarks         String?
   shippingDetails String?
+  shippingCost    Float?
   updatedAt       DateTime    @updatedAt
   courierName     String?
   remittanceId    Int?
