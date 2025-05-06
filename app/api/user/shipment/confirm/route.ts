@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { prisma } from "@/lib/prisma";
-import axios from "axios";
+// import axios from "axios";
+import { ecomExpressClient } from "@/lib/services/ecom-express";
 
 interface TokenDetailsType {
   userId: number;
@@ -16,12 +17,12 @@ interface SelectedCourier {
     codCharges: number; 
     totalPrice: number;  
 }
-interface TempEcomFetchAwbResponseItem {
-    success: string;
-    awb?: string[];
-    reason?: string;
-    error?: string[];  
-}
+// interface TempEcomFetchAwbResponseItem {
+//     success: string;
+//     awb?: string[];
+//     reason?: string;
+//     error?: string[];  
+// }
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,12 +50,12 @@ export async function POST(req: NextRequest) {
 
     if (selectedCourier.name === "Ecom Express") {
         console.log("Attempting to fetch AWB from Ecom Express (using temporary function)...");
-        const fetchedAwb = await tempFetchEcomAwb();  
-        if (!fetchedAwb) {
+        // const fetchedAwb = await tempFetchEcomAwb();  
+        actualAwbNumber = await ecomExpressClient.fetchAwbNumber();
+        if (!actualAwbNumber) {
             console.error("Failed to fetch AWB number from Ecom Express using temporary function.");
             return NextResponse.json({ error: "Failed to obtain AWB from Ecom Express. Please check API logs/config." }, { status: 503 });
-        }
-        actualAwbNumber = String(fetchedAwb);
+        } 
         console.log("Successfully fetched AWB from Ecom Express (temporary function):", actualAwbNumber);
     } else if (selectedCourier.name === "Xpressbees") {
         console.warn("Xpressbees AWB fetch logic not implemented yet. Using placeholder.");
@@ -159,48 +160,4 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ success: false, error: errorMessage, details: error.cause || "An unknown error occurred" }, { status: errorStatus });
   }
-}
-
-
-async function tempFetchEcomAwb(): Promise<string | null> {
-    const ecomUsername = process.env.ECOM_EXPRESS_USERNAME;
-    const ecomPassword = process.env.ECOM_EXPRESS_PASSWORD; 
-    const ecomFetchAwbUrl = process.env.ECOM_EXPRESS_FETCH_AWB_API_URL || 'https://api.ecomexpress.in/apiv2/fetch_awb/';
-
-
-    if (!ecomFetchAwbUrl || !ecomUsername || !ecomPassword) {
-        console.error("Temporary Ecom Fetch: API URL or credentials missing in environment variables.");
-        return null;
-    }
-
-    try {
-        const formData = new URLSearchParams();
-        formData.append("username", ecomUsername);
-        formData.append("password", ecomPassword);
-        formData.append("count", "1");
-        formData.append("type", "COD");  
-
-        console.log(`Temp Fetch: Calling Ecom Express AWB API URL: ${ecomFetchAwbUrl}`);
-        console.log("Temp Fetch: Calling Ecom Express AWB API with form data:", formData.toString());
-
-        const response = await axios.post<TempEcomFetchAwbResponseItem>(ecomFetchAwbUrl, formData, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
-        console.log("Temp Fetch: Ecom Express AWB API Response:", response.data);
-
-        if (response.data && response.data.success === "yes" && Array.isArray(response.data.awb) && response.data.awb.length > 0) {
-            const awbValue = response.data.awb[0];
-            return String(awbValue);
-        } else if (response.data && response.data.success === "no") {
-            const errorMessage = response.data.reason || (Array.isArray(response.data.error) ? response.data.error.join(', ') : "Unknown API error");
-            console.error("Temp Fetch: Failed to fetch AWB from Ecom Express (API error):", errorMessage);
-            return null;
-        } else {
-            console.error("Temp Fetch: Unexpected response structure from Ecom Express AWB API:", response.data);
-            return null;
-        }
-    } catch (error: any) {
-        console.error("Temp Fetch: Error calling Ecom Express AWB API (axios catch):", error.response?.data || error.message);
-        return null;
-    }
 }
