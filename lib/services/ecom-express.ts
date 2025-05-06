@@ -30,7 +30,7 @@ class EcomExpressClient {
     }
   }
 
-  async fetchAwbNumber(): Promise<string | null> {
+  async fetchAwbNumber(paymentMode: "COD" | "Prepaid"): Promise<string | null> {
     if (!PROD_URLS.fetch_awb || !this.username || !this.password) {
         console.error("EcomExpressClient: Fetch AWB API URL or credentials missing.");
         return null;
@@ -40,7 +40,16 @@ class EcomExpressClient {
         formData.append("username", this.username);
         formData.append("password", this.password);
         formData.append("count", "1");
-        formData.append("type", "COD");  
+        let apiType: string;
+        if (paymentMode === "COD") {
+            apiType = "COD";  
+        } else if (paymentMode === "Prepaid") {
+            apiType = "PPD"; 
+        } else {
+            console.error(`EcomExpressClient: Unsupported payment mode for AWB fetch: ${paymentMode}`);
+            return null; 
+        }
+        formData.append("type", apiType); 
 
         console.log(`EcomExpressClient: Calling Fetch AWB API URL: ${PROD_URLS.fetch_awb}`);
         console.log("EcomExpressClient: Calling Fetch AWB API with form data:", formData.toString());

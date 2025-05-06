@@ -16,13 +16,7 @@ interface SelectedCourier {
     rate: number; 
     codCharges: number; 
     totalPrice: number;  
-}
-// interface TempEcomFetchAwbResponseItem {
-//     success: string;
-//     awb?: string[];
-//     reason?: string;
-//     error?: string[];  
-// }
+} 
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,12 +40,24 @@ export async function POST(req: NextRequest) {
 
     console.log(`Simplified Shipment Confirmation Request for Order ID: ${orderId}, User ID: ${userId}, Courier: ${selectedCourier.name}`);
 
+    const orderForPaymentMode = await prisma.order.findUnique({
+        where: { id: orderId, userId: userId },
+        select: { paymentMode: true, status: true }  
+    });
+
+    if (!orderForPaymentMode) {
+        return NextResponse.json({ error: "Order not found or does not belong to user (pre-check)." }, { status: 404 });
+    }
+    if (orderForPaymentMode.status !== "unshipped") {
+         return NextResponse.json({ error: `Order status is already '${orderForPaymentMode.status}'. Cannot process again.` }, { status: 400 });
+    }
+
     let actualAwbNumber: string | null = null;
 
     if (selectedCourier.name === "Ecom Express") {
         console.log("Attempting to fetch AWB from Ecom Express (using temporary function)...");
-        // const fetchedAwb = await tempFetchEcomAwb();  
-        actualAwbNumber = await ecomExpressClient.fetchAwbNumber();
+        
+        actualAwbNumber = await ecomExpressClient.fetchAwbNumber(orderForPaymentMode.paymentMode as "COD" | "Prepaid");
         if (!actualAwbNumber) {
             console.error("Failed to fetch AWB number from Ecom Express using temporary function.");
             return NextResponse.json({ error: "Failed to obtain AWB from Ecom Express. Please check API logs/config." }, { status: 503 });
