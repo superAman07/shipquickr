@@ -75,6 +75,43 @@ class EcomExpressClient {
         return null;
     }
   }
+  async generateShippingLabel(awbNumbers: string[]): Promise<string | null> {
+    if (!PROD_URLS.label || !this.username || !this.password) {
+        console.error("EcomExpressClient: Label API URL or credentials missing.");
+        return null;
+    }
+    if (!awbNumbers || awbNumbers.length === 0) {
+        console.error("EcomExpressClient: No AWB numbers provided for label generation.");
+        return null;
+    }
+
+    const apiUrl = new URL(PROD_URLS.label);
+    apiUrl.searchParams.append("username", this.username);
+    apiUrl.searchParams.append("password", this.password);
+    apiUrl.searchParams.append("awb_numbers", awbNumbers.join(','));
+    console.log(`EcomExpressClient: Calling Generate Label API URL: ${apiUrl.toString()}`);
+
+    try {
+        const response = await axios.get(apiUrl.toString(), {
+            responseType: 'arraybuffer',  
+        });
+
+        console.log("EcomExpressClient: Generate Label API Response Headers:", response.headers);
+        
+        if (response.headers['content-type'] === 'application/pdf' && response.data) {
+            console.log("EcomExpressClient: Successfully fetched PDF label data.");
+            const pdfBase64 = Buffer.from(response.data).toString('base64');
+            return `data:application/pdf;base64,${pdfBase64}`; 
+        } 
+
+        console.error("EcomExpressClient: Unexpected response content-type or no data from Label API:", response.headers['content-type']);
+        return null;
+
+    } catch (error: any) {
+        console.error("EcomExpressClient: Error calling Generate Label API:", error.response?.data ? Buffer.from(error.response.data).toString() : error.message);
+        return null;
+    }
+  }
 }
 
 export const ecomExpressClient = new EcomExpressClient();

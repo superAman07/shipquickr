@@ -1,11 +1,21 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Download } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Download, MoreVertical, DownloadCloud } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "@/components/orderTabs";
+import { handleDownloadLabel } from "@/lib/utils/labelHelper";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface OrderItem {
   productName: string;
@@ -36,6 +46,7 @@ interface Order {
   physicalWeight?: number | string;
   awbNumber?: string;
   labelUrl?: string;
+  courierName?: string;
 }
 
 const tabs = [
@@ -58,6 +69,7 @@ const ReportsPage: React.FC = () => {
   const pathname = usePathname(); 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; 
+  const router = useRouter();
 
 
   const [activeTab, setActiveTab] = useState(0);
@@ -88,18 +100,7 @@ const ReportsPage: React.FC = () => {
   };
 
   const handleCloneOrder = (orderId: string) => {
-    window.location.href = `/user/dashboard/clone-order/${orderId}`;
-  };
-
-  const handleDeleteOrder = async (orderId: string) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-    try {
-        await axios.delete(`/api/user/orders/single-order/${orderId}`);
-        setOrders(orders.filter(order => order.id !== orderId));
-        toast.success(`Order ${orderId} deleted successfully`);
-    } catch (error) {
-        toast.error("Failed to delete order. Please try again.");
-    }
+    router.push(`/user/dashboard/clone-order/${orderId}`); 
   };
 
   const filteredOrders = orders.filter(order =>
@@ -321,16 +322,34 @@ const ReportsPage: React.FC = () => {
                                 </span>
                             </td>
                             <td className="px-3 py-2 text-center"> 
-                                <div className="flex justify-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => handleCloneOrder(order.id)}
-                                    className="p-2 rounded-full border border-transparent text-blue-700 hover:bg-blue-100 hover:border-blue-400 transition dark:text-blue-300 dark:hover:bg-blue-900 dark:hover:border-blue-700"
-                                    title="Clone Order"
-                                >
-                                    <Copy className="h-5 w-5" />
-                                </button>
-                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">  
+                                      <span className="sr-only">Open menu</span>
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 shadow-md rounded-md p-1 border border-gray-200 dark:border-gray-700 min-w-[180px]">
+                                    <DropdownMenuSeparator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />  
+                                    {order.awbNumber && (order.status === 'pending_manifest' || order.status === 'shipped' || order.status === 'in_transit' || order.status === 'out_for_delivery' || order.status === 'delivered') && (
+                                      <DropdownMenuItem
+                                        onClick={() => handleDownloadLabel(order.id, order.awbNumber!, order.courierName!, order.labelUrl)}
+                                        className="flex items-center px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                                      >
+                                        <DownloadCloud className="mr-2 h-4 w-4" />
+                                        <span>Download Label</span>
+                                      </DropdownMenuItem>
+                                    )}
+                                     
+                                    <DropdownMenuItem
+                                      onClick={() => handleCloneOrder(order.id)}
+                                      className="cursor-pointer"
+                                    >
+                                      <Copy className="mr-2 h-4 w-4" />
+                                      <span>Clone Order</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                             </td>
                         </tr>
                       );
