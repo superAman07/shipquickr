@@ -168,6 +168,10 @@ export async function POST(req: NextRequest) {
     } else if (error.message) {
         errorMessage = error.message;
     }
-    return NextResponse.json({ success: false, error: errorMessage, details: error.cause || "An unknown error occurred" }, { status: errorStatus });
+    if (error.code && typeof error.code === 'string' && error.code.startsWith('P')) { // Prisma error
+      console.error("Prisma Error in Shipment Confirmation:", error.code, error.message);
+      errorMessage = "A database error occurred while processing your shipment.";
+    }
+    return NextResponse.json({ success: false, error: errorMessage }, { status: errorStatus });
   }
 }
