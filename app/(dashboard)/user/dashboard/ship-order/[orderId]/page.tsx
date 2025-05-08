@@ -43,7 +43,7 @@ interface Warehouse {
 interface CourierRate {
     name: string;
     logoUrl?: string;  
-    serviceName: string; 
+    serviceType: string; 
     minWeight: number;
     rate: number;
     codCharges: number;
@@ -154,7 +154,7 @@ export default function ShipOrderPage() {
                   const mappedCouriers: CourierRate[] = ratesRes.data.rates.map(rate => ({
                     name: rate.courierName,
                     logoUrl: getCourierLogo(rate.courierName),
-                    serviceName: rate.serviceType || 'Standard',
+                    serviceType: rate.serviceType || 'Standard',
                     minWeight: 0.5, // Dummy
                     rate: rate.courierCharges,
                     codCharges: rate.codCharges,
@@ -307,17 +307,6 @@ export default function ShipOrderPage() {
           </div>
         </div>
 
-        {/* Filters (Optional - Add later if needed) */}
-        {/* <div className="flex justify-between items-center mb-4">
-          <select className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
-            <option>All</option>
-          </select>
-          <select className="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
-            <option>Sort By Price</option>
-          </select>
-        </div> */}
-
-        {/* Courier Options */}
         <div className="space-y-4">
           {ratesLoading ? (
              <div className="flex justify-center items-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
@@ -327,9 +316,9 @@ export default function ShipOrderPage() {
           ) : availableCouriers.length > 0 ? (
             availableCouriers.map((courier, index) => (
               <div
-                key={`${courier.name}-${courier.serviceName}-${index}`} // More unique key
+                key={`${courier.name}-${courier.serviceType}-${index}`}  
                 className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-4 ${
-                  selectedCourier?.name === courier.name && selectedCourier?.serviceName === courier.serviceName
+                  selectedCourier?.name === courier.name && selectedCourier?.serviceType === courier.serviceType
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-400'
                     : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}
@@ -338,8 +327,8 @@ export default function ShipOrderPage() {
                 <input
                   type="radio"
                   name="courierSelection"
-                  title={`Select ${courier.name} - ${courier.serviceName}`}
-                  checked={selectedCourier?.name === courier.name && selectedCourier?.serviceName === courier.serviceName}
+                  title={`Select ${courier.name} - ${courier.serviceType}`}
+                  checked={selectedCourier?.name === courier.name && selectedCourier?.serviceType === courier.serviceType}
                   onChange={() => handleSelectCourier(courier)}
                   className="form-radio h-5 w-5 text-blue-600 focus:ring-blue-500 flex-shrink-0" // Added flex-shrink-0
                 /> 
@@ -356,7 +345,7 @@ export default function ShipOrderPage() {
                 <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1 items-center">
                    <div className="md:col-span-1">
                        <span className="font-semibold text-base md:text-lg block leading-tight">{courier.name}</span>
-                       <span className="text-sm text-gray-600 dark:text-gray-400 block leading-tight">{courier.serviceName}</span>
+                       <span className="text-sm text-gray-600 dark:text-gray-400 block leading-tight">{courier.serviceType}</span>
                        <span className="text-xs text-gray-500 dark:text-gray-500 block">Min. Weight: {courier.minWeight} Kg</span>
                    </div>
                    <div className="text-left md:text-center md:col-span-1"> 
