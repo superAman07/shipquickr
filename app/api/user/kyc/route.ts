@@ -106,11 +106,10 @@ export async function POST(req: NextRequest) {
               Key: filename,  
               Body: buffer,
               ContentType: file.type,
-              // ACL: 'public-read', // Optional: Only if you want files to be publicly accessible via direct S3 URL without pre-signed URLs. Requires bucket public access settings adjustment.
+              ACL: 'public-read', 
             },
           });
-  
-          // Optional: Track progress
+   
           upload.on("httpUploadProgress", (progress) => {
             console.log(`Upload progress for ${filename}: ${progress.loaded}/${progress.total}`);
           });
@@ -173,11 +172,10 @@ export async function POST(req: NextRequest) {
       });
   
       return NextResponse.json({ message: "KYC details submitted successfully", kyc }, { status: 201 });
-    } catch (err: any) { // Catch specific errors if needed
-      console.error("KYC POST error:", err);
-      // Provide more specific error messages if possible
+    } catch (err: any) {  
+      console.error("KYC POST error:", err); 
       const errorMessage = err.message || "Something went wrong during KYC submission.";
-      const statusCode = err.status || 500; // Use a specific status code if available
+      const statusCode = err.status || 500;  
       return NextResponse.json({ error: errorMessage }, { status: statusCode });
     }
   }
