@@ -262,7 +262,7 @@ enum KycStatus {
 enum OrderStatus {
   unshipped
   pending_manifest 
-  manifested
+  manifested 
   manifest_failed  
   shipped
   in_transit
