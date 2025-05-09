@@ -3,15 +3,27 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Sun, Moon, Wallet, ChevronDown, User, Lock, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import LogoutButton from './logout';
-import Link from 'next/link'; 
-import { useWallet } from '@/contexts/WalletContext';
+import Link from 'next/link';  
+import { useWallet as useActualWallet, WalletContextType } from '@/contexts/WalletContext'; // Renamed and import type
 
+
+
+const useConditionalWallet = (userRole: string): WalletContextType => {
+  if (userRole !== 'admin') {
+    return useActualWallet();
+  }
+  return { 
+    balance: null, 
+    isLoadingBalance: false, 
+    refreshBalance: async () => {}, 
+  };
+};
 
 export default function Navbar({ userRole , userName}: { userRole: string , userName: string}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const dropdownRef = useRef<HTMLDivElement>(null);  
-  const { balance, isLoadingBalance } = useWallet();
+  const { balance, isLoadingBalance } = useConditionalWallet(userRole);
 
 
   useEffect(() => {

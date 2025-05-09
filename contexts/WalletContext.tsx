@@ -4,7 +4,7 @@ import React, { createContext, useState, useEffect, useContext, useCallback, Rea
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-interface WalletContextType {
+export interface WalletContextType {
   balance: number | null;
   isLoadingBalance: boolean;
   refreshBalance: () => Promise<void>;
