@@ -90,11 +90,6 @@ class EcomExpressClient {
         console.error("EcomExpressClient: Manifest API URL or credentials missing.");
         return false;
     }
-    // bypass karna pad rha abhi k liiye... Development mock mode - always return success
-    if (process.env.MOCK_ECOM_EXPRESS === 'true') {
-        console.log("MOCK MODE: Bypassing manifest creation. This will prevent label generation.");
-        return false; // Indicate failure to create manifest
-    }
     const warehouse = order.warehouse;
     if (!warehouse) {
         console.error("EcomExpressClient: Warehouse details missing for manifest creation.");
