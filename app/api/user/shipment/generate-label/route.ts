@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
 
     if (courierName.toLowerCase().includes("ecom express")) {
         console.log(`Generating Ecom Express label for AWB: ${awbNumber}`);
+        console.log("Waiting for 2 seconds to ensure manifest is processed...");
+        await new Promise(resolve => setTimeout(resolve, 5000));
         labelDataUri = await ecomExpressClient.generateShippingLabel([awbNumber]);
     } else if (courierName.toLowerCase().includes("xpressbees")) {
         console.warn("Xpressbees label generation is not yet implemented.");

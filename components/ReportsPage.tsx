@@ -331,11 +331,15 @@ const ReportsPage: React.FC = () => {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 shadow-md rounded-md p-1 border border-gray-200 dark:border-gray-700 min-w-[180px]">
                                     <DropdownMenuSeparator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />  
-                                    {order.awbNumber && (order.status === 'pending_manifest' || order.status === 'shipped' || order.status === 'in_transit' || order.status === 'out_for_delivery' || order.status === 'delivered') && (
-                                      <DropdownMenuItem
-                                        onClick={() => handleDownloadLabel(order.id, order.awbNumber!, order.courierName!, order.labelUrl)}
-                                        className="flex items-center px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                                      >
+                                    {order.awbNumber && (
+                                      order.status === 'manifested' ||   
+                                      order.status === 'pending_manifest' || 
+                                      order.status === 'shipped' || 
+                                      order.status === 'in_transit' || 
+                                      order.status === 'out_for_delivery' || 
+                                      order.status === 'delivered'
+                                    ) && (
+                                      <DropdownMenuItem onClick={() => handleDownloadLabel(order.id, order.awbNumber!, order.courierName!, order.labelUrl)}>
                                         <DownloadCloud className="mr-2 h-4 w-4" />
                                         <span>Download Label</span>
                                       </DropdownMenuItem>

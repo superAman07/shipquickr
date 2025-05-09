@@ -78,7 +78,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Failed to obtain AWB from Ecom Express. Please check API logs/config." }, { status: 503 });
         } 
         console.log("Successfully fetched AWB from Ecom Express (temporary function):", actualAwbNumber);
-        const manifestSuccess = await ecomExpressClient.createManifest(actualAwbNumber, order);
+        
+        const manifestSuccess = await ecomExpressClient.createManifest(actualAwbNumber, {...order, kycDetail});
         if (!manifestSuccess) {
             console.error("Failed to create manifest for AWB:", actualAwbNumber);
             return NextResponse.json({ error: "Failed to create shipment manifest with Ecom Express." }, { status: 503 });
@@ -126,8 +127,7 @@ export async function POST(req: NextRequest) {
             });
         }
  
-        const newStatus = "pending_manifest";  
-
+        const newStatus = selectedCourier.name === "Ecom Express" ? "manifested" : "pending_manifest";   
         await tx.order.update({
             where: { id: order.id },
             data: {
@@ -135,8 +135,9 @@ export async function POST(req: NextRequest) {
                 awbNumber: actualAwbNumber,
                 courierName: selectedCourier.name,
                 shippingCost: finalShippingCost,
-                shippingDetails: `AWB ${actualAwbNumber} assigned (placeholder). Pending actual manifest.`,
-            },
+                shippingDetails: selectedCourier.name === "Ecom Express" 
+                    ? `AWB ${actualAwbNumber} assigned and manifested with Ecom Express.` 
+                    : `AWB ${actualAwbNumber} assigned. Pending manifest creation.`,            },
         });
 
         return {
