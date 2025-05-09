@@ -10,6 +10,14 @@ const PROD_URLS = {
   label: process.env.ECOM_EXPRESS_LABEL_API_URL || 'https://shipment.ecomexpress.in/services/expp/shipping_label',
 };
 
+interface OrderItem {
+    productName: string;
+    quantity: number;
+    orderValue: number; 
+    hsn?: string;       
+    category?: string;
+}
+
 interface EcomFetchAwbResponseItem {
     success: string;
     awb?: (string | number)[];  
@@ -75,6 +83,108 @@ class EcomExpressClient {
         return null;
     }
   }
+
+
+  async createManifest(awbNumber: string, order: any): Promise<boolean> {
+    if (!PROD_URLS.manifest || !this.username || !this.password) {
+        console.error("EcomExpressClient: Manifest API URL or credentials missing.");
+        return false;
+    }
+ 
+    const warehouse = order.warehouse;
+    if (!warehouse) {
+        console.error("EcomExpressClient: Warehouse details missing for manifest creation.");
+        return false;
+    }
+
+    const physicalWeight = parseFloat(order.physicalWeight) || 0.5;
+    const length = parseFloat(order.length) || 10;
+    const breadth = parseFloat(order.breadth) || 10;
+    const height = parseFloat(order.height) || 5;
+    const volumetricWeight = (length * breadth * height) / 5000;
+
+    
+
+    const productDetails: string = order.items.map((item: OrderItem) => 
+        `${item.productName} (${item.quantity}x)`).join(', ').substring(0, 200);
+
+    const manifestPayload = [{
+        "AWB_NUMBER": awbNumber,
+        "ORDER_NUMBER": order.orderId,
+        "PRODUCT": order.paymentMode === "COD" ? "COD" : "PPD",
+        "CONSIGNEE": order.customerName,
+        "CONSIGNEE_ADDRESS1": order.address.substring(0, 50),
+        "CONSIGNEE_ADDRESS2": order.landmark || "",
+        "CONSIGNEE_ADDRESS3": "",
+        "DESTINATION_CITY": order.city,
+        "PINCODE": order.pincode,
+        "STATE": order.state,
+        "MOBILE": order.mobile,
+        "TELEPHONE": "",
+        "ITEM_DESCRIPTION": productDetails,
+        "PIECES": order.items.reduce((sum: number, item: OrderItem) => sum + item.quantity, 0),
+        "COLLECTABLE_VALUE": order.paymentMode === "COD" ? (order.codAmount || 0) : 0,
+        "DECLARED_VALUE": order.items.reduce((sum: number, item: OrderItem) => sum + (item.orderValue * item.quantity), 0),        "ACTUAL_WEIGHT": physicalWeight,
+        "VOLUMETRIC_WEIGHT": volumetricWeight,
+        "LENGTH": length,
+        "BREADTH": breadth,
+        "HEIGHT": height,
+        "PICKUP_NAME": warehouse.warehouseName,
+        "PICKUP_ADDRESS_LINE1": warehouse.address1,
+        "PICKUP_ADDRESS_LINE2": warehouse.address2 || "",
+        "PICKUP_PINCODE": warehouse.pincode,
+        "PICKUP_PHONE": warehouse.phone || warehouse.mobile,
+        "PICKUP_MOBILE": warehouse.mobile,
+        "RETURN_NAME": warehouse.warehouseName,
+        "RETURN_ADDRESS_LINE1": warehouse.address1,
+        "RETURN_ADDRESS_LINE2": warehouse.address2 || "",
+        "RETURN_PINCODE": warehouse.pincode,
+        "RETURN_PHONE": warehouse.phone || warehouse.mobile,
+        "RETURN_MOBILE": warehouse.mobile,
+        "DG_SHIPMENT": "false",
+        "ADDITIONAL_INFORMATION": {
+        "SELLER_GSTIN": warehouse.gstNumber || "",
+        "INVOICE_DATE": new Date().toLocaleDateString("en-IN"),
+        "INVOICE_NUMBER": `INV-${order.id}`,
+        "GST_HSN": order.items[0]?.hsn || "",
+        "ITEM_CATEGORY": order.items[0]?.category || "Goods",
+        "ESSENTIALPRODUCT": "N",
+        "PICKUP_TYPE": "WH",
+        "RETURN_TYPE": "WH",
+        "CONSIGNEE_ADDRESS_TYPE": "HOME"
+        }
+    }];
+
+    try {
+        const formData = new URLSearchParams();
+        formData.append("username", this.username);
+        formData.append("password", this.password);
+        formData.append("json_input", JSON.stringify(manifestPayload));
+
+        console.log(`EcomExpressClient: Creating manifest for AWB ${awbNumber}`);
+        console.log(`EcomExpressClient: Manifest API URL: ${PROD_URLS.manifest}`);
+        console.log(`EcomExpressClient: Manifest Payload: ${JSON.stringify(manifestPayload)}`);
+
+        const response = await axios.post(PROD_URLS.manifest, formData, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        
+        console.log(`EcomExpressClient: Manifest API Response: ${JSON.stringify(response.data)}`);
+        
+        if (response.data && response.data.success === "yes") {
+        return true;
+        } else {
+        console.error("EcomExpressClient: Failed to create manifest:", response.data?.reason || "Unknown error");
+        return false;
+        }
+    } catch (error: any) {
+        console.error("EcomExpressClient: Error calling Manifest API:", error.response?.data || error.message);
+        return false;
+    }
+  }
+
+
+
   async generateShippingLabel(awbNumbers: string[]): Promise<string | null> {
     if (!PROD_URLS.label || !this.username || !this.password) {
         console.error("EcomExpressClient: Label API URL or credentials missing.");
@@ -85,15 +195,20 @@ class EcomExpressClient {
         return null;
     }
 
-    const apiUrl = new URL(PROD_URLS.label);
-    apiUrl.searchParams.append("username", this.username);
-    apiUrl.searchParams.append("password", this.password);
-    apiUrl.searchParams.append("awb_numbers", awbNumbers.join(','));
-    console.log(`EcomExpressClient: Calling Generate Label API URL: ${apiUrl.toString()}`);
+    const apiUrl = PROD_URLS.label;
+    const formData = new URLSearchParams();
+    formData.append("username", this.username);
+    formData.append("password", this.password); 
+    formData.append("awb", awbNumbers.join(',')); 
+    console.log(`EcomExpressClient: Calling Generate Label API URL (POST): ${apiUrl}`);
+    console.log(`EcomExpressClient: Calling Generate Label API with form data: ${formData.toString()}`);
 
     try {
-        const response = await axios.get(apiUrl.toString(), {
+        const response = await axios.post(apiUrl, formData, {
             responseType: 'arraybuffer',  
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded' 
+            },
         });
 
         console.log("EcomExpressClient: Generate Label API Response Headers:", response.headers);
@@ -104,11 +219,37 @@ class EcomExpressClient {
             return `data:application/pdf;base64,${pdfBase64}`; 
         } 
 
-        console.error("EcomExpressClient: Unexpected response content-type or no data from Label API:", response.headers['content-type']);
+        let responseDataString = "";
+        try {
+            responseDataString = Buffer.from(response.data).toString();
+            const jsonData = JSON.parse(responseDataString);
+            console.error("EcomExpressClient: Received JSON response instead of PDF:", jsonData);
+        } catch (e) {
+            console.error("EcomExpressClient: Unexpected response content-type or data format from Label API:", response.headers['content-type']);
+            console.error("EcomExpressClient: Response Data (raw string):", responseDataString);
+        }
         return null;
 
     } catch (error: any) {
-        console.error("EcomExpressClient: Error calling Generate Label API:", error.response?.data ? Buffer.from(error.response.data).toString() : error.message);
+        console.error("EcomExpressClient: Error calling Generate Label API (axios catch block):");
+        if (error.response) {
+            console.error("  Status:", error.response.status);
+            console.error("  Headers:", error.response.headers);
+            let errorDataString = error.response.data;
+            try {
+                if (error.response.data instanceof ArrayBuffer) {
+                    errorDataString = Buffer.from(error.response.data).toString();
+                } else if (typeof error.response.data === 'object') {
+                    errorDataString = JSON.stringify(error.response.data);
+                }
+            } catch (e) { 
+            }
+            console.error("  Data:", errorDataString);
+        } else if (error.request) {
+            console.error("  No response received:", error.request);
+        } else {
+            console.error("  Error message:", error.message);
+        }
         return null;
     }
   }

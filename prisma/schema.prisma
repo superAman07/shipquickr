@@ -126,6 +126,7 @@ model Order {
   transactions    Transaction[]
   warehouseId     Int?
   warehouse       Warehouse? @relation(fields: [warehouseId], references: [id])
+  courierPayables CourierPayable[]
 
   @@index([remittanceId])
   @@index([userId])
@@ -211,6 +212,41 @@ model Complaint {
   @@index([status])
 }
 
+model CompanyAccount {
+  id        Int      @id @default(autoincrement())
+  balance   Float    @default(0)
+  updatedAt DateTime @updatedAt
+  transactions CompanyTransaction[]
+}
+
+model CompanyTransaction {
+  id            Int      @id @default(autoincrement())
+  accountId     Int
+  account       CompanyAccount @relation(fields: [accountId], references: [id])
+  amount        Float
+  type          String    
+  sourceType    String    
+  sourceId      Int?      
+  createdAt     DateTime @default(now())
+}
+
+model CourierPayable {
+  id           Int      @id @default(autoincrement())
+  courierName  String
+  amount       Float
+  orderId      Int
+  order        Order    @relation(fields: [orderId], references: [id])
+  status       String   // "pending", "paid", "cancelled"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  settlementId Int?
+  
+  @@index([orderId])
+  @@index([courierName])
+}
+
+
+
 enum Role {
   user
   admin
@@ -226,6 +262,7 @@ enum KycStatus {
 enum OrderStatus {
   unshipped
   pending_manifest 
+  manifested
   manifest_failed  
   shipped
   in_transit

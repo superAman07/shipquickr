@@ -78,6 +78,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Failed to obtain AWB from Ecom Express. Please check API logs/config." }, { status: 503 });
         } 
         console.log("Successfully fetched AWB from Ecom Express (temporary function):", actualAwbNumber);
+        const manifestSuccess = await ecomExpressClient.createManifest(actualAwbNumber, order);
+        if (!manifestSuccess) {
+            console.error("Failed to create manifest for AWB:", actualAwbNumber);
+            return NextResponse.json({ error: "Failed to create shipment manifest with Ecom Express." }, { status: 503 });
+        }
+        console.log("Successfully created manifest for AWB:", actualAwbNumber);
     } else if (selectedCourier.name === "Xpressbees") {
         console.log("Attempting to fetch AWB from Xpressbees..."); 
         actualAwbNumber = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber);
