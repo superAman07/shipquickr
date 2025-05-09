@@ -92,8 +92,8 @@ class EcomExpressClient {
     }
     // bypass karna pad rha abhi k liiye... Development mock mode - always return success
     if (process.env.MOCK_ECOM_EXPRESS === 'true') {
-        console.log("MOCK MODE: Simulating successful manifest creation for AWB:", awbNumber);
-        return true; // Skip actual API call
+        console.log("MOCK MODE: Bypassing manifest creation. This will prevent label generation.");
+        return false; // Indicate failure to create manifest
     }
     const warehouse = order.warehouse;
     if (!warehouse) {
