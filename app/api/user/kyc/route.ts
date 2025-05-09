@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         }
   
         try {
-          console.log(`Uploading ${filename} to bucket ${BUCKET_NAME}...`);
+          console.log(`Uploading ${filename} to bucket ${BUCKET_NAME}..`);
           const upload = new Upload({
             client: s3Client,
             params: {
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
               Key: filename,  
               Body: buffer,
               ContentType: file.type,
-              ACL: 'public-read', 
+              ACL: 'public-read',  
             },
           });
    
