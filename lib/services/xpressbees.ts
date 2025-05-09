@@ -34,7 +34,7 @@ class XpressbeesClient {
             if (response.data && response.data.status === true && response.data.data) {
                 this.currentToken = response.data.data;
                 this.tokenExpiry = Date.now() + 60 * 60 * 1000; 
-                console.log("XpressbeesClient: Successfully fetched new Xpressbees token.");
+                console.log("XpressbeesClient: Successfully fetched new Xpressbees token:", this.currentToken);
                 return this.currentToken;
             } else {
                 console.error("XpressbeesClient: Failed to fetch Xpressbees token:", response.data?.message || "Unknown error during token fetch");
