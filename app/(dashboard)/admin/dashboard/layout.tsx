@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { jwtDecode } from "jwt-decode"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"  
+import { WalletProvider } from "@/contexts/WalletContext"
 interface TokenDetailsType {
   userId: string,
   firstName: string,
@@ -35,18 +36,20 @@ export default async function Dashboard({ children }: { children: React.ReactNod
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-      <Navbar userRole={decoded.role} userName={fullName}/>
-      <div className="flex min-h-screen w-full bg-gray-50 dark:bg-gray-900 pt-16">
-        <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
-          <DashboardSidebarAdmin />
-        </aside>
-        <div className="flex-1 flex flex-col overflow-hidden"> 
-          <main className="flex-1 p-6 overflow-hidden  ">
-            <RouteLoadingBar />
-            {children}
-          </main>
-        </div> 
-      </div>
+      <WalletProvider>
+        <Navbar userRole={decoded.role} userName={fullName}/>
+        <div className="flex min-h-screen w-full bg-gray-50 dark:bg-gray-900 pt-16">
+          <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
+            <DashboardSidebarAdmin />
+          </aside>
+          <div className="flex-1 flex flex-col overflow-hidden"> 
+            <main className="flex-1 p-6 overflow-hidden  ">
+              <RouteLoadingBar />
+              {children}
+            </main>
+          </div> 
+        </div>
+      </WalletProvider>
     </ThemeProvider>
   )
 }
