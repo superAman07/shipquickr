@@ -31,7 +31,7 @@ frontend:
         - echo "XPRESSBEES_EMAIL=$XPRESSBEES_EMAIL" >> .env.production 
         - echo "XPRESSBEES_PASSWORD=$XPRESSBEES_PASSWORD" >> .env.production 
         - echo "XPRESSBEES_LOGIN_API_URL=$XPRESSBEES_LOGIN_API_URL" >> .env.production 
-        - echo "MOCK_ECOM_EXPRESS=$MOCK_ECOM_EXPRESS" >> .env.production 
+        - echo "MOCK_ECOM_EXPRESS=$MOCK_ECOM_EXPRESS" >> .env.production # <-- isko hatana hai manifest working k baad
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
