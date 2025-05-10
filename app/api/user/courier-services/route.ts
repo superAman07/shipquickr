@@ -200,8 +200,8 @@ interface ShadowfaxServiceabilityResponse {
 }
 
 interface ShadowfaxApiPincodeInfo {
-  code: number; // API 'code' return karta hai
-  services: string[]; // API 'services' ko array of strings return karta hai
+  code: number;  
+  services: string[];  
 }
 
 type ShadowfaxServiceabilityApiResponse = ShadowfaxApiPincodeInfo[];
