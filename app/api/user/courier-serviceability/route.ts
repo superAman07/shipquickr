@@ -4,6 +4,7 @@ import { URLSearchParams } from "url";
 import { prisma } from "@/lib/prisma";
 import shadowfaxManualRatesFromFile from '@/lib/data/shadowfax-rates.json';  
 import { ecomExpressClient } from '@/lib/services/ecom-express';  
+import { xpressbeesClient } from '@/lib/services/xpressbees'; 
 
 interface RateResult {
   courierName: string;
@@ -58,10 +59,10 @@ export async function POST(req: NextRequest) {
     const adminChargeType = adminRates?.courierChargesType ?? "fixed";
     const adminCodRate = adminRates?.codChargesAmount ?? 0; 
     const adminCodType = adminRates?.codChargesType ?? "fixed"; 
-
+    
     const promises = [
       ecomExpressClient.getEcomExpressOptions(commonShipmentData, cw), 
-      fetchXpressbeesRates(commonShipmentData, cw, dimensions),
+      xpressbeesClient.getXpressbeesOptions(commonShipmentData, cw, dimensions), // Call the method on the imported instance
       fetchShadowfaxRates(commonShipmentData, cw, dimensions),
     ];
 
@@ -256,123 +257,4 @@ async function fetchShadowfaxRates(
         console.error("Error fetching Shadowfax options:", error.response?.data || error.message);
         return null;
     }
-}
-
-
-
-// ecom express
-
-
-// yaha se expressbees ka code shuru hota hai
-
-let currentXpressbeesToken: string | null = null;
-
-let tokenExpiryTime: number | null = null;
-const TOKEN_BUFFER_SECONDS = 300;  
-
-async function getValidXpressbeesToken(): Promise<string | null> {
-  const now = Date.now();
-  if (currentXpressbeesToken && tokenExpiryTime && (tokenExpiryTime - TOKEN_BUFFER_SECONDS * 1000) > now) {
-      console.log("Using existing valid Xpressbees token.");
-      return currentXpressbeesToken;
-  }
-  console.log("Xpressbees token is invalid or expired, fetching new one...");
-  currentXpressbeesToken = await getNewXpressbeesToken();  
-  return currentXpressbeesToken;
-}
-
-async function getNewXpressbeesToken(): Promise<string | null> {
-  const loginUrl = process.env.XPRESSBEES_LOGIN_API_URL;
-  const email = process.env.XPRESSBEES_EMAIL;
-  const password = process.env.XPRESSBEES_PASSWORD;
-
-  if (!loginUrl || !email || !password) {
-      console.error("Xpressbees login credentials or URL are not configured in environment variables.");
-      return null;
-  }
-  try {
-      console.log("Attempting to fetch new Xpressbees token...");
-      const response = await axios.post(loginUrl, { email, password });
-      if (response.data && response.data.status === true && response.data.data) {
-          console.log("Successfully fetched new Xpressbees token.");
-          tokenExpiryTime = Date.now() + (60 * 60 * 1000);
-          return response.data.data;  
-      } else {
-          console.error("Failed to fetch new Xpressbees token. Response:", response.data);
-          tokenExpiryTime = null;
-          return null;
-      }
-  } catch (error: any) {
-    console.error("Error fetching new Xpressbees token:", error.response?.data || error.message);
-    tokenExpiryTime = null;
-    return null;
-  }
-}
-
-async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: { l: number, w: number, h: number }): Promise<RateResult[] | null> {
-  const apiUrl = process.env.XPRESSBEES_RATE_API_URL; 
-  const token = await getValidXpressbeesToken();
-
-  if (!apiUrl) {
-      console.error("Xpressbees API URL or Bearer Token is not configured.");
-      return null;
-  }
-  const xpressbeesPayload = {
-      order_type_user: "ecom",
-      origin: String(shipmentData.originPincode), 
-      destination: String(shipmentData.destinationPincode), 
-      weight: String(cw), 
-      length: String(dimensions.l),
-      height: String(dimensions.h),
-      breadth: String(dimensions.w), 
-      cod_amount: String(Math.max(shipmentData.declaredValue, 1)), 
-      cod: shipmentData.productType === "cod" ? "yes" : "no",
-      product_value: String(shipmentData.declaredValue)
-  };
-
-  try {
-      console.log("Xpressbees Request Payload:", xpressbeesPayload);
-      const { data } = await axios.post(apiUrl, xpressbeesPayload, {
-          headers: {
-              'Authorization': `Bearer ${currentXpressbeesToken}`,
-              'Content-Type': 'application/json'
-          }
-      });
-      console.log("Xpressbees API Response:", data);
- 
-      if (data && data.status === true && Array.isArray(data.message)) {
-        const validRates = data.message
-            .map((rate: any) => {
-                const courierCharges = parseFloat(rate.courier_charges);
-                const codCharges = parseFloat(rate.cod_charges); 
-                const calculatedTotal = (isNaN(courierCharges) ? 0 : courierCharges) + (isNaN(codCharges) ? 0 : codCharges);
- 
-                if (!isNaN(courierCharges)) {
-                    return {
-                        courierName: "Xpressbees",
-                        serviceType: rate.name || "Standard",  
-                        weight: cw,
-                        courierCharges: courierCharges,  
-                        codCharges: isNaN(codCharges) ? 0 : codCharges,  
-                        totalPrice: calculatedTotal  
-                    };
-                }
-                return null;  
-            })
-            .filter((rate: RateResult | null): rate is RateResult => rate !== null);  
-
-        return validRates.length > 0 ? validRates : null;
-    } else { 
-        console.error("Xpressbees API returned unexpected format or status false:", data);
-        return null;
-    }
-  } catch (error: any) {
-    console.error("Xpressbees API Call Error:", error.response?.data || error.message);
-    if (error.response?.status === 401) {  
-        console.log("Xpressbees token might have expired. Invalidating.");
-        currentXpressbeesToken = null;  
-        tokenExpiryTime = null;
-    }
-    return null;
-  }
 }
