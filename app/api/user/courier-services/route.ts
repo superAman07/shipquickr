@@ -229,8 +229,8 @@ async function fetchShadowfaxRates(
     codAmount,
     declaredValue,
   } = commonShipmentData;
-  const paymentMode = productType === "cod" ? "COD" : "Prepaid"; // Convert back for consistency
-
+  const paymentMode = productType === "cod" ? "COD" : "Prepaid";
+  
   const serviceabilityUrl = `${process.env.SHADOWFAX_SERVICEABILITY_API_URL}?service=customer_delivery&pincodes=${originPincode},${destinationPincode}`;
   const apiToken = process.env.SHADOWFAX_API_TOKEN;
 

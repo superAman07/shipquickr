@@ -149,7 +149,7 @@ export default function ShipOrderPage() {
               };
               console.log("Rate Payload:", ratePayload);
   
-              const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/user/courier-serviceability', ratePayload);
+              const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/user/courier-services', ratePayload);
               console.log("Rate API Response:", ratesRes.data);
 
               if (ratesRes.data && Array.isArray(ratesRes.data.rates)) {
