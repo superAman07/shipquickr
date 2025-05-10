@@ -28,6 +28,12 @@ export default function CourierServiceabilityUserPage() {
     if (nameLower.includes("shadowfax")) {
       return "/shadowfax.png"; 
     }
+    if (nameLower.includes("ecom express")) {
+      return "/ecom-express.png"; 
+    }
+    if (nameLower.includes("xpressbees")) {
+      return "/xpressbees.png";
+    }
     return null;
   };
 
