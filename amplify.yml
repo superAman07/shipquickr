@@ -27,11 +27,15 @@ frontend:
         - echo "ECOM_EXPRESS_USERNAME=$ECOM_EXPRESS_USERNAME" >> .env.production
         - echo "ECOM_EXPRESS_PASSWORD=$ECOM_EXPRESS_PASSWORD" >> .env.production
         - echo "ECOM_EXPRESS_RATE_API_URL=$ECOM_EXPRESS_RATE_API_URL" >> .env.production
-        - echo "XPRESSBEES_RATE_API_URL=$XPRESSBEES_RATE_API_URL" >> .env.production 
+
         - echo "XPRESSBEES_EMAIL=$XPRESSBEES_EMAIL" >> .env.production 
         - echo "XPRESSBEES_PASSWORD=$XPRESSBEES_PASSWORD" >> .env.production 
         - echo "XPRESSBEES_LOGIN_API_URL=$XPRESSBEES_LOGIN_API_URL" >> .env.production 
-        - echo "MOCK_ECOM_EXPRESS=$MOCK_ECOM_EXPRESS" >> .env.production # <-- isko hatana hai manifest working k baad
+        - echo "XPRESSBEES_RATE_API_URL=$XPRESSBEES_RATE_API_URL" >> .env.production 
+        - echo "XPRESSBEES_CREATE_SHIPMENT_API_URL=$XPRESSBEES_CREATE_SHIPMENT_API_URL" >> .env.production 
+
+        - echo "SHADOWFAX_SERVICEABILITY_API_URL=$SHADOWFAX_SERVICEABILITY_API_URL" >> .env.production 
+        - echo "SHADOWFAX_API_TOKEN=$SHADOWFAX_API_TOKEN" >> .env.production 
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
