@@ -18,6 +18,15 @@ interface OrderItem {
     category?: string;
 }
 
+interface RateResult {
+  courierName: string;
+  serviceType: string;
+  weight: number;
+  courierCharges: number;
+  codCharges: number;
+  totalPrice: number;
+}
+
 interface EcomFetchAwbResponseItem {
     success: string;
     awb?: (string | number)[];  
@@ -37,6 +46,7 @@ class EcomExpressClient {
         console.warn("Ecom Express credentials missing in environment variables for EcomExpressClient!");
     }
   }
+
   async getEcomExpressOptions(shipmentData: any, cw: number): Promise<RateResult | null> {
     const ecomShipmentPayload = {
       ...shipmentData,

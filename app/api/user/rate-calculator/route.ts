@@ -12,6 +12,16 @@ interface RateResult {
   totalPrice: number;
 }
 
+interface CommonShipmentDataType {
+  orginPincode: number; 
+  originPincode: number;
+  destinationPincode: number;
+  productType: "cod" | "ppd";  
+  chargeableWeight: number;  
+  codAmount: number;
+  declaredValue: number;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -34,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const dimensions = { l, w, h };
  
-    const commonShipmentData = {
+    const commonShipmentData: CommonShipmentDataType = {
       orginPincode: parseInt(body.pickupPincode), 
       originPincode: parseInt(body.pickupPincode), 
       destinationPincode: parseInt(body.destinationPincode),

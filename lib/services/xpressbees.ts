@@ -10,8 +10,8 @@ interface RateResult {
 }
 
 interface ShipmentData {
-    originPincode: string;
-    destinationPincode: string;
+    originPincode: string | number;
+    destinationPincode: string | number;
     productType: "cod" | "ppd";
     codAmount: number;
     declaredValue: number;
@@ -29,48 +29,6 @@ class XpressbeesClient {
     private readonly TOKEN_BUFFER_SECONDS = 300;  
 
     constructor() {}
-
-    // private async getValidXpressbeesToken(): Promise<string | null> {
-    //     const now = Date.now();
-    //     if (this.currentToken && this.tokenExpiry && (this.tokenExpiry - this.TOKEN_BUFFER_SECONDS * 1000) > now) {
-    //         console.log("XpressbeesClient: Using existing valid Xpressbees token.");
-    //         return this.currentToken;
-    //     }
-
-    //     console.log("XpressbeesClient: Fetching new Xpressbees token...");
-    //     const loginUrl = process.env.XPRESSBEES_LOGIN_API_URL;
-    //     const email = process.env.XPRESSBEES_EMAIL;
-    //     const password = process.env.XPRESSBEES_PASSWORD;
-
-    //     if (!loginUrl || !email || !password) {
-    //         console.error("XpressbeesClient: Xpressbees login credentials or URL are not configured in .env.");
-    //         return null;
-    //     }
-
-    //     try {
-    //         const response = await axios.post(loginUrl, {
-    //             email: email,
-    //             password: password,
-    //         });
-
-    //         if (response.data && response.data.status === true && response.data.data) {
-    //             this.currentToken = response.data.data;
-    //             this.tokenExpiry = Date.now() + 60 * 60 * 1000; 
-    //             console.log("XpressbeesClient: Successfully fetched new Xpressbees token:", this.currentToken);
-    //             return this.currentToken;
-    //         } else {
-    //             console.error("XpressbeesClient: Failed to fetch Xpressbees token:", response.data?.message || "Unknown error during token fetch");
-    //             this.currentToken = null;
-    //             this.tokenExpiry = null;
-    //             return null;
-    //         }
-    //     } catch (error: any) {
-    //         console.error("XpressbeesClient: Error fetching new Xpressbees token:", error.response?.data || error.message);
-    //         this.currentToken = null;
-    //         this.tokenExpiry = null;
-    //         return null;
-    //     }
-    // } 
 
     private async getValidXpressbeesToken(): Promise<string | null> {
         const now = Date.now();
