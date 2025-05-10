@@ -37,6 +37,48 @@ class EcomExpressClient {
         console.warn("Ecom Express credentials missing in environment variables for EcomExpressClient!");
     }
   }
+  async getEcomExpressOptions(shipmentData: any, cw: number): Promise<RateResult | null> {
+    const ecomShipmentPayload = {
+      ...shipmentData,
+      orginPincode: shipmentData.orginPincode,  
+    };
+  
+    const formData = new URLSearchParams();
+    formData.append("username", this.username || "");
+    formData.append("password", this.password || "");
+    formData.append("json_input", JSON.stringify([ecomShipmentPayload]));
+  
+    const apiUrl = process.env.ECOM_EXPRESS_RATE_API_URL;
+    if (!apiUrl) {
+      console.error("Ecom Express Rate API URL is not configured.");
+      return null;
+    }
+  
+    try {
+      const { data } = await axios.post(apiUrl, formData);
+      console.log("Ecom API Response:", JSON.stringify(data, null, 2)); 
+  
+      if (Array.isArray(data) && data.length > 0 && data[0].success) {
+        const breakup = data[0].chargesBreakup || {};
+        const rawCourierCharge = (parseFloat(breakup.FRT) || 0) + (parseFloat(breakup.FUEL) || 0);  
+        const rawCodCharge = parseFloat(breakup.COD) || 0;
+        return {
+          courierName: "Ecom Express",
+          serviceType: "Standard", 
+          weight: cw, 
+          courierCharges: rawCourierCharge, 
+          codCharges: rawCodCharge,     
+          totalPrice: rawCourierCharge + rawCodCharge,  
+        };
+      } else { 
+        console.error("Ecom API returned error or unexpected format:", data[0]?.errors?.reason || data);
+        return null;  
+      }
+    } catch (error: any) { 
+      console.error("Ecom API Call Error:", error.response?.data || error.message);
+      return null; 
+    }
+  }
 
   async fetchAwbNumber(paymentMode: "COD" | "Prepaid"): Promise<string | null> {
     if (!PROD_URLS.fetch_awb || !this.username || !this.password) {

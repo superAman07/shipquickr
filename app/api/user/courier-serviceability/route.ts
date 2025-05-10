@@ -3,6 +3,7 @@ import axios from "axios";
 import { URLSearchParams } from "url";
 import { prisma } from "@/lib/prisma";
 import shadowfaxManualRatesFromFile from '@/lib/data/shadowfax-rates.json';  
+import { ecomExpressClient } from '@/lib/services/ecom-express';  
 
 interface RateResult {
   courierName: string;
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
     const adminCodType = adminRates?.codChargesType ?? "fixed"; 
 
     const promises = [
-      fetchEcomRates(commonShipmentData, cw),
+      ecomExpressClient.getEcomExpressOptions(commonShipmentData, cw), 
       fetchXpressbeesRates(commonShipmentData, cw, dimensions),
       fetchShadowfaxRates(commonShipmentData, cw, dimensions),
     ];
@@ -260,48 +261,7 @@ async function fetchShadowfaxRates(
 
 
 // ecom express
-async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult | null> {
-  const ecomShipmentPayload = {
-    ...shipmentData,
-    orginPincode: shipmentData.orginPincode,  
-  };
 
-  const formData = new URLSearchParams();
-  formData.append("username", process.env.ECOM_EXPRESS_USERNAME || "");
-  formData.append("password", process.env.ECOM_EXPRESS_PASSWORD || "");
-  formData.append("json_input", JSON.stringify([ecomShipmentPayload]));
-
-  const apiUrl = process.env.ECOM_EXPRESS_RATE_API_URL;
-  if (!apiUrl) {
-    console.error("Ecom Express Rate API URL is not configured.");
-    return null;
-  }
-
-  try {
-    const { data } = await axios.post(apiUrl, formData);
-    console.log("Ecom API Response:", JSON.stringify(data, null, 2)); 
-
-    if (Array.isArray(data) && data.length > 0 && data[0].success) {
-      const breakup = data[0].chargesBreakup || {};
-      const rawCourierCharge = (parseFloat(breakup.FRT) || 0) + (parseFloat(breakup.FUEL) || 0);  
-      const rawCodCharge = parseFloat(breakup.COD) || 0;
-      return {
-        courierName: "Ecom Express",
-        serviceType: "Standard", 
-        weight: cw, 
-        courierCharges: rawCourierCharge, 
-        codCharges: rawCodCharge,     
-        totalPrice: rawCourierCharge + rawCodCharge,  
-      };
-    } else { 
-      console.error("Ecom API returned error or unexpected format:", data[0]?.errors?.reason || data);
-      return null;  
-    }
-  } catch (error: any) { 
-    console.error("Ecom API Call Error:", error.response?.data || error.message);
-    return null; 
-  }
-}
 
 // yaha se expressbees ka code shuru hota hai
 
