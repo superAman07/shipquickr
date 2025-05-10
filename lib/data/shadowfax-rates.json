@@ -1,0 +1,22 @@
+[
+  {
+    "serviceName": "Shadowfax Standard",
+    "serviceTypeKey": "standard",  
+    "minWeight": 0.5, 
+    "baseRate": 40,  
+    "ratePerKgAboveMin": 35, 
+    "codFixedCharge": 50,
+    "codPercentage": 0, 
+    "applicableZones": ["A", "B", "C"] 
+  },
+  {
+    "serviceName": "Shadowfax Express",
+    "serviceTypeKey": "express",
+    "minWeight": 0.5,
+    "baseRate": 60,
+    "ratePerKgAboveMin": 55,
+    "codFixedCharge": 60,
+    "codPercentage": 0,
+    "applicableZones": ["A", "B"]
+  } 
+]

@@ -8,9 +8,9 @@ import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/admin/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" }, 
-  { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
   { href: "/admin/dashboard/users", icon: <Users className="h-5 w-5" />, label: "Users" },
   { href: "/admin/dashboard/kyc", icon: <UserCheck className="h-5 w-5" />, label: "KYC" },
+  { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
   { href: "/admin/dashboard/shipping-rates", icon: <Truck className="h-5 w-5" />, label: "Shipping Rates" },
 ];
  

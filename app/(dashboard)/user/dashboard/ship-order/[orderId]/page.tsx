@@ -81,6 +81,9 @@ export default function ShipOrderPage() {
     if (nameLower.includes("xpressbees")) {
       return "/xpressbees.png";
     }
+    if (nameLower.includes("shadowfax")) {
+      return "/shadowfax.png";
+    }
     return undefined;  
   };
 
@@ -146,7 +149,7 @@ export default function ShipOrderPage() {
               };
               console.log("Rate Payload:", ratePayload);
   
-              const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/user/rate-calculator', ratePayload);
+              const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/user/courier-serviceability', ratePayload);
               console.log("Rate API Response:", ratesRes.data);
 
               if (ratesRes.data && Array.isArray(ratesRes.data.rates)) {
@@ -155,7 +158,7 @@ export default function ShipOrderPage() {
                     name: rate.courierName,
                     logoUrl: getCourierLogo(rate.courierName),
                     serviceType: rate.serviceType || 'Standard',
-                    minWeight: 0.5, // Dummy
+                    minWeight: 0.5, // dummy
                     rate: rate.courierCharges,
                     codCharges: rate.codCharges,
                     totalPrice: rate.totalPrice,
@@ -200,7 +203,7 @@ export default function ShipOrderPage() {
     return items.reduce((sum, item) => sum + (Number(item.orderValue || 0) * Number(item.quantity || 0)), 0);
   };
 
-  const appliedWeight = order?.physicalWeight ? Number(order.physicalWeight) : 0; // Add volumetric calculation later
+  const appliedWeight = order?.physicalWeight ? Number(order.physicalWeight) : 0;  
 
   const handleSelectCourier = (courier: CourierRate) => {
     setSelectedCourier(courier);
