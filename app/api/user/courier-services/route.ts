@@ -183,22 +183,6 @@ export async function POST(req: NextRequest) {
 }
 
 // shadowfax
-
-interface ShadowfaxServiceabilityPincodeInfo {
-  pincode: string;
-  services: {
-    customer_delivery?: {
-      available: boolean;
-      service_types?: Array<{ name: string; available: boolean }>;
-    };
-  };
-}
-interface ShadowfaxServiceabilityResponse {
-  success: boolean;
-  message?: string;
-  data?: ShadowfaxServiceabilityPincodeInfo[];
-}
-
 interface ShadowfaxApiPincodeInfo {
   code: number;  
   services: string[];  

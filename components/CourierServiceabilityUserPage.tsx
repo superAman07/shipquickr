@@ -10,16 +10,11 @@ import React, { useState } from "react";
 export default function CourierServiceabilityUserPage() {
   const [sellerPincode, setSellerPincode] = useState("");
   const [customerPincode, setCustomerPincode] = useState("");
-  interface Service {
-    courierName: string;
-    serviceType: string;
-    services: Record<string, boolean>;
-  }
   interface CourierInfo {
     courierName: string;
   }
 
-  const [availableCouriers, setAvailableCouriers] = useState<CourierInfo[]>([]); // Changed state variable name and type
+  const [availableCouriers, setAvailableCouriers] = useState<CourierInfo[]>([]);  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
