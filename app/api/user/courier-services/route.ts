@@ -301,8 +301,6 @@ async function fetchShadowfaxRates(
               codCharges: parseFloat(rawCodApiCharge.toFixed(2)),
               totalPrice: parseFloat((rawFreight + rawCodApiCharge).toFixed(2)),
             });
-          } else {
-            // console.log(`No manual rate rule found for Shadowfax serviceTypeKey: ${serviceTypeKey} (derived from API's ${serviceNameFromApi})`);
           }
         }
       }
