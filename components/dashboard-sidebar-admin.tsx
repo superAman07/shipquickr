@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight, Users, UserCheck } from "lucide-react";
+import { Package, Truck, Info, Calculator, ChevronRight, Users, UserCheck, Plus, ListFilter, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -41,6 +41,61 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
   );
 }
 
+function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
+  const pathname = usePathname()
+  const [showSubMenu, setShowSubMenu] = useState(false)
+  const active = pathname.includes("/user/dashboard/orders")
+
+  return (
+    <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
+      <div
+        className={cn(
+          "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
+          active ? "bg-indigo-900" : "hover:bg-indigo-900",
+          collapsed ? "justify-center" : "",
+        )}
+      >
+        <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
+          <Truck className="h-5 w-5" />
+
+          <span
+            className={cn(
+              "ml-3 whitespace-nowrap transition-all duration-300",
+              collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs",
+            )}
+          >
+            Orders
+          </span>
+        </div>
+      </div>
+ 
+      <div
+        className={cn(
+          "absolute left-full top-0 bg-indigo-800 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
+          showSubMenu ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible",
+          collapsed ? "mt-3" : "mt-3 ml-0",
+          "submenu"
+        )}
+      >
+        <Link
+          href="/admin/dashboard/single-order"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">Add Single Order</span>
+        </Link>
+        <Link
+          href="/admin/dashboard/bulk"
+          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+        >
+          <ListFilter className="h-4 w-4" />
+          <span className="ml-3 whitespace-nowrap">Process Bulk Orders</span>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardSidebarAdmin() {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); 
@@ -76,19 +131,48 @@ export default function DashboardSidebarAdmin() {
         )}
         style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)" }}
       >
-        <ChevronRight className="h-5 w-5" />
+      <ChevronRight className="h-5 w-5" />
       </Button>
       <nav className="flex-1 pt-4">
-        {navItems.map((item) => (
-          <NavItem
-            key={item.href}
-            icon={item.icon}
-            label={item.label}
-            href={item.href}
-            active={pathname === item.href}
-            collapsed={sidebarCollapsed}
-          />
-        ))}
+        <NavItem
+          icon={<Package className="h-5 w-5" />}
+          label="Dashboard"
+          href="/admin/dashboard"
+          active={pathname === "/admin/dashboard"}
+          collapsed={sidebarCollapsed}
+        />
+        <NavItem
+          icon={<Users className="h-5 w-5" />}
+          label="Users"
+          href="/admin/dashboard/users"
+          active={pathname === "/admin/dashboard/users"}
+          collapsed={sidebarCollapsed}
+        />
+        <NavItem
+          icon={<UserCheck className="h-5 w-5" />}
+          label="Kyc"
+          href="/admin/dashboard/kyc"
+          active={pathname === "/admin/dashboard/kyc"}
+          collapsed={sidebarCollapsed}
+        />
+ 
+        <OrdersNavItem collapsed={sidebarCollapsed} />
+
+        <NavItem
+          icon={<Info className="h-5 w-5" />}
+          label="Reports"
+          href="/admin/dashboard/reports"
+          active={pathname === "/admin/dashboard/reports"}
+          collapsed={sidebarCollapsed}
+        /> 
+
+        <NavItem
+          icon={<Calculator className="h-5 w-5" />}
+          label="Rate Calculator"
+          href="/admin/dashboard/rate-calculator"
+          active={pathname === "/admin/dashboard/rate-calculator"}
+          collapsed={sidebarCollapsed}
+        />  
       </nav>
       <div className="p-4 border-t border-indigo-900">
         <Button
