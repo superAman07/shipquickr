@@ -34,18 +34,27 @@ interface Order {
   orderId: string;
   orderDate: string;
   customerName: string;
-  shippingAddress: {
-    addressLine1: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
+  address: string; 
+  city: string;
+  state: string;
+  pincode: string;
+  landmark?: string;  
+  mobile: string;  
+  email?: string;
+
   items: OrderItem[];
   status: "all" | "unshipped" | "shipped" | "cancelled" | "rto" | "delivered" | "pending_manifest" | "manifested" | "in_transit" | "out_for_delivery" | "undelivered" | "rto_intransit" | "rto_delivered" | "lost_shipment";
   paymentMode: string;
   awbNumber?: string;
   courierName?: string;
   totalAmount: number;
+  user?: {  
+    id: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  pickupLocation?: string;
 }
 
 type TabValue = "all" | "unshipped" | "shipped" | "cancelled";
@@ -123,9 +132,22 @@ export default function AllOrdersAdminPage() {
     return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
   };
 
-  const formatAddress = (address: Order["shippingAddress"]) => {
-    if (!address) return "N/A";
-    return `${address.addressLine1 || ''}, ${address.city || ''}, ${address.state || ''} - ${address.pincode || ''}`.replace(/, ,/g, ',').trim().replace(/^,|,$/g, '');
+  const formatAddress = (order: Pick<Order, 'address' | 'city' | 'state' | 'pincode' | 'landmark'>) => {
+    if (!order.address && !order.city && !order.state && !order.pincode) return "N/A";
+    
+    const addressParts = [];
+    if (order.address) addressParts.push(order.address);
+    if (order.city) addressParts.push(order.city);
+    if (order.state) addressParts.push(order.state);
+    if (order.landmark) addressParts.push(order.landmark);  
+
+    let formattedAddress = addressParts.join(', ');
+
+    if (order.pincode) {
+      formattedAddress = formattedAddress ? `${formattedAddress} - ${order.pincode}` : order.pincode;
+    }
+    
+    return formattedAddress.trim().replace(/^,|,$/g, '') || "N/A";
   };
 
   const handleCloneOrder = (orderId: string) => {
@@ -261,7 +283,7 @@ export default function AllOrdersAdminPage() {
                         <Link href={`/admin/dashboard/order-details/${order.id}`}>{order.orderId}</Link>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{order.customerName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">{formatAddress(order.shippingAddress)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">{formatAddress(order)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow-sm ${getStatusColor(order.status)}`}>
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, ' ')}
