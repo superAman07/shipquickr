@@ -306,18 +306,18 @@ export default function AllOrdersAdminPage() {
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{order.courierName || "N/A"}</td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" title="View Details" onClick={() => handleViewDetails(order)} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-500 h-8 w-8">
+                          <Button variant="ghost" size="icon" title="View Details" onClick={() => handleViewDetails(order)} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-500 h-8 w-8 cursor-pointer">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" title="Clone Order (Admin)" onClick={() => handleCloneOrder(order.id)} className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500 h-8 w-8">
+                          <Button variant="ghost" size="icon" title="Clone Order (Admin)" onClick={() => handleCloneOrder(order.id)} className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500 h-8 w-8 cursor-pointer">
                             <Copy className="h-4 w-4" />
                           </Button>
                           {(order.status === "unshipped" || order.status === "pending_manifest") && (
-                            <Button variant="ghost" size="icon" title="Ship Order (Admin)" onClick={() => handleShipOrder(order.id)} className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-500 h-8 w-8">
+                            <Button variant="ghost" size="icon" title="Ship Order (Admin)" onClick={() => handleShipOrder(order.id)} className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-500 h-8 w-8 cursor-pointer">
                               <Truck className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="ghost" size="icon" title="Delete Order (Admin)" onClick={() => handleDeleteOrder(order.id)} className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 h-8 w-8">
+                          <Button variant="ghost" size="icon" title="Delete Order (Admin)" onClick={() => handleDeleteOrder(order.id)} className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 h-8 w-8 cursor-pointer">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
