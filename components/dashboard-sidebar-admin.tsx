@@ -85,7 +85,7 @@ function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
           <span className="ml-3 whitespace-nowrap">Add Single Order</span>
         </Link>
         <Link
-          href="/admin/dashboard/bulk"
+          href="/admin/dashboard/all-orders"
           className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
         >
           <ListFilter className="h-4 w-4" />
