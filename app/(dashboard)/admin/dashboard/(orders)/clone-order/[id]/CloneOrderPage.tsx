@@ -162,10 +162,51 @@ export default function CloneOrderPageClient({ orderIdToClone }: CloneOrderClien
     }
   };
 
-  const addItem = () =>  
-  const removeItem = (index: number) =>  
-  const generateOrderId = () =>  
-  const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => { /* ... same as before ... */ };
+  const addItem = () => {
+    setForm((prev) => ({
+      ...prev,
+      items: [...prev.items, { ...initialItem }],
+    }));
+  };
+  const removeItem = (index: number) => {
+    if (form.items.length <= 1) {
+        toast.error("You must have at least one item in the order.");
+        return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index),
+    }));
+  };
+  const generateOrderId = () => {
+    const prefix = "SQA";  
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setForm(prev => ({ ...prev, orderId: `${prefix}-${timestamp}-${randomSuffix}` }));
+  };
+  const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pincode = e.target.value;
+    setForm((f) => ({ ...f, pincode }));
+    if (pincode.length === 6) {
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await res.json();
+        if (data[0].Status === "Success") {
+          setForm((f) => ({
+            ...f,
+            state: data[0].PostOffice[0].State,
+            city: data[0].PostOffice[0].District,
+          }));
+        } else {
+           setForm((f) => ({ ...f, state: "", city: "" }));  
+        }
+      } catch {
+         setForm((f) => ({ ...f, state: "", city: "" }));  
+      }
+    } else {
+        setForm((f) => ({ ...f, state: "", city: "" }));  
+    }
+  };
 
   const handleWarehouseFromDB = async (userIdForWarehouses: string | null) => {
     if (!userIdForWarehouses) {
