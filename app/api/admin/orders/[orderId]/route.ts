@@ -9,24 +9,14 @@ interface TokenDetailsType {
   exp: number;
 }
 
-interface RouteContext {
-  params: {
-    orderId: string; 
-  };
-}
+// interface RouteContext {
+//   params: {
+//     orderId: string; 
+//   };
+// }
 
-export async function GET(req: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, { params: routeParams }: { params: Promise<{ orderId: string }> }) {
   try {
-    const { orderId: orderIdString } = context.params;
-
-    if (!orderIdString) {
-      return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
-    }
-    const orderId = parseInt(orderIdString, 10);
-    if (isNaN(orderId)) {
-        return NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 });
-    }
-
     const cookieStore = await cookies();
     const token = cookieStore.get("adminToken")?.value;
 
@@ -48,6 +38,17 @@ export async function GET(req: NextRequest, context: RouteContext) {
     if (decoded.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    const { orderId: orderIdString } = await routeParams;
+
+    if (!orderIdString) {
+      return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
+    }
+    const orderId = parseInt(orderIdString, 10);
+    if (isNaN(orderId)) {
+        return NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 });
+    }
+
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -72,20 +73,9 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
 export async function DELETE(
   req: NextRequest,
-  context: RouteContext
+  { params: routeParams }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId:orderIdString } = context.params;
-
-    if (!orderIdString) {
-      return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
-    }
-    const orderId = parseInt(orderIdString, 10);
-
-    if (isNaN(orderId)) {
-      return NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 });
-    }
-
     const cookieStore = await cookies();
     const token = cookieStore.get("adminToken")?.value;
 
@@ -107,6 +97,18 @@ export async function DELETE(
     if (decoded.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    const { orderId: orderIdString } = await routeParams;
+
+    if (!orderIdString) {
+      return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
+    }
+    const orderId = parseInt(orderIdString, 10);
+
+    if (isNaN(orderId)) {
+      return NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 });
+    }
+
  
     const orderExists = await prisma.order.findUnique({
       where: { id: orderId },  
