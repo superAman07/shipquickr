@@ -222,7 +222,7 @@ export default function AllOrdersAdminPage() {
                 type="button"
                 key={tab.value}
                 onClick={() => handleTabChange(tab.value)}
-                className={`whitespace-nowrap py-3 px-3 border-b-2 font-medium text-sm focus:outline-none
+                className={`whitespace-nowrap cursor-pointer py-3 px-3 border-b-2 font-medium text-sm focus:outline-none
                   ${activeTab === tab.value
                     ? "border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600"
