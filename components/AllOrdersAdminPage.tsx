@@ -172,6 +172,7 @@ export default function AllOrdersAdminPage() {
   };
 
   const handleDeleteOrder = async (orderId: string) => {
+
     if (!window.confirm("Are you sure you want to delete this order? This action is for admin only.")) return;
     try { 
       await axios.delete(`/api/admin/orders/${orderId}`);

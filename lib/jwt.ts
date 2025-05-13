@@ -8,6 +8,7 @@ export function signToken(payload: object, p0: string) {
 
 interface DecodedToken {
   userId: string;   
+  role?: string;
 }
 
 export function verifyToken(token: string): DecodedToken {
