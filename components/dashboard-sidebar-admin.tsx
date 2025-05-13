@@ -41,61 +41,6 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
   );
 }
 
-function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
-  const pathname = usePathname()
-  const [showSubMenu, setShowSubMenu] = useState(false)
-  const active = pathname.includes("/user/dashboard/orders")
-
-  return (
-    <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
-      <div
-        className={cn(
-          "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
-          active ? "bg-indigo-900" : "hover:bg-indigo-900",
-          collapsed ? "justify-center" : "",
-        )}
-      >
-        <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
-          <Truck className="h-5 w-5" />
-
-          <span
-            className={cn(
-              "ml-3 whitespace-nowrap transition-all duration-300",
-              collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs",
-            )}
-          >
-            Orders
-          </span>
-        </div>
-      </div>
- 
-      <div
-        className={cn(
-          "absolute left-full top-0 bg-indigo-800 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
-          showSubMenu ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible",
-          collapsed ? "mt-3" : "mt-3 ml-0",
-          "submenu"
-        )}
-      >
-        <Link
-          href="/admin/dashboard/single-order"
-          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="ml-3 whitespace-nowrap">Add Single Order</span>
-        </Link>
-        <Link
-          href="/admin/dashboard/all-orders"
-          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
-        >
-          <ListFilter className="h-4 w-4" />
-          <span className="ml-3 whitespace-nowrap">Process Bulk Orders</span>
-        </Link>
-      </div>
-    </div>
-  )
-}
-
 export default function DashboardSidebarAdmin() {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); 
@@ -155,8 +100,13 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/kyc"}
           collapsed={sidebarCollapsed}
         />
- 
-        <OrdersNavItem collapsed={sidebarCollapsed} />
+        <NavItem
+          icon={<Truck className="h-5 w-5" />}
+          label="Orders"
+          href="/admin/dashboard/all-orders"
+          active={pathname === "/admin/dashboard/all-orders"}
+          collapsed={sidebarCollapsed}
+        />
 
         <NavItem
           icon={<Info className="h-5 w-5" />}
