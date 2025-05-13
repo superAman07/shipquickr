@@ -80,7 +80,7 @@ model Transaction {
   razorpayPaymentId String?  
   razorpayOrderId   String? 
   orderId           Int?     // Link to the Order for shipping charges
-  order             Order?   @relation(fields: [orderId], references: [id])
+  order             Order?   @relation(fields: [orderId], references: [id],onDelete: Cascade)
   status            String?
   @@index([userId]) 
   @@index([orderId]) 
@@ -235,7 +235,7 @@ model CourierPayable {
   courierName  String
   amount       Float
   orderId      Int
-  order        Order    @relation(fields: [orderId], references: [id])
+  order        Order    @relation(fields: [orderId], references: [id],onDelete: Cascade)
   status       String   // "pending", "paid", "cancelled"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
