@@ -6,7 +6,7 @@ const PROD_URLS = {
   manifest: process.env.ECOM_EXPRESS_MANIFEST_API_URL || 'https://api.ecomexpress.in/apiv2/manifest_awb/',
   track: process.env.ECOM_EXPRESS_TRACKING_API_URL || 'https://plapi.ecomexpress.in/track_me/api/mawbd/',
   cancel: process.env.ECOM_EXPRESS_CANCEL_AWB_API_URL || 'https://api.ecomexpress.in/apiv2/cancel_awb/',
-  ndr: process.env.ECOM_EXPRESS_NDR_RESOLUTIONS_API_URL || 'https://api.ecomexpress.in/apiv2/ndr_resolutions/', // Added NDR URL from your env example
+  ndr: process.env.ECOM_EXPRESS_NDR_RESOLUTIONS_API_URL || 'https://api.ecomexpress.in/apiv2/ndr_resolutions/',  
   label: process.env.ECOM_EXPRESS_LABEL_API_URL || 'https://shipment.ecomexpress.in/services/expp/shipping_label',
 };
 
