@@ -248,7 +248,7 @@ export default function DashboardSidebarUser() {
         aria-label="Toggle sidebar"
         onClick={toggleSidebar}
         className={cn(
-          "absolute z-40 right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-white border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
+          "absolute z-40 cursor-pointer right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-white border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
           "hover:bg-indigo-800",
           "backdrop-blur bg-indigo-700/60",
           sidebarCollapsed ? "rotate-180" : "",
@@ -332,7 +332,7 @@ export default function DashboardSidebarUser() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-center text-white hover:bg-indigo-900"
+          className="w-full justify-center cursor-pointer text-white hover:bg-indigo-900"
           onClick={toggleSidebar}
         >
           <ChevronRight className={cn("h-5 w-5 transition-transform", sidebarCollapsed ? "rotate-180" : "")} />
