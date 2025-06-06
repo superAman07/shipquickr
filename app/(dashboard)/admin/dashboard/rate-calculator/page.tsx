@@ -113,7 +113,7 @@ export default function RateCalculator() {
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
             <Link
-              href="/user/dashboard"
+              href="/admin/dashboard"
               className="flex items-center hover:text-gray-300 transition-colors min-w-0 shrink-0"
             >
               <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
