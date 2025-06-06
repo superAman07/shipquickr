@@ -86,6 +86,24 @@ export default function KYC() {
   }, []);
 
 
+  const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pincode = e.target.value;
+    setForm(f => ({ ...f, pincode }));
+    if (pincode.length === 6) {
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await res.json();
+        if (data[0].Status === "Success") {
+          setForm(f => ({
+            ...f,
+            state: data[0].PostOffice[0].State,
+            city: data[0].PostOffice[0].District
+          }));
+        }
+      } catch {}
+    }
+  };
+
 
   function isFormValid() {
     if (isUserDataLoading) return false;
@@ -402,7 +420,8 @@ export default function KYC() {
               </label>
               <Input 
                 value={form.pincode}
-                onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                // onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                onChange={handlePincodeChange}
                 required
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter pincode"
@@ -414,6 +433,7 @@ export default function KYC() {
                 value={form.state}
                 onChange={(e) => setForm({ ...form, state: e.target.value })}
                 required
+                readOnly
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter state"
               />
@@ -424,6 +444,7 @@ export default function KYC() {
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 required
+                readOnly
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="Enter city"
               />
