@@ -38,8 +38,8 @@ function NavItem({
 
         <span
           className={cn(
-            "ml-3 whitespace-nowrap transition-all duration-300 overflow-hidden",
-            collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs",
+            "ml-3 whitespace-nowrap transition-all duration-300 w-full",
+            collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
           )}
         >
           {label}
@@ -298,7 +298,7 @@ export default function DashboardSidebarUser() {
           collapsed={sidebarCollapsed}
         />
         <NavItem
-          icon={<IndianRupee className="h-5 w-5" />}
+          icon={<IndianRupee className="h-5 w-5 flex-shrink-0 cursor-pointer" />}
           label="Billings"
           href="/user/dashboard/recharge"
           active={pathname === "/user/dashboard/recharge"}
