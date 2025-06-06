@@ -63,13 +63,13 @@ function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
           collapsed ? "justify-center" : "",
         )}
       >
-        <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
-          <Truck className="h-5 w-5" />
+        <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
+          <Truck className="h-5 w-5 flex-shrink-0 cursor-pointer" />
 
           <span
             className={cn(
-              "ml-3 whitespace-nowrap transition-all duration-300",
-              collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs",
+              "ml-3 whitespace-nowrap transition-all duration-300 w-full",
+              collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
             )}
           >
             Orders
