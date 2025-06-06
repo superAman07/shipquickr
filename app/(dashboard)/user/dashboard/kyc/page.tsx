@@ -126,8 +126,8 @@ export default function KYC() {
       form.ifsc.trim() &&
       form.cheque &&
       // form.gstNumber.trim() &&
-      (form.gst === "no" || (form.gst === "yes" && form.gstNumber.trim() && form.gstCertificate)) &&
-      form.gstCertificate &&
+      (form.gst === "no" || ((form.gst === "yes" && form.gstNumber.trim() && form.gstCertificate)) &&
+      form.gstCertificate) &&
       form.shipments !== "Select" &&
       form.companyName.trim() &&
       form.companyEmail.trim() &&
