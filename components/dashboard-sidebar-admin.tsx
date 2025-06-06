@@ -6,13 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 
-const navItems = [
-  { href: "/admin/dashboard", icon: <Package className="h-5 w-5" />, label: "Dashboard" }, 
-  { href: "/admin/dashboard/users", icon: <Users className="h-5 w-5" />, label: "Users" },
-  { href: "/admin/dashboard/kyc", icon: <UserCheck className="h-5 w-5" />, label: "KYC" },
-  { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-5 w-5" />, label: "Rate Calculator" },
-  { href: "/admin/dashboard/shipping-rates", icon: <Truck className="h-5 w-5" />, label: "Shipping Rates" },
-];
+ 
  
 function NavItem({ icon, label, href, active = false, collapsed }: {
   icon: React.ReactNode;
@@ -30,10 +24,12 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
         collapsed ? "justify-center" : ""
       )}
     >
-      <div className={cn("flex font-bold items-center", collapsed ? "justify-center" : "")}>
-        {icon}
+      <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
+        <div className="flex-shrink-0">
+          {icon}
+        </div>
         
-        <span className={cn("ml-3 whitespace-nowrap transition-all duration-300",collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs")}>
+        <span className={cn("ml-3 whitespace-nowrap transition-all duration-300 w-full",collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs")}>
             {label}
         </span>
       </div>
@@ -69,7 +65,7 @@ export default function DashboardSidebarAdmin() {
         aria-label="Toggle sidebar"
         onClick={toggleSidebar}
         className={cn(
-          "absolute z-40 right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-white border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
+          "absolute z-40 cursor-pointer right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-white border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
           "hover:bg-indigo-800",
           "backdrop-blur bg-indigo-700/60",
           sidebarCollapsed ? "rotate-180" : ""
@@ -128,7 +124,7 @@ export default function DashboardSidebarAdmin() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-center text-white hover:bg-indigo-900"
+          className="w-full cursor-pointer justify-center text-white hover:bg-indigo-900"
           onClick={toggleSidebar}
         >
           <ChevronRight className={cn("h-5 w-5 transition-transform", sidebarCollapsed ? "rotate-180" : "")} />
