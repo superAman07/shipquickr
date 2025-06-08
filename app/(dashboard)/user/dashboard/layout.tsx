@@ -5,8 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { WalletProvider } from "@/contexts/WalletContext"
 import { jwtDecode } from "jwt-decode"
 import { cookies } from "next/headers"
-import { redirect } from "next/navigation"   
-import { toast } from "sonner"
+import { redirect } from "next/navigation"  
+
 interface TokenDetailsType {
   userId: string,
   firstName: string,
