@@ -16,7 +16,7 @@ export async function generateMetadata () {
       if(decoded.role=== 'admin') role = "Admin";
     } else if(userToken){
       const decode: any = jwtDecode(userToken);
-      if(decode.role === 'user') role = "User";
+      if(decoded.role === 'user') role = "User";
     }
   }catch {}
   return {
