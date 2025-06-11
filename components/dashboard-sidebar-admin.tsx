@@ -5,8 +5,6 @@ import { Package, Truck, Info, Calculator, ChevronRight, Users, UserCheck, Plus,
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
-
- 
  
 function NavItem({ icon, label, href, active = false, collapsed }: {
   icon: React.ReactNode;
@@ -117,6 +115,13 @@ export default function DashboardSidebarAdmin() {
           label="Rate Calculator"
           href="/admin/dashboard/rate-calculator"
           active={pathname === "/admin/dashboard/rate-calculator"}
+          collapsed={sidebarCollapsed}
+        />  
+        <NavItem
+          icon={<Truck className="h-5 w-5" />}
+          label="Shipping Rates"
+          href="/admin/dashboard/shipping-rates"
+          active={pathname === "/admin/dashboard/shipping-rates"}
           collapsed={sidebarCollapsed}
         />  
       </nav>
