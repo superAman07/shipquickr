@@ -159,8 +159,7 @@ function CouponAdmin() {
         <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 dark:text-amber-50">
-                {/* <ListFilter className="h-5 w-5 sm:h-6 sm:w-6" /> */}
+              <div className="flex items-center gap-2 dark:text-amber-50"> 
                 <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">
                   Coupon
                 </h1>
@@ -176,8 +175,7 @@ function CouponAdmin() {
           </div>
         </div>
       </header>
-      <div className="container mx-auto px-4 py-8">
-        {/* Coupon Form */}
+      <div className="container mx-auto px-4 py-8"> 
         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg p-6 mb-8 transition-colors duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -360,16 +358,16 @@ function CouponAdmin() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Coupon Name</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Coupon Code</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Amount</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Start Date</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">End Date</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Coupon Limit</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Coupon Condition</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Schedule</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Status</th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">Action</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Coupon Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Coupon Code</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Start Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">End Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Coupon Limit</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Coupon Condition</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Schedule</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -382,15 +380,15 @@ function CouponAdmin() {
                 ) : (
                   paginatedCoupons.map((coupon) => (
                     <tr key={coupon.id} className="border-b border-gray-200 dark:border-gray-700 duration-200">
-                      <td className="py-3 px-2">{coupon.name}</td>
-                      <td className="py-3 px-2">{coupon.code}</td>
-                      <td className="py-3 px-2">{coupon.amount}</td>
-                      <td className="py-3 px-2">{coupon.startDate}</td>
-                      <td className="py-3 px-2">{coupon.endDate}</td>
-                      <td className="py-3 px-2">{coupon.limit}</td>
-                      <td className="py-3 px-2">{coupon.condition}</td>
-                      <td className="py-3 px-2">{coupon.schedule}</td>
-                      <td className="py-3 px-2">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.name}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.code}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.amount}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.startDate}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.endDate}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.limit}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.condition}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{coupon.schedule}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <button
                           onClick={() => toggleStatus(coupon.id)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer ${
@@ -404,7 +402,7 @@ function CouponAdmin() {
                           />
                         </button>
                       </td>
-                      <td className="py-3 px-2">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(coupon)}
