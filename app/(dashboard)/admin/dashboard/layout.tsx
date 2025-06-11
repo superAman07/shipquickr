@@ -15,8 +15,7 @@ interface TokenDetailsType {
 
 export async function generateMetadata () { 
   const cookiesStore = await cookies();
-  const adminToken  = cookiesStore.get("adminToken")?.value;
-  const userToken  = cookiesStore.get("userToken")?.value;
+  const adminToken  = cookiesStore.get("adminToken")?.value; 
   let role = "User";
   try {
     if(adminToken){

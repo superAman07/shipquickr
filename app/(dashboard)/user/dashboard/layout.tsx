@@ -15,14 +15,13 @@ interface TokenDetailsType {
   role: string,
 }
 export async function generateMetadata () { 
-  const cookiesStore = await cookies();
-  const adminToken  = cookiesStore.get("adminToken")?.value;
+  const cookiesStore = await cookies(); 
   const userToken  = cookiesStore.get("userToken")?.value;
   let role = "User";
   try {
     if(userToken){
       const decode: any = jwtDecode(userToken);
-      if(decoded.role === 'user') role = "User";
+      if(decode.role === 'user') role = "User";
     }
   }catch {}
   return {
