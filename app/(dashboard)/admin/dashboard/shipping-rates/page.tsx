@@ -47,11 +47,12 @@ export default function ShippingRates() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background dark:bg-background">
-      <div className="bg-purple-900 dark:bg-purple-950 p-6 text-white rounded-2xl">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <svg
+    <>
+      <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-950 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
+         <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
+           <div className="flex flex-col gap-1 sm:gap-2">
+             <div className="flex items-center gap-2 dark:text-amber-50">
+               <svg
               width="24"
               height="24"
               viewBox="0 0 24 24"
@@ -67,20 +68,23 @@ export default function ShippingRates() {
                 strokeLinejoin="round"
               />
             </svg>
-            Shipping Rates
-          </h1>
-          <p className="text-sm text-white/80">Manage your shipping and COD charges</p>
-          <div className="flex items-center gap-1 text-sm mt-2">
-            <Link href="/admin/dashboard" className="text-white/70 hover:text-white flex items-center">
-              <Home className="h-3.5 w-3.5 mr-1" />
-              Dashboard
+               <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">Shipping Rates</h1>
+             </div>
+              <p className="text-xs sm:text-sm text-primary-foreground/80 dark:text-amber-50/90">Manage your shipping and COD charges</p>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
+            <Link
+              href="/admin/dashboard"
+              className="flex items-center hover:text-gray-300 transition-colors min-w-0 shrink-0"
+            >
+              <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+              <span className="truncate">Dashboard</span>
             </Link>
-            <ChevronRight className="h-3.5 w-3.5 text-white/50" />
-            <span>Shipping Rates</span>
+            <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
+            <span className="font-medium truncate">Shipping Rates</span>
           </div>
         </div>
-      </div>
- 
+      </header>
       <div className="p-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="grid gap-6 md:grid-cols-2">
@@ -154,6 +158,6 @@ export default function ShippingRates() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
