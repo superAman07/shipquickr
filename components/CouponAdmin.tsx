@@ -1,20 +1,13 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Link from "next/link"; 
 import {
   ChevronRight,
-  Home,
-  Package,
-  Search as SearchIcon,
-  Copy,
-  Truck, 
-  XCircle,  
-  Eye,  
-  Plus, 
-  ListFilter, 
+  Home, 
 } from "lucide-react";
+import axios from 'axios';
+import { toast } from "react-toastify";
 
 interface Coupon {
   id: string;
@@ -57,6 +50,21 @@ function CouponAdmin() {
   const [showEntries, setShowEntries] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect (()=> {
+    fetchCoupons();
+  },[]);
+
+  const fetchCoupons = async ()=>{
+    try {
+        const res = await axios.get('/api/admin/coupon');
+        if(res.status === 200){
+            setCoupons(res.data)
+        }
+    }catch {}
+  }
+
+
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -79,51 +87,59 @@ function CouponAdmin() {
     setEditingId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingId) {
-      // Update existing coupon
-      setCoupons(prev => prev.map(coupon => 
-        coupon.id === editingId 
-          ? { ...coupon, ...formData }
-          : coupon
-      ));
-    } else {
-      // Add new coupon
-      const newCoupon: Coupon = {
-        id: Date.now().toString(),
-        ...formData,
-        status: true
-      };
-      setCoupons(prev => [...prev, newCoupon]);
+  const handleSubmit = async (e: React.FormEvent)=> {
+    e.preventDefault ();
+    try {
+        if(editingId){
+            await axios.put('/api/admin/coupon', {id:editingId, ...formData});
+        }else {
+            await axios.post('/api/admin/coupon', formData);
+        }
+        fetchCoupons();
+        resetForm();
+        toast.success("Coupon created successfully!");
+    }catch {
+        toast.error("Failed to create coupon. Please try again.");
+
     }
-    
-    resetForm();
-  };
+  }
+
 
   const handleEdit = (coupon: Coupon) => {
     setFormData({
       name: coupon.name,
       code: coupon.code,
-      startDate: coupon.startDate,
-      endDate: coupon.endDate,
-      limit: coupon.limit,
-      condition: coupon.condition,
-      amount: coupon.amount,
-      schedule: coupon.schedule
+      startDate: coupon.startDate.slice(0,10),
+      endDate: coupon.endDate.slice(0,10),
+      limit: coupon.limit.toString(),
+      condition: coupon.condition || "",
+      amount: coupon.amount.toString(),
+      schedule: coupon.schedule ? coupon.schedule.slice(0,10): ""
     });
     setEditingId(coupon.id);
   };
 
-  const handleDelete = (id: string) => {
-    setCoupons(prev => prev.filter(coupon => coupon.id !== id));
+  const handleDelete = async (id: string) => {
+    if(!window.confirm("Are you sure you want to delete this coupon")) return ;
+    try {
+        await axios.delete('/api/admin/coupon',{data: {id}});
+        fetchCoupons();
+        toast.success("Coupon deleted successfully!");
+    }catch{
+        toast.error("Failed to delete Coupon")
+    }
   };
 
-  const toggleStatus = (id: string) => {
-    setCoupons(prev => prev.map(coupon => 
-      coupon.id === id ? { ...coupon, status: !coupon.status } : coupon
-    ));
+  const toggleStatus = async (id: string) => {
+    const coupon = coupons.find(c=> c.id === id);
+    if(!coupon)return ;
+    try {
+        await axios.put('/api/admin/coupon', {...coupon, status: !coupon.status});
+        fetchCoupons();
+        toast.success("Status updated successfully!")
+    }catch (err){ 
+        toast.error("Falied to update status")
+    }
   };
 
   // Filter and paginate coupons
