@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight, Users, UserCheck, Plus, ListFilter, User } from "lucide-react";
+import { Package, Truck, Info, Calculator, ChevronRight, Ticket , Users, UserCheck, Plus, ListFilter, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -115,6 +115,13 @@ export default function DashboardSidebarAdmin() {
           label="Rate Calculator"
           href="/admin/dashboard/rate-calculator"
           active={pathname === "/admin/dashboard/rate-calculator"}
+          collapsed={sidebarCollapsed}
+        />  
+        <NavItem
+          icon={<Ticket className="h-5 w-5" />}
+          label="Coupon"
+          href="/admin/dashboard/coupon"
+          active={pathname === "/admin/dashboard/coupon"}
           collapsed={sidebarCollapsed}
         />  
         <NavItem
