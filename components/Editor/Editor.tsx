@@ -2,21 +2,21 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useTheme } from 'next-themes';  
+import { useTheme } from 'next-themes';
 import { Button } from '../ui/button';
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 interface EditorProps {
-  content: string;
-  onChange: (value: string) => void;
-  onSave: () => void;
-  onCancel: () => void;
+    content: string;
+    onChange: (value: string) => void;
+    onSave: () => void;
+    onCancel: () => void;
 }
 
 export default function Editor({ content, onChange, onSave, onCancel }: EditorProps) {
     const editor = useRef(null);
-    const { resolvedTheme } = useTheme(); 
+    const { resolvedTheme } = useTheme();
 
     const config = useMemo(() => {
         const isDark = resolvedTheme === 'dark';
@@ -29,15 +29,54 @@ export default function Editor({ content, onChange, onSave, onCancel }: EditorPr
                 minHeight: '300px',
             },
             toolbarAdaptive: false,
-            toolbarSticky: false,
+            toolbarSticky: true,
+            buttons: [
+                'source', '|',
+                'bold', 'italic', 'underline', 'strikethrough', '|',
+                'ul', 'ol', '|',
+                'font', 'fontsize', 'brush', 'paragraph', '|',
+                'image', 'table', 'link', '|',
+                'align', 'left', 'center', 'right', 'justify', '|',
+                'undo', 'redo', '|',
+                'hr', 'eraser', 'copyformat', '|',
+                'symbol', 'print', 'about', 'fullsize'
+            ],
             uploader: {
                 insertImageAsBase64URI: true,
                 imagesExtensions: ['jpg', 'png', 'jpeg', 'gif', 'svg', 'webp'],
             },
-        };
+            list: {
+                defaultListType: 'UL'
+            }, 
+            showCharsCounter: true,
+            showWordsCounter: true,
+            iframe: false,
+            askBeforePasteHTML: false,
+            askBeforePasteFromWord: false,
+            defaultActionOnPaste: 'insert_clear_html',
+            disablePlugins: [
+                'select', 
+                'indent', 
+                'outdent'
+            ],
+            controls: {
+            ul: {
+                data: {
+                    elementList: 'ul'
+                },
+                list: null  
+            },
+            ol: {
+                data: {
+                    elementList: 'ol'
+                },
+                list: null  
+            }
+        }
+        } as any;
     }, [resolvedTheme]);
 
-    
+
 
     return (
         <main className="flex justify-center items-center p-6">

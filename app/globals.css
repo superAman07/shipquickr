@@ -177,3 +177,16 @@
 .dark .rich-content table tr:nth-child(even) {
   background-color: #111827;
 }
+
+.jodit-container ul, .jodit-container ol {
+  list-style: revert !important;
+  padding-left: 2em !important;
+}
+
+.jodit-container ul li {
+  list-style-type: disc !important;
+}
+
+.jodit-container ol li {
+  list-style-type: decimal !important;
+}
