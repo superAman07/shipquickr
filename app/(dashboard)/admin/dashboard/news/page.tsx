@@ -372,9 +372,9 @@ export default function NewsManagement() {
                           className="p-0 h-auto hover:bg-transparent"
                         >
                           {item.status ? (
-                            <ToggleRight className="h-6 w-6 text-blue-500" />
+                            <ToggleRight className="h-10 w-10 text-blue-500" />
                           ) : (
-                            <ToggleLeft className="h-6 w-6 text-gray-400" />
+                            <ToggleLeft className="h-10 w-10 text-gray-400" />
                           )}
                         </Button>
                       </TableCell>
