@@ -190,3 +190,18 @@
 .jodit-container ol li {
   list-style-type: decimal !important;
 }
+.rich-content ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin: 0.5em 0 !important;
+}
+
+.rich-content ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin: 0.5em 0 !important;
+}
+
+.rich-content li {
+  margin-bottom: 0.25em !important;
+}

@@ -268,8 +268,12 @@ export default function NewsManagement() {
                       </TableCell>
                       <TableCell className="max-w-md">
                         <div
-                          className="rich-content text-gray-700 dark:text-gray-300 prose prose-sm max-h-24 overflow-y-auto overflow-x-hidden"
+                          className="rich-content text-gray-700 dark:text-gray-300 prose prose-sm max-h-15 overflow-hidden hover:overflow-y-auto"
                           dangerouslySetInnerHTML={{ __html: item.description }}
+                          style={{
+                            listStyleType: 'disc',
+                            listStylePosition: 'inside'
+                          }}
                         />
                       </TableCell>
                       <TableCell className="text-center">
