@@ -7,9 +7,15 @@ import { Button } from '../ui/button';
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-export default function Editor() {
+interface EditorProps {
+  content: string;
+  onChange: (value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+export default function Editor({ content, onChange, onSave, onCancel }: EditorProps) {
     const editor = useRef(null);
-    const [content, setContent] = useState("");
     const { resolvedTheme } = useTheme(); 
 
     const config = useMemo(() => {
@@ -31,9 +37,7 @@ export default function Editor() {
         };
     }, [resolvedTheme]);
 
-    const handleChange = (value: any) => {
-        setContent(value);
-    };
+    
 
     return (
         <main className="flex justify-center items-center p-6">
@@ -43,16 +47,16 @@ export default function Editor() {
                         ref={editor}
                         value={content}
                         config={config}
-                        onChange={handleChange}
+                        onChange={onChange}
                         className="w-full"
                     />
                     <style>{`.jodit-wysiwyg{height:300px !important}`}</style>
                 </div>
                 <div className="flex justify-end gap-3">
-                    <Button className="bg-red-500 hover:bg-red-600 text-white">
+                    <Button variant="outline" onClick={onCancel} className="bg-red-500 hover:bg-red-600 text-white">
                         Cancel
                     </Button>
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white">
+                    <Button onClick={onSave} className="bg-blue-500 hover:bg-blue-600 text-white">
                         Save
                     </Button>
                 </div>

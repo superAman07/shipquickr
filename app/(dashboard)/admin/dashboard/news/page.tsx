@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,18 +14,7 @@ import {
   MoreVertical,
   ChevronLeft,
   ChevronRight,
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Indent,
-  Outdent,
-  Image,
-  Quote,
   Table as TableIcon,
-  Undo,
-  Redo,
-  Play,
   ToggleLeft,
   ToggleRight,
   Edit,
@@ -36,10 +25,12 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Editor from '@/components/Editor/Editor';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 interface NewsItem {
   id: number;
-  description: string;
+  description: any;
   status: boolean;
 }
 
@@ -52,30 +43,73 @@ export default function NewsManagement() {
   const [editingItem, setEditingItem] = useState<NewsItem | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([
-    {
-      id: 1,
-      description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-      status: false
-    },
-    {
-      id: 2,
-      description: `• Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-• Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-• Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-• Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-• Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-• Lorem Ipsum is simply dummy text of the printing and typesetting industry.`,
-      status: true
-    }
-  ]);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const toggleStatus = (id: number) => {
-    setNewsItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, status: !item.status } : item
-      )
-    );
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  // Function to fetch news
+  const fetchNews = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('/api/admin/news');
+      setNewsItems(response.data);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+      toast.error("Failed to fetch news");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleStatus = async (id: number) => {
+    try {
+      await axios.patch('/api/admin/news', { id });
+      fetchNews(); // Refresh the news list
+      toast.success("News status updated");
+    } catch (error) {
+      console.error("Error updating news status:", error);
+      toast.error("Failed to update news status");
+    }
+  };
+
+  const handleSaveNews = async () => {
+    try {
+      if (currentView === 'add') {
+        await axios.post('/api/admin/news', {
+          description: newsDescription,
+          status: true
+        });
+        toast.success("News created successfully");
+      } else {
+        await axios.put('/api/admin/news', {
+          id: editingItem?.id,
+          description: newsDescription,
+          status: editingItem?.status
+        });
+        toast.success("News updated successfully");
+      }
+      setCurrentView('list');
+      fetchNews();
+    } catch (error) {
+      console.error("Error saving news:", error);
+      toast.error("Failed to save news");
+    }
+  };
+
+  const handleDeleteNews = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this news?")) return;
+
+    try {
+      await axios.delete('/api/admin/news', { data: { id } });
+      fetchNews(); // Refresh the news list
+      toast.success("News deleted successfully");
+    } catch (error) {
+      console.error("Error deleting news:", error);
+      toast.error("Failed to delete news");
+    }
   };
 
   const filteredItems = newsItems.filter(item =>
@@ -87,185 +121,52 @@ export default function NewsManagement() {
   const endIndex = startIndex + parseInt(entriesPerPage);
   const currentItems = filteredItems.slice(startIndex, endIndex);
 
-  const handleSaveNews = () => {
-    if (newsDescription.trim()) {
-      if (currentView === 'edit' && editingItem) {
-        setNewsItems(items =>
-          items.map(item =>
-            item.id === editingItem.id
-              ? { ...item, description: newsDescription }
-              : item
-          )
-        );
-      } else {
-        const newItem: NewsItem = {
-          id: Math.max(...newsItems.map(item => item.id)) + 1,
-          description: newsDescription,
-          status: false
-        };
-        setNewsItems([...newsItems, newItem]);
-      }
-      setNewsDescription('');
-      setEditingItem(null);
-      setCurrentView('list');
-    }
-  };
-
   const handleEditItem = (item: NewsItem) => {
     setEditingItem(item);
     setNewsDescription(item.description);
     setCurrentView('edit');
   };
 
-  const handleCancel = () => {
-    setNewsDescription('');
-    setEditingItem(null);
-    setCurrentView('list');
-  };
-
-  // Rich text editor functions
-  const insertTextAtCursor = (text: string) => {
-    if (!textareaRef.current) return;
-
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentText = newsDescription;
-
-    const newText = currentText.substring(0, start) + text + currentText.substring(end);
-    setNewsDescription(newText);
-
-    // Set cursor position after inserted text
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + text.length, start + text.length);
-    }, 0);
-  };
-
-  const wrapSelectedText = (prefix: string, suffix: string = '') => {
-    if (!textareaRef.current) return;
-
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = newsDescription.substring(start, end);
-    const currentText = newsDescription;
-
-    if (selectedText) {
-      const newText = currentText.substring(0, start) + prefix + selectedText + suffix + currentText.substring(end);
-      setNewsDescription(newText);
-
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-      }, 0);
-    } else {
-      insertTextAtCursor(prefix + suffix);
-    }
-  };
-
-  const handleBold = () => wrapSelectedText('**', '**');
-  const handleItalic = () => wrapSelectedText('*', '*');
-  const handleLink = () => wrapSelectedText('[', '](url)');
-  const handleBulletList = () => insertTextAtCursor('\n• ');
-  const handleNumberedList = () => insertTextAtCursor('\n1. ');
-  const handleQuote = () => insertTextAtCursor('\n> ');
-  const handleImage = () => insertTextAtCursor('![alt text](image-url)');
-
-  const handleInsertTable = (rows: number, cols: number) => {
-    let table = '\n\n';
-
-    // Header row
-    table += '|';
-    for (let i = 0; i < cols; i++) {
-      table += ` Header ${i + 1} |`;
-    }
-    table += '\n';
-
-    // Separator row
-    table += '|';
-    for (let i = 0; i < cols; i++) {
-      table += ' --- |';
-    }
-    table += '\n';
-
-    // Data rows
-    for (let i = 0; i < rows - 1; i++) {
-      table += '|';
-      for (let j = 0; j < cols; j++) {
-        table += ` Cell ${i + 1}-${j + 1} |`;
-      }
-      table += '\n';
-    }
-
-    insertTextAtCursor(table);
-  };
-
-  const TableSizeSelector = ({ onSelect }: { onSelect: (rows: number, cols: number) => void }) => {
-    const [hoveredCell, setHoveredCell] = useState({ row: 0, col: 0 });
-
-    return (
-      <div className="p-2 bg-white dark:bg-gray-800 border rounded-md shadow-lg">
-        <div className="grid grid-cols-10 gap-1 mb-2">
-          {Array.from({ length: 100 }, (_, i) => {
-            const row = Math.floor(i / 10);
-            const col = i % 10;
-            const isHighlighted = row <= hoveredCell.row && col <= hoveredCell.col;
-
-            return (
-              <div
-                key={i}
-                className={`w-4 h-4 border cursor-pointer ${isHighlighted
-                    ? 'bg-blue-500 border-blue-600'
-                    : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                  }`}
-                onMouseEnter={() => setHoveredCell({ row, col })}
-                onClick={() => onSelect(row + 1, col + 1)}
-              />
-            );
-          })}
-        </div>
-        <div className="text-xs text-center text-gray-600 dark:text-gray-400">
-          {hoveredCell.row + 1} × {hoveredCell.col + 1}
-        </div>
-      </div>
-    );
-  };
 
   if (currentView === 'add' || currentView === 'edit') {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
-        <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 dark:text-amber-50">
-                <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">
+          <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 dark:text-amber-50">
+                  <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">
+                    {currentView === 'add' ? 'Add News' : 'Edit News'}
+                  </h1>
+                </div>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
+                <Link href="/admin/dashboard" className="flex items-center hover:text-gray-300">
+                  <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />Dashboard
+                </Link>
+                <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
+                <button
+                  onClick={() => setCurrentView('list')}
+                  className="hover:text-blue-300 cursor-pointer transition-colors"
+                >
+                  News
+                </button>
+                <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
+                <span className="text-gray-300">
                   {currentView === 'add' ? 'Add News' : 'Edit News'}
-                </h1>
+                </span>
               </div>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-              <Link href="/admin/dashboard" className="flex items-center hover:text-gray-300">
-                <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />Dashboard
-              </Link>
-              <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
-              <button
-                onClick={() => setCurrentView('list')}
-                className="hover:text-blue-300 cursor-pointer transition-colors"
-              >
-                News
-              </button>
-              <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
-              <span className="text-gray-300">
-                {currentView === 'add' ? 'Add News' : 'Edit News'}
-              </span>
-            </div>
           </div>
-        </div>
-      </header> 
-      <Editor/>
+        </header>
+        <Editor
+          content={newsDescription}
+          onChange={setNewsDescription}
+          onSave={handleSaveNews}
+          onCancel={() => setCurrentView('list')}
+        />
       </div>
     );
   }
@@ -360,21 +261,25 @@ export default function NewsManagement() {
                         {startIndex + index + 1}
                       </TableCell>
                       <TableCell className="max-w-md">
-                        <div className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                          {item.description}
-                        </div>
+                        <div
+                          className="rich-content text-gray-700 dark:text-gray-300 prose prose-sm max-h-24 overflow-y-auto overflow-x-hidden"
+                          dangerouslySetInnerHTML={{ __html: item.description }}
+                        />
                       </TableCell>
                       <TableCell className="text-center">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleStatus(item.id)}
-                          className="p-0 h-auto hover:bg-transparent"
+                          className="p-0 h-auto w-auto hover:bg-transparent"
                         >
                           {item.status ? (
-                            <ToggleRight className="h-10 w-10 text-blue-500" />
+                            <ToggleRight
+                              className="h-14 w-14 text-blue-500"
+                              style={{ minWidth: '1.5rem', minHeight: '1.5rem' }}
+                            />
                           ) : (
-                            <ToggleLeft className="h-10 w-10 text-gray-400" />
+                            <ToggleLeft className="h-14 w-14 text-gray-400" style={{ minWidth: '1.5rem', minHeight: '1.5rem' }} />
                           )}
                         </Button>
                       </TableCell>
@@ -390,13 +295,9 @@ export default function NewsManagement() {
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteNews(item.id)}>
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
