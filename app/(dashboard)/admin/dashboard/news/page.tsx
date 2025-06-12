@@ -127,6 +127,12 @@ export default function NewsManagement() {
     setCurrentView('edit');
   };
 
+  useEffect(() => {
+    if (currentView === 'add') {
+      setNewsDescription('');
+      setEditingItem(null);
+    }
+  }, [currentView]);
 
   if (currentView === 'add' || currentView === 'edit') {
     return (
