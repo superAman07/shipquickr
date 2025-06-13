@@ -122,7 +122,7 @@ export default async function Dashboard() {
         <div className="flex flex-col lg:flex-row gap-6 mb-8"> 
           <div className="lg:w-2/3 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"> 
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
                 Shipment Details
               </h2>
               <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
