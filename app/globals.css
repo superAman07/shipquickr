@@ -205,3 +205,18 @@
 .rich-content li {
   margin-bottom: 0.25em !important;
 }
+@keyframes scroll-up {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%); 
+  }
+}
+
+.animate-scroll-up-custom {
+}
+ 
+.animate-scroll-up-custom:hover {
+  animation-play-state: paused;
+}

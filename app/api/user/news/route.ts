@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
     const news = await prisma.news.findMany({
       where: { status: true },
       orderBy: { id: 'desc' }, 
-      take: 5  
     });
     
     return NextResponse.json(news);

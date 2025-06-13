@@ -91,11 +91,11 @@ export default async function Dashboard() {
     }
   }
   const shipmentCards = [
-    { title: "Total Shipment", value: "1", info: "Last 30 days", color: "bg-purple-600", icon: <Package className="h-6 w-6 text-white" /> },
-    { title: "Today Shipment", value: "0", info: "20-12-2024", color: "bg-blue-500", icon: <Truck className="h-6 w-6 text-white" /> },
-    { title: "Yesterday Shipment", value: "0", info: "19-12-2024", color: "bg-indigo-600", icon: <Info className="h-6 w-6 text-white" /> },
-    { title: "Total Load", value: "0", info: "In Kg", color: "bg-orange-500", icon: <TrendingUp className="h-6 w-6 text-white" /> },
-    { title: "Avg. Shipment Cost", value: "0", info: "Know More", color: "bg-green-500", icon: <Calculator className="h-6 w-6 text-white" /> },
+    { title: "Total Shipment", value: "1", info: "Last 30 days", color: "bg-[linear-gradient(to_right,#7f12e1,#3e0ead)] rounded-xl p-4 shadow-lg", icon: <Package className="h-6 w-6 text-white" /> },
+    { title: "Today Shipment", value: "0", info: "20-12-2024", color: "bg-[linear-gradient(to_right,#3b82f6,#1e40af)] rounded-xl p-4 shadow-lg", icon: <Truck className="h-6 w-6 text-white" /> },
+    { title: "Yesterday Shipment", value: "0", info: "19-12-2024", color: "bg-[linear-gradient(to_right,#6366f1,#312e81)] rounded-xl p-4 shadow-lg", icon: <Info className="h-6 w-6 text-white" /> },
+    { title: "Total Load", value: "0", info: "In Kg", color: "bg-[linear-gradient(to_right,#f97316,#c2410c)] rounded-xl p-4 shadow-lg", icon: <TrendingUp className="h-6 w-6 text-white" /> },
+    { title: "Avg. Shipment Cost", value: "0", info: "Know More", color: "bg-[linear-gradient(to_right,#22c55e,#15803d)] rounded-xl p-4 shadow-lg", icon: <Calculator className="h-6 w-6 text-white" /> },
   ];
 
   const statusCards = [
@@ -120,24 +120,23 @@ export default async function Dashboard() {
           ))}
         </div> 
         <div className="flex flex-col lg:flex-row gap-6 mb-8"> 
-          <div className="lg:w-1/2">  
+          <div className="lg:w-2/3 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"> 
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Shipment Details
               </h2>
-                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                  Last 30 days
-                </span>
+              <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                Last 30 days
+              </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {statusCards.map((card, index) => (
                 <StatusCard key={index} {...card} />
               ))}
             </div>
           </div>
-
-          {/* News Section */}
-          <div className="lg:w-1/2"> {/* Takes 1/3 width on large screens */}
+ 
+          <div className="lg:w-1/3 bg-white h-[65dvh] overflow-hidden dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col">  
             <NewsSection />
           </div>
         </div>
