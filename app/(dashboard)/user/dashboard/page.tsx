@@ -37,20 +37,35 @@ interface StatusCardProps {
   status: string;
   color: string;
 }
+const getProgressBarColor = (status: string): string => {
+  const lowerStatus = status.toLowerCase();
+  if (lowerStatus.includes('unshipped')) return 'bg-slate-400 dark:bg-slate-500';
+  if (lowerStatus.includes('pickup scheduled')) return 'bg-rose-500';
+  if (lowerStatus.includes('in-transit') && !lowerStatus.includes('rto')) return 'bg-amber-500';
+  if (lowerStatus.includes('delivered') && !lowerStatus.includes('rto')) return 'bg-green-500';
+  if (lowerStatus.includes('un-delivered')) return 'bg-sky-500';
+  if (lowerStatus.includes('ofd')) return 'bg-red-600';
+  if (lowerStatus.includes('rto in-transit')) return 'bg-orange-500';
+  if (lowerStatus.includes('rto delivered')) return 'bg-lime-500';
+  if (lowerStatus.includes('lost')) return 'bg-neutral-500';
+  return 'bg-indigo-500';  
+};
 
 function StatusCard({ count, percentage, status, color }: StatusCardProps) {
+  const progressBarColor = getProgressBarColor(status);
+  const displayCount = `${count}(${percentage})`;  
+
   return (
-    <div className={`${color} rounded-lg p-6 transition-all hover:shadow-lg`}>
-      <div className="flex justify-between items-start">
-        <div>
-          <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{count}</h4>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{percentage}</p>
-        </div>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{status}</span>
+    <div className={`${color} rounded-lg p-5 flex flex-col items-center text-center transition-all hover:shadow-md h-full`}>
+      <div className="mb-1.5">
+        <h4 className="text-lg font-bold text-gray-800 dark:text-white">{displayCount}</h4>
       </div>
-      <div className="mt-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 flex-grow capitalize">{status}</p>
+      
+      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-auto">
         <div
-          className={`bg-indigo-600 h-1.5 rounded-full w-${percentage}`}
+          className={`${progressBarColor} h-2 rounded-full`}
+          style={{ width: percentage }}  
         ></div>
       </div>
     </div>
@@ -90,6 +105,9 @@ export default async function Dashboard() {
     { count: "0", percentage: "0%", status: "Delivered", color: "bg-green-100 dark:bg-green-900/20" },
     { count: "0", percentage: "0%", status: "Un-Delivered", color: "bg-blue-100 dark:bg-blue-900/20" },
     { count: "0", percentage: "0%", status: "OFD", color: "bg-purple-100 dark:bg-purple-900/20" },
+    { count: "0", percentage: "0%", status: "RTO In-Transit", color: "bg-white dark:bg-gray-800" },
+    { count: "0", percentage: "0%", status: "RTO Delivered", color: "bg-white dark:bg-gray-800" },
+    { count: "0", percentage: "0%", status: "LOST Shipments", color: "bg-white dark:bg-gray-800" },
   ];
   return (
     <main className=" px-4 md:px-8 pb-8">
@@ -101,23 +119,28 @@ export default async function Dashboard() {
             <ShipmentCard key={index} {...card} />
           ))}
         </div> 
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Shipment Details
-              <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                Last 30 days
-              </span>
-            </h2>
+        <div className="flex flex-col lg:flex-row gap-6 mb-8"> 
+          <div className="lg:w-1/2">  
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
+                Shipment Details
+              </h2>
+                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                  Last 30 days
+                </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {statusCards.map((card, index) => (
+                <StatusCard key={index} {...card} />
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {statusCards.map((card, index) => (
-              <StatusCard key={index} {...card} />
-            ))}
+          {/* News Section */}
+          <div className="lg:w-1/2"> {/* Takes 1/3 width on large screens */}
+            <NewsSection />
           </div>
         </div>
-        <NewsSection />
       </div>
     </main>
   );

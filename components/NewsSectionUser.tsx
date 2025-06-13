@@ -48,7 +48,7 @@ export default function NewsSection() {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Shipment News</h2>
+          <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">Shipment News</h2>
         </div>
         <div className="space-y-4">
           {loading ? (
