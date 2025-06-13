@@ -36,14 +36,14 @@ export default async function Dashboard() {
       title: "Total Users",
       value: `${totalUsers}`,
       info: "All Time",
-      color: "bg-blue-500",
+      color: "bg-[linear-gradient(to_right,#3b82f6,#1e40af)] rounded-xl p-4 shadow-lg",
       icon: <Users className="h-6 w-6 text-white" />,
     },
     {
       title: "New Users (30 Days)",
       value: `${usersInLast30Days}`,
       info: `Since ${thirtyDaysAgo.toLocaleDateString()}`,
-      color: "bg-purple-600",
+      color: "bg-[linear-gradient(to_right,#7f12e1,#3e0ead)] rounded-xl p-4 shadow-lg",
       icon: <Users className="h-6 w-6 text-white" />,
     },
   ]; 
