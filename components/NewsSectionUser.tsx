@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { AlertCircle, ChevronRight, Loader, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import DOMPurify from 'isomorphic-dompurify';
 
 interface NewsArticle {
