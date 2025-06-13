@@ -58,8 +58,8 @@ export default async function Dashboard({ children }: { children: React.ReactNod
           <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
             <DashboardSidebarUser />
           </aside>
-          <div className="flex-1 flex flex-col overflow-hidden"> 
-            <main className="flex-1 p-6 overflow-hidden">
+          <div className="flex-1 flex flex-col"> 
+            <main className="flex-1 p-6 overflow-y-auto">
               <RouteLoadingBar />
               {children}
             </main>

@@ -257,7 +257,7 @@ export default function DashboardSidebarUser() {
       >
         <ChevronRight className="h-5 w-5" />
       </Button>
-      <nav className="flex-1 pt-4">
+      <nav className="flex-1 pt-4 overflow-y-auto hide-scrollbar">
         <NavItem
           icon={<Package className="h-5 w-5" />}
           label="Dashboard"
