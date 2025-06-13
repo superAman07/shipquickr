@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 
-// Helper to check admin
+
 async function isAdmin(req: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get("adminToken")?.value;
