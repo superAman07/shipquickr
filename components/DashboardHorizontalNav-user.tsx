@@ -12,11 +12,11 @@ function CODIcon({ className, label }: { className?: string; label?: string }) {
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div className="flex items-center gap-1">
-        <Package className="h-6 w-6" />
-        <ArrowLeftRight className="h-5 w-5 text-white" />
-        <Wallet className="h-6 w-6" />
+        <Package className="h-5 w-5 md:h-6 md:w-6" />
+        <ArrowLeftRight className="h-4 w-4 md:h-5 md:w-5 text-gray-100" />
+        <Wallet className="h-5 w-5 md:h-6 md:w-6" />
       </div>
-      <span className="text-sm mt-1 text-white font-medium">{label}</span>
+      <span className="text-sm mt-1 text-gray-100 font-medium">{label}</span>
     </div>
   );
 }
@@ -32,12 +32,12 @@ export default function DashboardHorizontalNavUser() {
   const kycStatus = isLoading ? "loading" : data?.kycStatus || "not_found";
 
   const navItems = [ 
-    { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-8 w-8" />, label: "Rate Calculator" },
-    { href: "/user/dashboard/warehouse", icon: <HousePlus  className="h-8 w-8" />, label: "Add Warehouse" },
-    { href: "/user/dashboard/wallet", icon: <Wallet className="h-8 w-8" />, label: "Recharge Wallet" },
+    { href: "/user/dashboard/rate-calculator", icon: <Calculator className="h-6 w-6 md:h-8 md:w-8" />, label: "Rate Calculator" },
+    { href: "/user/dashboard/warehouse", icon: <HousePlus  className="h-6 w-6 md:h-8 md:w-8" />, label: "Add Warehouse" },
+    { href: "/user/dashboard/wallet", icon: <Wallet className="h-6 w-6 md:h-8 md:w-8" />, label: "Recharge Wallet" },
     { href: "/user/dashboard/kyc", icon: <KYCNavIcon status={kycStatus}/>, label: "KYC" },
-    { href: "/user/dashboard/cod", icon: <CODIcon label="COD" className="h-8 w-8" />},
-    { href: "/user/dashboard/orders", icon: <Truck className="h-8 w-8" />, label: "Transporter ID" },
+    { href: "/user/dashboard/cod", icon: <CODIcon label="COD" className="h-6 w-6 md:h-8 md:w-8" />},
+    { href: "/user/dashboard/orders", icon: <Truck className="h-6 w-6 md:h-8 md:w-8" />, label: "Transporter ID" },
   ];
 
   return (
@@ -47,7 +47,7 @@ export default function DashboardHorizontalNavUser() {
           key={item.href}
           href={item.href}
           className={cn(
-            "flex-1 flex flex-col items-center justify-center py-4 rounded-lg font-medium text-white transition-colors hover:bg-indigo-800/40",
+            "flex-1 flex flex-col items-center justify-center py-2.5 md:py-4 rounded-lg font-medium text-gray-100 transition-colors hover:bg-indigo-800/40",
             pathname === item.href
               ? "bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg ring-1 ring-indigo-500/50"
               : ""

@@ -54,12 +54,12 @@ export default async function Dashboard({ children }: { children: React.ReactNod
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <WalletProvider>
         <Navbar userRole={decoded.role} userName={fullName}/>
-        <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+        <div className="flex bg-gray-50 dark:bg-[#10162A] pt-16">
           <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
             <DashboardSidebarUser />
           </aside>
-          <div className="flex-1 flex flex-col"> 
-            <main className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 flex flex-col overflow-hidden"> 
+            <main className="flex-1 p-6 overflow-hidden">
               <RouteLoadingBar />
               {children}
             </main>
