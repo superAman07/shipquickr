@@ -1,9 +1,10 @@
 import React from 'react';
 import { Package, Truck, Info, Calculator, TrendingUp, AlertCircle } from 'lucide-react'; 
 import DashboardWelcome from '@/components/DashboardWelcome';
-import { cookies } from 'next/headers';
-import { jwtDecode } from 'jwt-decode';
 import DashboardHorizontalNavUser from '@/components/DashboardHorizontalNav-user';
+import { cookies } from 'next/headers'; 
+import { jwtDecode } from 'jwt-decode';   
+import NewsSection from '@/components/NewsSectionUser';
 
 interface ShipmentCardProps {
   title: string;
@@ -61,17 +62,19 @@ interface TokenDetailsType {
   email: string;
   role: string;
 }
-export default async function Dashboard() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("userToken")?.value;
-  let firstName = "User";
-  if(token){
-    try{
-      const decoded = jwtDecode<{exp: number} & TokenDetailsType>(token);
-      firstName = decoded.firstName;
-    }catch{}
-  }
+export default async function Dashboard() { 
+  const cookieStore = await cookies();
+  const token = cookieStore.get('userToken')?.value;
+  let firstName = 'User';
 
+  if (token) {
+    try {
+      const decoded = jwtDecode<TokenDetailsType>(token);
+      firstName = decoded.firstName;
+    } catch (error) {
+      console.error('Failed to decode token:', error);
+    }
+  }
   const shipmentCards = [
     { title: "Total Shipment", value: "1", info: "Last 30 days", color: "bg-purple-600", icon: <Package className="h-6 w-6 text-white" /> },
     { title: "Today Shipment", value: "0", info: "20-12-2024", color: "bg-blue-500", icon: <Truck className="h-6 w-6 text-white" /> },
@@ -88,15 +91,6 @@ export default async function Dashboard() {
     { count: "0", percentage: "0%", status: "Un-Delivered", color: "bg-blue-100 dark:bg-blue-900/20" },
     { count: "0", percentage: "0%", status: "OFD", color: "bg-purple-100 dark:bg-purple-900/20" },
   ];
-
-  const shipmentNews = [
-    "New feature: Track multiple shipments at once with our bulk tracking tool",
-    "Holiday season shipping deadlines announced - Plan your deliveries",
-    "System maintenance scheduled for next weekend",
-    "New partnership with major courier service announced",
-    "Updated shipping rates for international destinations",
-  ];
-  
   return (
     <main className=" px-4 md:px-8 pb-8">
       <DashboardWelcome name={firstName}/>
@@ -123,25 +117,7 @@ export default async function Dashboard() {
             ))}
           </div>
         </div>
- 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Shipment News</h2>
-              <button type='button' className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                View All
-              </button>
-            </div>
-            <div className="space-y-4">
-              {shipmentNews.map((news, index) => (
-                <div key={index} className="flex items-start p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <AlertCircle className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-700 dark:text-gray-300">{news}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <NewsSection />
       </div>
     </main>
   );

@@ -58,8 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
-
-// PUT: Update a news item
+ 
 export async function PUT(req: NextRequest) {
   if (!(await isAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -81,7 +80,6 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE: Delete a news item
 export async function DELETE(req: NextRequest) {
   if (!(await isAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
