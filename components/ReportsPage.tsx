@@ -28,17 +28,17 @@ interface Order {
   id: string;
   orderId: string;
   orderDate: string;
-  items: OrderItem[]; 
+  items: OrderItem[];
   customerName: string;
   mobile: string;
   paymentMode?: string;
-  address: string; 
+  address: string;
   pickupLocation?: string;
   billableWeight?: number | string;
   ageing?: number | string;
   attempts?: number | string;
-  shippingDetails?: string;  
-  remarks?: string;  
+  shippingDetails?: string;
+  remarks?: string;
   status: string;
   length?: number | string;
   breadth?: number | string;
@@ -50,25 +50,25 @@ interface Order {
 }
 
 const tabs = [
-    { label: "All-Shipments", status: undefined, href: "/user/dashboard/reports" },
-    { label: "In-Transit", status: "in_transit" , href: "/user/dashboard/in-transit"},
-    { label: "Out For Delivery", status: "out_for_delivery" , href: "/user/dashboard/out-for-delivery"},
-    { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped-reports" },
-    { label: "Delivered", status: "delivered" , href: "/user/dashboard/delivered"},
-    { label: "Undelivered", status: "undelivered" , href: "/user/dashboard/undelivered"},
-    { label: "RTO Intransit", status: "rto_intransit" , href: "/user/dashboard/rto-intransit"},
-    { label: "RTO Delivered", status: "rto_delivered" , href: "/user/dashboard/rto-delivered"},
-    { label: "Lost Shipment", status: "lost_shipment" , href: "/user/dashboard/lost-shipment"},
-  ];
+  { label: "All-Shipments", status: undefined, href: "/user/dashboard/reports" },
+  { label: "In-Transit", status: "in_transit", href: "/user/dashboard/in-transit" },
+  { label: "Out For Delivery", status: "out_for_delivery", href: "/user/dashboard/out-for-delivery" },
+  { label: "Unshipped", status: "unshipped", href: "/user/dashboard/unshipped-reports" },
+  { label: "Delivered", status: "delivered", href: "/user/dashboard/delivered" },
+  { label: "Undelivered", status: "undelivered", href: "/user/dashboard/undelivered" },
+  { label: "RTO Intransit", status: "rto_intransit", href: "/user/dashboard/rto-intransit" },
+  { label: "RTO Delivered", status: "rto_delivered", href: "/user/dashboard/rto-delivered" },
+  { label: "Lost Shipment", status: "lost_shipment", href: "/user/dashboard/lost-shipment" },
+];
 
 const ReportsPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const pathname = usePathname(); 
+  const pathname = usePathname();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; 
+  const itemsPerPage = 10;
   const router = useRouter();
 
 
@@ -77,7 +77,7 @@ const ReportsPage: React.FC = () => {
   useEffect(() => {
     fetchOrders();
   }, [activeTab]);
-  
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -100,7 +100,7 @@ const ReportsPage: React.FC = () => {
   };
 
   const handleCloneOrder = (orderId: string) => {
-    router.push(`/user/dashboard/clone-order/${orderId}`); 
+    router.push(`/user/dashboard/clone-order/${orderId}`);
   };
 
   const filteredOrders = orders.filter(order =>
@@ -108,7 +108,8 @@ const ReportsPage: React.FC = () => {
     order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.items.some(item => item.productName.toLowerCase().includes(searchTerm.toLowerCase())) || // Search within items
     (order.awbNumber && order.awbNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    order.mobile.toLowerCase().includes(searchTerm.toLowerCase()) 
+    order.mobile.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.courierName && order.courierName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const paginatedOrders = filteredOrders.slice(
@@ -121,7 +122,7 @@ const ReportsPage: React.FC = () => {
       setCurrentPage(currentPage - 1);
     }
   };
-  
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -185,7 +186,7 @@ const ReportsPage: React.FC = () => {
         order.orderId,
         order.awbNumber || "-",
         fullProductDetails,
-        order.paymentMode || "-", 
+        order.paymentMode || "-",
         totalValue.toFixed(2),
         `${order.customerName} (${order.mobile})`,
         order.address,
@@ -211,7 +212,7 @@ const ReportsPage: React.FC = () => {
   }
 
   return (
-      <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
@@ -227,7 +228,7 @@ const ReportsPage: React.FC = () => {
                     <span className="truncate text-gray-700 dark:text-white">Dashboard</span>
                   </Link>
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
-                  <span className="font-medium truncate text-gray-700 dark:text-white">Reports</span>
+                  <span className="font-medium truncate text-gray-700 dark:text-white">All-Shipments</span>
                 </div>
               </div>
             </div>
@@ -235,7 +236,7 @@ const ReportsPage: React.FC = () => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search orders..."
+                  placeholder="Search by order ID, customer, product, courier, AWB, or mobile..."
                   className="pl-10 pr-4 py-2 rounded-lg w-full sm:w-auto shadow-sm border transition
                     bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-400
                     dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:ring-blue-800
@@ -245,17 +246,15 @@ const ReportsPage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              <div className="flex flex-wrap items-center gap-4"> 
-                <button
-                  type="button"
-                  onClick={() => downloadCSV(filteredOrders)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
-                  title="Download CSV"
-                >
-                  <Download className="h-5 w-5" />
-                  Download
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => downloadCSV(filteredOrders)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+                title="Download CSV"
+              >
+                <Download className="h-5 w-5" />
+                Download
+              </button>
             </div>
           </div>
 
@@ -279,29 +278,29 @@ const ReportsPage: React.FC = () => {
                 </thead>
                 <tbody className="divide-y text-xs divide-gray-200 dark:divide-gray-800">
                     {paginatedOrders.map((order, idx) => {
-                      const totalValue = calculateTotalOrderValue(order.items);
-                      return (
+                       const totalValue = calculateTotalOrderValue(order.items);
+                       return (
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                             <td className="px-3 py-2">{idx + 1}</td>
                             <td className="px-3 py-2">{order.orderId}</td>
                             <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
-                            {order.items && order.items.length > 0 ? (
-                              <div className="space-y-1">
-                                {order.items.map((item: OrderItem, index: number) => (
-                                  <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
-                                    <span className="font-medium">{item.productName}</span> ({item.quantity}x)
-                                    {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                              {order.items && order.items.length > 0 ? (
+                                <div className="space-y-1">
+                                  {order.items.map((item: OrderItem, index: number) => (
+                                    <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
+                                      <span className="font-medium">{item.productName}</span> ({item.quantity}x)
+                                      {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                                    </div>
+                                  ))}
+                                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
+                                    {(order.length && order.breadth && order.height)
+                                      ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
+                                      : ""}
+                                    {order.physicalWeight
+                                      ? `Wt: ${order.physicalWeight}Kg`
+                                      : ""}
                                   </div>
-                                ))}
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
-                                  {(order.length && order.breadth && order.height)
-                                    ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
-                                    : ""}
-                                  {order.physicalWeight
-                                    ? `Wt: ${order.physicalWeight}Kg`
-                                    : ""}
                                 </div>
-                              </div>
                               ) : (
                                 <span className="text-gray-400">No items</span>
                               )}
@@ -317,47 +316,25 @@ const ReportsPage: React.FC = () => {
                             <td className="px-3 py-2">{order.attempts ?? "0"}</td>
                             <td className="px-3 py-2">{order.shippingDetails ?? "-"}</td>
                             <td className="px-3 py-2">
-                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
-                            {order.status === "unshipped" ? "Unshipped" : order.status.replace(/_/g, " ")}
+                                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
+                                {order.status === "unshipped" ? "Unshipped" : order.status.replace(/_/g, " ")}
                                 </span>
                             </td>
                             <td className="px-3 py-2 text-center"> 
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">  
-                                      <span className="sr-only">Open menu</span>
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 shadow-md rounded-md p-1 border border-gray-200 dark:border-gray-700 min-w-[180px]">
-                                    <DropdownMenuSeparator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />  
-                                    {order.awbNumber && (
-                                      order.status === 'manifested' ||   
-                                      order.status === 'pending_manifest' || 
-                                      order.status === 'shipped' || 
-                                      order.status === 'in_transit' || 
-                                      order.status === 'out_for_delivery' || 
-                                      order.status === 'delivered'
-                                    ) && (
-                                      <DropdownMenuItem onClick={() => handleDownloadLabel(order.id, order.awbNumber!, order.courierName!, order.labelUrl)}>
-                                        <DownloadCloud className="mr-2 h-4 w-4" />
-                                        <span>Download Label</span>
-                                      </DropdownMenuItem>
-                                    )}
-                                     
-                                    <DropdownMenuItem
-                                      onClick={() => handleCloneOrder(order.id)}
-                                      className="cursor-pointer"
-                                    >
-                                      <Copy className="mr-2 h-4 w-4" />
-                                      <span>Clone Order</span>
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                <div className="flex justify-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleCloneOrder(order.id)}
+                                    className="p-2 rounded-full border border-transparent text-blue-700 hover:bg-blue-100 hover:border-blue-400 transition dark:text-blue-300 dark:hover:bg-blue-900 dark:hover:border-blue-700"
+                                    title="Clone Order"
+                                >
+                                    <Copy className="h-5 w-5" />
+                                </button>
+                                </div>
                             </td>
                         </tr>
-                      );
-                    })}
+                      );  
+                    })} 
                     </tbody>
               </table>
             </div>
