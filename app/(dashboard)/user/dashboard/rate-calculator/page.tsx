@@ -279,10 +279,10 @@ export default function RateCalculator() {
             const logo = getCourierLogo(rate.courierName);
             return (
               <Card key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <CardContent className="p-2 grid grid-cols-3 sm:grid-cols-5 gap-2 items-center">
-                  <div className="col-span-1 flex flex-col items-start">
+                <CardContent className="p-3 grid grid-cols-2 sm:grid-cols-5 gap-x-3 gap-y-2 items-center">
+                  <div className="col-span-2 sm:col-span-1 flex flex-col items-start">
                      {logo && (
-                       <div className="relative h-10 w-20 rounded-[2px] mb-1"> 
+                       <div className="relative h-8 w-16 rounded-[2px]"> 
                          <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
                        </div>
                      )}
@@ -292,22 +292,22 @@ export default function RateCalculator() {
                      <span className="text-sm font-medium text-gray-900 dark:text-white ml-3">{rate.serviceType || 'Standard'}</span>
                   </div>
  
-                  <div className="col-span-1 text-center sm:text-left">
+                  <div className="text-left">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Weight</p>
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{rate.weight.toFixed(2)} kg</p>
                   </div>
 
-                  <div className="col-span-1 text-center sm:text-left">
+                  <div className="text-left">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Courier Charges</p>
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">₹{rate.courierCharges.toFixed(2)}</p>
                   </div>
 
-                  <div className="col-span-1 text-center sm:text-left">
+                  <div className="text-left">
                     <p className="text-xs text-gray-500 dark:text-gray-400">COD Charges</p>
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">₹{rate.codCharges.toFixed(2)}</p>
                   </div>
 
-                  <div className="col-span-1 text-right">
+                  <div className="text-left sm:text-right">
                     <p className="text-xs text-gray-500 dark:text-gray-400">Total Price</p>
                     <p className="text-base font-bold text-blue-700 dark:text-blue-400">₹{rate.totalPrice.toFixed(2)}</p>
                   </div>
