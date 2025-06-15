@@ -181,7 +181,7 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
   }
 }
 
-// yaha se expressbees ka code shuru hota hai
+// yaha se xpressbees ka code shuru hota hai
 
 let currentXpressbeesToken: string | null = null;
 

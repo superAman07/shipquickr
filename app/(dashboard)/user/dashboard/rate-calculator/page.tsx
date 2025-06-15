@@ -125,11 +125,11 @@ export default function RateCalculator() {
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 px-2 md:px-4">
+      <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8 px-2 md:px-4">
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 shadow-md w-full lg:w-1/2 space-y-5" // Adjusted padding and spacing
+          className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 shadow-md w-full lg:w-1/2 space-y-5"  
         >
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Mode</label>
@@ -240,9 +240,13 @@ export default function RateCalculator() {
           </Button>
         </form>
 
-        <div className="w-full lg:w-1/2 space-y-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Shipping Rates</h2>
+        <div className="w-full lg:w-1/2 space-y-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md flex flex-col lg:max-h-[405px]">
+          <div className="p-2 sm:p-3 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-md sm:text-xl font-semibold text-[#495057] dark:text-gray-200">Shipping Rates</h2>
+          </div>
+          <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 hide-scrollbar">
 
+          
           {loading && (
             <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
@@ -311,6 +315,7 @@ export default function RateCalculator() {
               </Card>
             );
           })}
+          </div>
         </div>
       </div>
     </>
