@@ -245,8 +245,6 @@ export default function RateCalculator() {
             <h2 className="text-md sm:text-xl font-semibold text-[#495057] dark:text-gray-200">Shipping Rates</h2>
           </div>
           <div className="flex-grow overflow-y-auto p-2 sm:p-3 space-y-4 hide-scrollbar">
-
-
             {loading && (
               <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
                 <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
