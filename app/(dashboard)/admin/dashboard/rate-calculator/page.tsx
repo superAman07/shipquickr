@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import { ChevronRight, FileCheck, Home, Loader2, PackageSearch } from "lucide-react"; // Added Loader2, PackageSearch
 import Link from "next/link";
-import Image from "next/image";  
+import Image from "next/image";
 
 interface Rate {
   courierName: string;
@@ -35,9 +35,9 @@ export default function RateCalculator() {
     width: "",
     height: "",
     collectableValue: "",
-    declaredValue: "", 
+    declaredValue: "",
   });
-  const [rates, setRates] = useState<Rate[]>([]);  
+  const [rates, setRates] = useState<Rate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -56,42 +56,42 @@ export default function RateCalculator() {
     setLoading(true);
     setError(null);
     setRates([]);
-    setSubmitted(true);  
+    setSubmitted(true);
 
     try {
       const payload = {
         ...form,
       };
-      const res = await axios.post("/api/admin/rate-calculator", payload);  
+      const res = await axios.post("/api/admin/rate-calculator", payload);
       if (res.status === 200 && Array.isArray(res.data.rates)) {
         setRates(res.data.rates);
         if (res.data.rates.length === 0) {
           setError("No shipping rates found for the given details.");
         }
-      } else { 
+      } else {
         setError(res.data.error || "Could not fetch rates. Please check details.");
       }
     } catch (err: any) {
       console.error("Rate Calc Error:", err);
-      
+
       if (err.response?.status === 404) {
-          setError("No shipping rates found for the given details.");
+        setError("No shipping rates found for the given details.");
       } else if (err.response?.data?.error) {
-          setError(err.response.data.error);
+        setError(err.response.data.error);
       } else {
-          setError("Failed to fetch rates. Please try again later.");
+        setError("Failed to fetch rates. Please try again later.");
       }
     } finally {
       setLoading(false);
     }
   };
- 
+
   const getCourierLogo = (courierName: string): string | null => {
     const nameLower = courierName.toLowerCase();
     if (nameLower.includes("ecom express")) {
       return "/ecom-express.png";
     }
-    if (nameLower.includes("xpressbees")) { 
+    if (nameLower.includes("xpressbees")) {
       return "/xpressbees.png";
     }
     return null;
@@ -99,15 +99,15 @@ export default function RateCalculator() {
 
 
   return (
-    <> 
-       <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-950 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
-         <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
-           <div className="flex flex-col gap-1 sm:gap-2">
-             <div className="flex items-center gap-2 dark:text-amber-50">
-               <FileCheck className="h-5 w-5 sm:h-6 sm:w-6" />
-               <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">{title}</h1>
-             </div>
-             {subtitle && (
+    <>
+      <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-950 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
+        <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
+          <div className="flex flex-col gap-1 sm:gap-2">
+            <div className="flex items-center gap-2 dark:text-amber-50">
+              <FileCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+              <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">{title}</h1>
+            </div>
+            {subtitle && (
               <p className="text-xs sm:text-sm text-primary-foreground/80 dark:text-amber-50/90">{subtitle}</p>
             )}
           </div>
@@ -143,7 +143,7 @@ export default function RateCalculator() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="COD">COD</SelectItem>
-                <SelectItem value="ppd">Prepaid</SelectItem> 
+                <SelectItem value="ppd">Prepaid</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -160,7 +160,7 @@ export default function RateCalculator() {
                 required
                 disabled={loading}
                 placeholder="e.g. 110001"
-                className="bg-blue-50 dark:bg-gray-800"  
+                className="bg-blue-50 dark:bg-gray-800"
               />
             </div>
             <div>
@@ -186,7 +186,7 @@ export default function RateCalculator() {
                 value={form.weight}
                 onChange={handleChange}
                 type="number"
-                min="0.01" 
+                min="0.01"
                 step="0.01"
                 required
                 disabled={loading}
@@ -202,34 +202,34 @@ export default function RateCalculator() {
               </div>
             </div>
           </div>
- 
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Declared Value (₹)</label>
-                <Input
-                    name="declaredValue"
-                    value={form.declaredValue}
-                    onChange={handleChange}
-                    type="number"
-                    min="0"
-                    required
-                    disabled={loading}
-                    placeholder="Value of goods"
-                />
-             </div>
-             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Collectable Value (₹)</label>
-                <Input
-                    name="collectableValue"
-                    value={form.collectableValue}
-                    onChange={handleChange}
-                    type="number"
-                    min="0"
-                    required={form.paymentMode === "COD"}
-                    disabled={loading || form.paymentMode !== "COD"}
-                    placeholder={form.paymentMode === "COD" ? "Amount to collect" : "Not applicable"}
-                />
-             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Declared Value (₹)</label>
+              <Input
+                name="declaredValue"
+                value={form.declaredValue}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required
+                disabled={loading}
+                placeholder="Value of goods"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Collectable Value (₹)</label>
+              <Input
+                name="collectableValue"
+                value={form.collectableValue}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                required={form.paymentMode === "COD"}
+                disabled={loading || form.paymentMode !== "COD"}
+                placeholder={form.paymentMode === "COD" ? "Amount to collect" : "Not applicable"}
+              />
+            </div>
           </div>
 
           {error && !loading && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
@@ -240,77 +240,80 @@ export default function RateCalculator() {
           </Button>
         </form>
 
-        <div className="w-full lg:w-1/2 space-y-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200">Shipping Rates</h2>
-
-          {loading && (
-            <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fetching rates...</p>
-            </Card>
-          )}
-
-          {!loading && rates.length === 0 && submitted && !error && (
-             <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
-               <PackageSearch className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
-               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">No rates found for the entered details.</p>
-             </Card>
-          )}
-          {!loading && !submitted && rates.length === 0 && !error && (
-             <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
-               <PackageSearch className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
-               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fill the form to see shipping rates.</p>
-             </Card>
-          )}
-
-          {!loading && error && rates.length === 0 && (
-             <Card className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-6 text-center">
-               <PackageSearch className="mx-auto h-8 w-8 text-red-500 dark:text-red-400" />
-               <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300">Error</p>
-               <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
-             </Card>
-          )}
-
-          {!loading && rates.length > 0 && rates.map((rate, idx) => {
-            const logo = getCourierLogo(rate.courierName);
-            return (
-              <Card key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <CardContent className="p-4 grid grid-cols-3 sm:grid-cols-5 gap-2 items-center">
-                  <div className="col-span-1 flex flex-col items-start">
-                     {logo && (
-                       <div className="relative h-10 w-20 rounded-[2px] mb-1"> 
-                         <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
-                       </div>
-                     )}
-                     {!logo && (
-                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{rate.courierName}</span>
-                     )}
-                     <span className="text-sm font-medium text-gray-900 dark:text-white ml-3">{rate.serviceType || 'Standard'}</span>
-                  </div>
- 
-                  <div className="col-span-1 text-center sm:text-left">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Weight</p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{rate.weight.toFixed(2)} kg</p>
-                  </div>
-
-                  <div className="col-span-1 text-center sm:text-left">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Courier Charges</p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">₹{rate.courierCharges.toFixed(2)}</p>
-                  </div>
-
-                  <div className="col-span-1 text-center sm:text-left">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">COD Charges</p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">₹{rate.codCharges.toFixed(2)}</p>
-                  </div>
-
-                  <div className="col-span-1 text-right">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Price</p>
-                    <p className="text-base font-bold text-blue-700 dark:text-blue-400">₹{rate.totalPrice.toFixed(2)}</p>
-                  </div>
-                </CardContent>
+        <div className="w-full lg:w-1/2 space-y-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md flex flex-col lg:max-h-[405px]">
+          <div className="p-2 sm:p-3 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-md sm:text-xl font-semibold text-[#495057] dark:text-gray-200">Shipping Rates</h2>
+          </div>
+          <div className="flex-grow overflow-y-auto p-2 sm:p-3 space-y-4 hide-scrollbar">
+            {loading && (
+              <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
+                <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fetching rates...</p>
               </Card>
-            );
-          })}
+            )}
+
+            {!loading && rates.length === 0 && submitted && !error && (
+              <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
+                <PackageSearch className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">No rates found for the entered details.</p>
+              </Card>
+            )}
+            {!loading && !submitted && rates.length === 0 && !error && (
+              <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
+                <PackageSearch className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fill the form to see shipping rates.</p>
+              </Card>
+            )}
+
+            {!loading && error && rates.length === 0 && (
+              <Card className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-3 text-center">
+                <PackageSearch className="mx-auto h-8 w-8 text-red-500 dark:text-red-400" />
+                <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300">Error</p>
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
+              </Card>
+            )}
+
+            {!loading && rates.length > 0 && rates.map((rate, idx) => {
+              const logo = getCourierLogo(rate.courierName);
+              return (
+                <Card key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                  <CardContent className="p-3 grid grid-cols-2 sm:grid-cols-5 gap-x-3 gap-2 items-center">
+                    <div className="col-span-2 sm:col-span-1 flex flex-col items-start">
+                      {logo && (
+                        <div className="relative h-8 w-16 rounded-[2px]">
+                          <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
+                        </div>
+                      )}
+                      {!logo && (
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">{rate.courierName}</span>
+                      )}
+                      <span className="text-sm font-medium text-gray-900 dark:text-white ml-3">{rate.serviceType || 'Standard'}</span>
+                    </div>
+
+                    <div className="text-left">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Weight</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{rate.weight.toFixed(2)} kg</p>
+                    </div>
+
+                    <div className="text-left">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Courier Charges</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">₹{rate.courierCharges.toFixed(2)}</p>
+                    </div>
+
+                    <div className="text-left">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">COD Charges</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">₹{rate.codCharges.toFixed(2)}</p>
+                    </div>
+
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Price</p>
+                      <p className="text-base font-bold text-blue-700 dark:text-blue-400">₹{rate.totalPrice.toFixed(2)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </div>
     </>
