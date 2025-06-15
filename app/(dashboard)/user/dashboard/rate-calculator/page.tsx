@@ -244,31 +244,31 @@ export default function RateCalculator() {
           <div className="p-2 sm:p-3 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-md sm:text-xl font-semibold text-[#495057] dark:text-gray-200">Shipping Rates</h2>
           </div>
-          <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 hide-scrollbar">
+          <div className="flex-grow overflow-y-auto p-2 sm:p-3 space-y-4 hide-scrollbar">
 
           
           {loading && (
-            <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
+            <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fetching rates...</p>
             </Card>
           )}
 
           {!loading && rates.length === 0 && submitted && !error && (
-             <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
+             <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
                <PackageSearch className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">No rates found for the entered details.</p>
              </Card>
           )}
           {!loading && !submitted && rates.length === 0 && !error && (
-             <Card className="bg-gray-50 dark:bg-gray-800 p-6 text-center">
+             <Card className="bg-gray-50 dark:bg-gray-800 p-3 text-center">
                <PackageSearch className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Fill the form to see shipping rates.</p>
              </Card>
           )}
 
           {!loading && error && rates.length === 0 && (
-             <Card className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-6 text-center">
+             <Card className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 p-3 text-center">
                <PackageSearch className="mx-auto h-8 w-8 text-red-500 dark:text-red-400" />
                <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300">Error</p>
                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
@@ -279,7 +279,7 @@ export default function RateCalculator() {
             const logo = getCourierLogo(rate.courierName);
             return (
               <Card key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <CardContent className="p-4 grid grid-cols-3 sm:grid-cols-5 gap-2 items-center">
+                <CardContent className="p-2 grid grid-cols-3 sm:grid-cols-5 gap-2 items-center">
                   <div className="col-span-1 flex flex-col items-start">
                      {logo && (
                        <div className="relative h-10 w-20 rounded-[2px] mb-1"> 
