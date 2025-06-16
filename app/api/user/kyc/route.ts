@@ -170,7 +170,10 @@ export async function POST(req: NextRequest) {
           chequeUrl,
         },
       });
-  
+      await prisma.user.update({
+        where: { id: parseInt(decoded.userId) },
+        data: { kycStatus: "pending" },
+      });
       return NextResponse.json({ message: "KYC details submitted successfully", kyc }, { status: 201 });
     } catch (err: any) {  
       console.error("KYC POST error:", err); 
