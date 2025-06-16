@@ -4,15 +4,18 @@ import { Check, Upload, Building2, User, CreditCard, FileText, ChevronRight } fr
 import { Input } from "@/components/ui/input"
 import axios from "axios"
 import { toast } from "react-toastify"
-import ButtonLoading from "@/components/buttonLoading"
-import Cookies from 'js-cookie';
-import { jwtDecode } from "jwt-decode"
+import ButtonLoading from "@/components/buttonLoading" 
+import useSWR from 'swr';
 
 interface UserDetails {
   firstName: string;
   lastName: string;
   email: string;
 }
+interface KycStatusResponse {
+  kycStatus?: string;
+}
+const fetcher = (url: string) => axios.get(url).then(res => res.data);
 
 export default function KYC() { 
    
@@ -52,6 +55,13 @@ export default function KYC() {
   })
 
   const [isUserDataLoading, setIsUserDataLoading] = useState(true);
+
+  const { data: kycData, error: kycError, isLoading: isKycStatusLoading } = useSWR<KycStatusResponse>('/api/user/kyc', fetcher, {
+    refreshInterval: 5000,
+  });
+
+  const currentUserKycStatus = isKycStatusLoading ? "loading" : kycError ? "none" : kycData?.kycStatus?.toLowerCase() || "none";
+
   useEffect(() => {
     const fetchUserData = async () => {
       setIsUserDataLoading(true);  
@@ -167,12 +177,35 @@ export default function KYC() {
  
   const requiredField = <span className="text-red-500 ml-1">*</span>
 
+  const getStatusBadgeClass = (status?: string) => {
+    switch (status?.toLowerCase()) {
+      case "approved":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "rejected":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      case "loading":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+      default: // none or other
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    }
+  };
+
+  const formattedKycStatus = currentUserKycStatus
+    ? currentUserKycStatus.charAt(0).toUpperCase() + currentUserKycStatus.slice(1)
+    : "None";
+  
+  const overallInitialLoading = isUserDataLoading || isKycStatusLoading;
+
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6"> 
       <div className="flex items-center space-x-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">KYC Verification</h1>
-        <span className="px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
-          Pending
+        <span 
+          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(currentUserKycStatus)}`}
+        >
+          {formattedKycStatus === "Loading" ? "Loading Status..." : formattedKycStatus}
         </span>
       </div>
  
