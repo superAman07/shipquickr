@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// shadowfax
+// shadowfax still not working correctly <--- ignore for now
 interface ShadowfaxApiPincodeInfo {
   code: number;  
   services: string[];  
