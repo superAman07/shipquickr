@@ -154,7 +154,7 @@ export default function CourierServiceabilityUserPage() {
             </div>
           </div>
         ) : (
-          !loading && !error && availableCouriers.length === 0 && sellerPincode && customerPincode && ( // Show only if form was submitted
+          !loading && !error && availableCouriers.length === 0 && sellerPincode && customerPincode && (  
              <p className="text-gray-500 dark:text-gray-400 text-center">Enter pincodes to check serviceability.</p>
           )
         )}
