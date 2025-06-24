@@ -41,9 +41,14 @@ export async function POST(req: NextRequest) {
       availableCouriers.push(ecomServiceInfo);
     }
 
+    const xpressbeesServiceInfo = await getXpressbeesServiceInfo(String(pickupPincode), String(destinationPincode));
+    if (xpressbeesServiceInfo) {
+      availableCouriers.push(xpressbeesServiceInfo);
+    }
+
     if (availableCouriers.length === 0) {
       return NextResponse.json(
-        { couriers: [], message: "Shadowfax service not available for the given pincodes." },
+        { couriers: [], message: "No courier service available for the given pincodes." },
         { status: 200 }
       );
     }
@@ -147,6 +152,64 @@ async function getEcomExpressServiceInfo(
       "Error checking Ecom Express serviceability via Rate API:",
       error.response?.data || error.message
     );
+  }
+  return null;
+}
+
+async function getXpressbeesServiceInfo(
+  originPincode: string,
+  destinationPincode: string
+): Promise<SimpleServiceInfo | null> {
+  const apiUrl = process.env.XPRESSBEES_RATE_API_URL;
+  const loginUrl = process.env.XPRESSBEES_LOGIN_API_URL;
+  const email = process.env.XPRESSBEES_EMAIL;
+  const password = process.env.XPRESSBEES_PASSWORD;
+
+  if (!apiUrl || !loginUrl || !email || !password) {
+    console.error("Xpressbees API URL or credentials are not configured.");
+    return null;
+  }
+ 
+  let token: string | null = null;
+  try {
+    const loginRes = await axios.post(loginUrl, { email, password });
+    if (loginRes.data && loginRes.data.status === true && loginRes.data.data) {
+      token = loginRes.data.data;
+    } else {
+      console.error("Xpressbees: Failed to fetch token for serviceability check.");
+      return null;
+    }
+  } catch (err) {
+    console.error("Xpressbees: Error fetching token for serviceability check.", err);
+    return null;
+  }
+
+  const payload = {
+    order_type_user: "ecom",
+    origin: originPincode,
+    destination: destinationPincode,
+    weight: "0.5",
+    length: "10",
+    height: "10",
+    breadth: "10",
+    cod_amount: "10",
+    cod: "no",
+    product_value: "50"
+  };
+
+  try {
+    const { data } = await axios.post(apiUrl, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (data && data.status === true && Array.isArray(data.message) && data.message.length > 0) {
+      return { courierName: "Xpressbees" };
+    }
+  } catch (error: any) {
+    console.error("Error checking Xpressbees serviceability via Rate API:", error.response?.data || error.message);
   }
   return null;
 }

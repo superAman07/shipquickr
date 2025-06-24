@@ -144,7 +144,7 @@ export default function CourierServiceabilityUserPage() {
                 return (
                   <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow bg-white dark:bg-gray-800 flex flex-col items-center justify-center text-center">
                     {logoUrl && (
-                      <img src={logoUrl} alt={`${courier.courierName} logo`} className="h-16 w-auto mb-3 object-contain"/>
+                      <img src={logoUrl} alt={`${courier.courierName} logo`} className="h-12 max-w-[100px] mb-3 object-contain"/>
                     )}
                     <p className="text-lg font-medium text-gray-900 dark:text-gray-100">{courier.courierName}</p>
                     <p className="text-sm text-green-600 dark:text-green-400">Service Available</p>
