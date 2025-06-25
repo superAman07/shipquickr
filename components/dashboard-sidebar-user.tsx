@@ -32,7 +32,7 @@ function NavItem({
       )}
     >
       <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
-        <div className={cn("flex-shrink-0", active ? "text-[#252525]" : "text-white")}>
+        <div className={cn("flex-shrink-0", active ? "text-[#252525]" : "text-[#f3f4f6]")}>
           {React.isValidElement(icon)
             ? React.cloneElement( 
                 icon as React.ReactElement<{ className?: string }>,
@@ -40,7 +40,7 @@ function NavItem({
                   className: cn(
                     (icon.props as { className?: string }).className,
                     "h-5 w-5",
-                    active ? "text-[#252525]" : "text-white"
+                    active ? "text-[#252525]" : "text-[#f3f4f6]"
                   )
                 }
               )
@@ -50,7 +50,7 @@ function NavItem({
           className={cn(
             "ml-3 whitespace-nowrap transition-all duration-300 w-full",
             collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
-            active ? "text-[#252525]" : "text-white"
+            active ? "text-[#252525]" : "text-[#f3f4f6]"
           )}
         >
           {label}
@@ -249,7 +249,7 @@ export default function DashboardSidebarUser() {
   return (
     <aside
       className={cn(
-        `bg-[#0a0c37] text-white h-full transition-all duration-300 ease-in-out flex flex-col`,
+        `bg-[#0a0c37] text-[#f3f4f6] h-full transition-all duration-300 ease-in-out flex flex-col`,
         sidebarCollapsed ? "w-16" : "w-50",
       )}
     >
@@ -259,7 +259,7 @@ export default function DashboardSidebarUser() {
         aria-label="Toggle sidebar"
         onClick={toggleSidebar}
         className={cn(
-          "absolute z-40 cursor-pointer right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-white border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
+          "absolute z-40 cursor-pointer right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-[#f3f4f6] border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
           "hover:bg-indigo-800",
           "backdrop-blur bg-indigo-700/60",
           sidebarCollapsed ? "rotate-180" : "",
@@ -333,7 +333,7 @@ export default function DashboardSidebarUser() {
             > 
               <LogoutButton
                 propUser="user"
-                propStyle={{ color: "text-white"}} 
+                propStyle={{ color: "text-[#f3f4f6]"}} 
               />
             </div>
           </div>
@@ -343,7 +343,7 @@ export default function DashboardSidebarUser() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-center cursor-pointer text-white hover:bg-indigo-900"
+          className="w-full justify-center cursor-pointer text-[#f3f4f6] hover:bg-indigo-900"
           onClick={toggleSidebar}
         >
           <ChevronRight className={cn("h-5 w-5 transition-transform", sidebarCollapsed ? "rotate-180" : "")} />
