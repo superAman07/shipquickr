@@ -44,8 +44,10 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
       <div className="max-w-8xl mx-auto  sm:px-6 lg:px-12">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-              ShipQuickr
+            <div className="">
+              <Link href={`/${userRole}/dashboard`} className="flex items-center">
+                <img src="/shipquickr.png" alt="Logo" className="h-[57px] w-[145px]" />
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-4">
