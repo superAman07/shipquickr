@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight, Ticket , Users, UserCheck, Plus, ListFilter, User, Newspaper, LogOut } from "lucide-react";
+import { Package, Truck, Info, Calculator, ChevronRight, Ticket, Users, UserCheck, Plus, ListFilter, User, Newspaper, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import LogoutButton from "./logout";
- 
+
 function NavItem({ icon, label, href, active = false, collapsed }: {
   icon: React.ReactNode;
   label: string;
@@ -19,17 +19,33 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
       href={href}
       className={cn(
         "flex items-center px-4 py-3 mt-3 cursor-pointer rounded-l-full transition-colors",
-        active ? "bg-indigo-900" : "hover:bg-indigo-900",
+        active ? "bg-[#f3f4f6]" : "hover:bg-indigo-900",
         collapsed ? "justify-center" : ""
       )}
     >
       <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
-        <div className="flex-shrink-0">
-          {icon}
+        <div className={cn("flex-shrink-0", active ? "text-[#252525]" : "text-white")}>
+          {React.isValidElement(icon)
+            ? React.cloneElement(
+              icon as React.ReactElement<{ className?: string }>,
+              {
+                className: cn(
+                  (icon.props as { className?: string }).className,
+                  "h-5 w-5",
+                  active ? "text-[#252525]" : "text-white"
+                )
+              }
+            )
+            : icon}
         </div>
-        
-        <span className={cn("ml-3 whitespace-nowrap transition-all duration-300 w-full",collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs")}>
-            {label}
+        <span
+          className={cn(
+            "ml-3 whitespace-nowrap transition-all duration-300 w-full",
+            collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
+            active ? "text-[#252525]" : "text-white"
+          )}
+        >
+          {label}
         </span>
       </div>
     </Link>
@@ -38,15 +54,15 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
 
 export default function DashboardSidebarAdmin() {
   const pathname = usePathname();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth < 768;
       setSidebarCollapsed(isMobile);
     };
-  
-    handleResize(); 
+
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -57,8 +73,8 @@ export default function DashboardSidebarAdmin() {
         "bg-indigo-950 text-white h-full transition-all duration-300 ease-in-out flex flex-col",
         sidebarCollapsed ? "w-16" : "w-50",
       )}
-    > 
-    <Button
+    >
+      <Button
         variant="ghost"
         size="icon"
         aria-label="Toggle sidebar"
@@ -71,7 +87,7 @@ export default function DashboardSidebarAdmin() {
         )}
         style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)" }}
       >
-      <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-5 w-5" />
       </Button>
       <nav className="flex-1 pt-4 overflow-y-auto hide-scrollbar">
         <NavItem
@@ -109,7 +125,7 @@ export default function DashboardSidebarAdmin() {
           href="/admin/dashboard/reports"
           active={pathname === "/admin/dashboard/reports"}
           collapsed={sidebarCollapsed}
-        /> 
+        />
 
         <NavItem
           icon={<Calculator className="h-5 w-5" />}
@@ -117,21 +133,21 @@ export default function DashboardSidebarAdmin() {
           href="/admin/dashboard/rate-calculator"
           active={pathname === "/admin/dashboard/rate-calculator"}
           collapsed={sidebarCollapsed}
-        />  
+        />
         <NavItem
           icon={<Ticket className="h-5 w-5" />}
           label="Coupon"
           href="/admin/dashboard/coupon"
           active={pathname === "/admin/dashboard/coupon"}
           collapsed={sidebarCollapsed}
-        />  
+        />
         <NavItem
           icon={<Truck className="h-5 w-5" />}
           label="Shipping Rates"
           href="/admin/dashboard/shipping-rates"
           active={pathname === "/admin/dashboard/shipping-rates"}
           collapsed={sidebarCollapsed}
-        />  
+        />
         <NavItem
           icon={<Newspaper className="h-5 w-5" />}
           label="News"
@@ -152,14 +168,14 @@ export default function DashboardSidebarAdmin() {
                 "ml-3 whitespace-nowrap transition-all duration-300 w-full",
                 sidebarCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
               )}
-            > 
+            >
               <LogoutButton
                 propUser="admin"
-                propStyle={{ color: "text-white"}} 
+                propStyle={{ color: "text-white" }}
               />
             </div>
           </div>
-        </div>  
+        </div>
       </nav>
       <div className="p-4 border-t border-indigo-900">
         <Button
