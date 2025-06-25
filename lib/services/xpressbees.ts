@@ -66,6 +66,40 @@ class XpressbeesClient {
             return null;
         }
     }
+    public async getCourierList(): Promise<any[] | null> {
+    const token = await this.getValidXpressbeesToken();
+    if (!token) {
+        console.error("XpressbeesClient: Cannot get courier list without a valid token.");
+        return null;
+    }
+
+    const apiUrl = process.env.XPRESSBEES_COURIER_API_URL;
+    if (!apiUrl) {
+        console.error("XpressbeesClient: XPRESSBEES_COURIER_API_URL is not defined in .env.");
+        return null;
+    }
+
+    try {
+        const response = await axios.get(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        console.log("XpressbeesClient: Courier List API Response:", response.data);
+
+        if (response.data && response.data.status === true && Array.isArray(response.data.data)) {
+            return response.data.data;
+        } else {
+            console.error("XpressbeesClient: Failed to fetch courier list:", response.data?.message || "Unknown error");
+            return null;
+        }
+    } catch (error: any) {
+        console.error("XpressbeesClient: Error fetching courier list:", error.response?.data || error.message);
+        return null;
+    }
+}
 
     async getXpressbeesOptions(shipmentData: ShipmentData, cw: number, dimensions: Dimensions): Promise<RateResult[] | null> {
         const apiUrl = process.env.XPRESSBEES_RATE_API_URL; 
@@ -155,15 +189,24 @@ class XpressbeesClient {
         }
         const consignerWarehouse = order.warehouse;
 
-        const getXpressbeesCourierId = (serviceType?: string): string => {
-            const normalized = (serviceType || '').trim().toLowerCase();
-            if (normalized === 'b2c air') return '01';
-            if (normalized === 'b2c surface') return '02';
-            console.warn(`XpressbeesClient: Unknown or missing Xpressbees service type: '${serviceType}'. Defaulting to '01'. Confirm with Xpressbees.`);
-            return '01';  
-        };
-        const xpressbeesCourierId = getXpressbeesCourierId(selectedServiceType);
-        console.log("XpressbeesClient: Mapped courier_id:", xpressbeesCourierId, "for serviceType:", selectedServiceType);
+        let courierId = "01"; // Default fallback
+    try {
+        const courierList = await this.getCourierList();
+        if (courierList && courierList.length > 0) {
+            // Find the courier that matches the selected service type
+            const matchedCourier = courierList.find(c => 
+                c.name?.toLowerCase().includes((selectedServiceType || '').toLowerCase())
+            );
+            if (matchedCourier) {
+                courierId = matchedCourier.id;
+                console.log(`XpressbeesClient: Found courier id ${courierId} for service type ${selectedServiceType}`);
+            } else {
+                console.log(`XpressbeesClient: No courier found for service type ${selectedServiceType}, using default courier`);
+            }
+        }
+    } catch (error) {
+        console.error("XpressbeesClient: Error finding courier id:", error);
+    }
 
         const payload = {
             id: `ORD-${order.id}`,  
@@ -204,8 +247,8 @@ class XpressbeesClient {
             breadth: order.breadth.toString(),
             length: order.length.toString(),
             height: order.height.toString(),
-            courier_id: xpressbeesCourierId,
-            pickup_location: "franchise", 
+            courier_id: courierId,
+            pickup_location: "customer", 
             shipping_charges: "40",  
             cod_charges: order.paymentMode === "COD" ? "25" : "0",  
             discount: "0",  
