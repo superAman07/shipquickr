@@ -70,7 +70,7 @@ export default function DashboardSidebarAdmin() {
   return (
     <aside
       className={cn(
-        "bg-indigo-950 text-[#f3f4f6] h-full transition-all duration-300 ease-in-out flex flex-col",
+        "bg-[#0a0c37] text-[#f3f4f6] h-full transition-all duration-300 ease-in-out flex flex-col",
         sidebarCollapsed ? "w-16" : "w-50",
       )}
     >
