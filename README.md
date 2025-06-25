@@ -1,3 +1,10 @@
+color codes: 
+
+#3a9bdc
+#12229d
+#233dff
+#12229d
+
 You can see glimsp of this app: https://main.d1uhle828hy4wr.amplifyapp.com/
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). 

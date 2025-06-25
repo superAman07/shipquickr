@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import type React from "react"
+import React from "react"
 
 import { usePathname } from "next/navigation"
 import { Package, Truck, Info, Calculator, ChevronRight, Plus, ListFilter, RefreshCw, Banknote, IndianRupee, MessageSquareWarning, Settings, House, LocateIcon, LogOut } from "lucide-react"
@@ -27,19 +27,30 @@ function NavItem({
       href={href}
       className={cn(
         "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
-        active ? "bg-indigo-900" : "hover:bg-indigo-900",
+        active ? "bg-[#f3f4f6]" : "hover:bg-indigo-900",
         collapsed ? "justify-center" : "",
       )}
     >
       <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
-        <div className="flex-shrink-0">
-          {icon}
+        <div className={cn("flex-shrink-0", active ? "text-[#252525]" : "text-white")}>
+          {React.isValidElement(icon)
+            ? React.cloneElement( 
+                icon as React.ReactElement<{ className?: string }>,
+                {
+                  className: cn(
+                    (icon.props as { className?: string }).className,
+                    "h-5 w-5",
+                    active ? "text-[#252525]" : "text-white"
+                  )
+                }
+              )
+            : icon}
         </div>
-
         <span
           className={cn(
             "ml-3 whitespace-nowrap transition-all duration-300 w-full",
             collapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
+            active ? "text-[#252525]" : "text-white"
           )}
         >
           {label}
@@ -59,7 +70,7 @@ function OrdersNavItem({ collapsed }: { collapsed: boolean }) {
       <div
         className={cn(
           "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
-          active ? "bg-indigo-900" : "hover:bg-indigo-900",
+          active ? "bg-[#f3f4f6] text-[#252525]" : "hover:bg-indigo-900",
           collapsed ? "justify-center" : "",
         )}
       >
@@ -238,7 +249,7 @@ export default function DashboardSidebarUser() {
   return (
     <aside
       className={cn(
-        "bg-indigo-950 text-white h-full transition-all duration-300 ease-in-out flex flex-col",
+        `bg-[#0a0c37] text-white h-full transition-all duration-300 ease-in-out flex flex-col`,
         sidebarCollapsed ? "w-16" : "w-50",
       )}
     >

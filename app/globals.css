@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.abcd{
+  color: #399bdc;
+  color: #223dfe;
+  color: #12229c;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
