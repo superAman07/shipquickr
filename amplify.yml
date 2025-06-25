@@ -33,6 +33,7 @@ frontend:
         - echo "XPRESSBEES_LOGIN_API_URL=$XPRESSBEES_LOGIN_API_URL" >> .env.production 
         - echo "XPRESSBEES_RATE_API_URL=$XPRESSBEES_RATE_API_URL" >> .env.production 
         - echo "XPRESSBEES_CREATE_SHIPMENT_API_URL=$XPRESSBEES_CREATE_SHIPMENT_API_URL" >> .env.production 
+        - echo "XPRESSBEES_COURIER_API_URL=$XPRESSBEES_COURIER_API_URL" >> .env.production 
 
         - echo "SHADOWFAX_SERVICEABILITY_API_URL=$SHADOWFAX_SERVICEABILITY_API_URL" >> .env.production 
         - echo "SHADOWFAX_API_TOKEN=$SHADOWFAX_API_TOKEN" >> .env.production 
