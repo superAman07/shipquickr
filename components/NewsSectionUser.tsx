@@ -76,7 +76,7 @@ export default function NewsSection() {
   return (
     <div className="h-full flex flex-col">  
       <div className="mb-3">  
-        <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">Shipment News</h2>
+        <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">Latest News</h2>
         <hr className="mt-4 border-gray-300 dark:border-gray-700" /> 
       </div>
        
