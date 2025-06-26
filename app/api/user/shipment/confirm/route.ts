@@ -90,6 +90,10 @@ export async function POST(req: NextRequest) {
         if (!actualAwbNumber) {
             return NextResponse.json({ error: "Failed to obtain AWB from Xpressbees." }, { status: 503 });
         }
+        const manifestSuccess = await xpressbeesClient.createManifest([actualAwbNumber]);
+        if (!manifestSuccess) {
+            console.error("Manifest creation failed for Xpressbees AWB:", actualAwbNumber); 
+        }
     } else {
         console.warn(`No specific AWB fetch logic for ${selectedCourier.name}. Using generic placeholder.`);
         actualAwbNumber = `GENERIC-DUMMY-${orderId}-${Date.now().toString().slice(-6)}`;
