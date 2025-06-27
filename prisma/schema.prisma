@@ -114,6 +114,7 @@ model Order {
   labelUrl        String?
   shippingId      String?
   status          OrderStatus      @default(unshipped)
+  trackingHistory OrderTracking[]
   ageing          Int?
   attempts        Int?
   billableWeight  Float?
@@ -133,6 +134,21 @@ model Order {
   @@index([remittanceId])
   @@index([userId])
   @@index([warehouseId])
+}
+// history of order
+model OrderTracking {
+  id               Int      @id @default(autoincrement())
+  orderId          Int
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status           String // Original status from courier
+  normalizedStatus String // Mapped to your system's OrderStatus enum
+  description      String?  @db.Text
+  courier          String?
+  timestamp        DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  @@index([orderId])
+  @@index([normalizedStatus])
 }
 
 model OrderItem {
@@ -289,8 +305,8 @@ model News {
   status      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  createdBy   Int?     
-  
+  createdBy   Int?
+
   @@index([status])
   @@index([createdAt])
 }

@@ -72,6 +72,34 @@ class XpressbeesClient {
             return null;
         }
     }
+
+    private parseXpressbeesTrackingResponse(data: any) {
+        try {
+            if (!data || !data.response || !Array.isArray(data.data) || data.data.length === 0) {
+                console.error("XpressbeesClient: Invalid tracking response format", data);
+                return null;
+            }
+
+            const trackingData = data.data[0];
+            return {
+                awbNumber: trackingData.awb_number,
+                status: trackingData.status,
+                description: trackingData.description || trackingData.status_description || "",
+                location: trackingData.location || "",
+                date: trackingData.status_date,
+                delivered: trackingData.status.toLowerCase().includes('delivered'),
+                history: (data.data || []).map((item: any) => ({
+                    status: item.status,
+                    description: item.description || item.status_description || "",
+                    location: item.location || "",
+                    date: item.status_date
+                }))
+            };
+        } catch (error) {
+            console.error("XpressbeesClient: Error parsing tracking response:", error);
+            return null;
+        }
+    }
     public async getCourierList(): Promise<any[] | null> {
         const token = await this.getValidXpressbeesToken();
         if (!token) {
@@ -195,10 +223,10 @@ class XpressbeesClient {
         }
         const consignerWarehouse = order.warehouse;
 
-        let courierId = "01";  
+        let courierId = "01";
         try {
             const courierList = await this.getCourierList();
-            if (courierList && courierList.length > 0) { 
+            if (courierList && courierList.length > 0) {
                 const matchedCourier = courierList.find(c =>
                     c.name?.toLowerCase().includes((selectedServiceType || '').toLowerCase())
                 );
@@ -309,7 +337,7 @@ class XpressbeesClient {
         try {
             console.log("XpressbeesClient: Creating manifest/pickup with payload:", payload);
             const response = await axios.post(apiUrl, payload, {
-                headers: { 
+                headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
@@ -325,6 +353,24 @@ class XpressbeesClient {
         } catch (error: any) {
             console.error("XpressbeesClient: Error creating manifest:", error.response?.data || error.message);
             return false;
+        }
+    }
+    async trackShipment(awbNumber: string) {
+        try {
+            const token = await this.getValidXpressbeesToken(); // Fixed method name
+            const url = process.env.XPRESSBEES_TRACKING_API_URL;
+            if (!token || !url) {
+                console.error("XpressbeesClient: Token or Tracking API URL is missing.");
+                return null;
+            }
+            const response = await axios.get(url, {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { awb: awbNumber }
+            });
+            return this.parseXpressbeesTrackingResponse(response.data);
+        } catch (error) {
+            console.error("XpressbeesClient: Error tracking shipment:", error);
+            return null;
         }
     }
 }

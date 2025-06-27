@@ -27,6 +27,10 @@ frontend:
         - echo "ECOM_EXPRESS_USERNAME=$ECOM_EXPRESS_USERNAME" >> .env.production
         - echo "ECOM_EXPRESS_PASSWORD=$ECOM_EXPRESS_PASSWORD" >> .env.production
         - echo "ECOM_EXPRESS_RATE_API_URL=$ECOM_EXPRESS_RATE_API_URL" >> .env.production
+        - echo "ECOM_EXPRESS_FETCH_AWB_API_URL=$ECOM_EXPRESS_FETCH_AWB_API_URL" >> .env.production
+        - echo "ECOM_EXPRESS_MANIFEST_API_URL=$ECOM_EXPRESS_MANIFEST_API_URL" >> .env.production
+        - echo "ECOM_EXPRESS_LABEL_API_URL=$ECOM_EXPRESS_LABEL_API_URL" >> .env.production
+        - echo "ECOM_EXPRESS_TRACKING_API_URL=$ECOM_EXPRESS_TRACKING_API_URL" >> .env.production
 
         - echo "XPRESSBEES_EMAIL=$XPRESSBEES_EMAIL" >> .env.production 
         - echo "XPRESSBEES_PASSWORD=$XPRESSBEES_PASSWORD" >> .env.production 
@@ -35,6 +39,7 @@ frontend:
         - echo "XPRESSBEES_CREATE_SHIPMENT_API_URL=$XPRESSBEES_CREATE_SHIPMENT_API_URL" >> .env.production 
         - echo "XPRESSBEES_COURIER_API_URL=$XPRESSBEES_COURIER_API_URL" >> .env.production 
         - echo "XPRESSBEES_PICKUP_API_URL=$XPRESSBEES_PICKUP_API_URL" >> .env.production 
+        - echo "XPRESSBEES_TRACKING_API_URL=$XPRESSBEES_TRACKING_API_URL" >> .env.production 
 
         - echo "SHADOWFAX_SERVICEABILITY_API_URL=$SHADOWFAX_SERVICEABILITY_API_URL" >> .env.production 
         - echo "SHADOWFAX_API_TOKEN=$SHADOWFAX_API_TOKEN" >> .env.production 
