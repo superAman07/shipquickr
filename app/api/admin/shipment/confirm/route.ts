@@ -99,15 +99,12 @@ export async function POST(req: NextRequest) {
             }
         } else if (selectedCourier.name === "Xpressbees") {
             console.log("ADMIN: Attempting to fetch AWB from Xpressbees...");
-            const shipmentDetails = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber); // kycDetail is for targetUser
+            const shipmentDetails = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber);  
             if (!shipmentDetails) {
                 return NextResponse.json({ error: "Failed to obtain AWB from Xpressbees." }, { status: 503 });
             }
-
-            // Extract just the AWB number from the shipment details
+            
             actualAwbNumber = shipmentDetails.awbNumber;
-
-            // Also handle manifest creation like in the user route
             const manifestSuccess = await xpressbeesClient.createManifest([actualAwbNumber]);
             if (!manifestSuccess) {
                 console.error("ADMIN: Manifest creation failed for Xpressbees AWB:", actualAwbNumber);
