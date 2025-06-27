@@ -266,11 +266,11 @@ class EcomExpressClient {
 
   async generateShippingLabel(awbNumbers: string[]): Promise<string | null> {
     //    abhi k liye bypass karna pad rha..
-    if (process.env.MOCK_ECOM_EXPRESS === 'true') {
-        console.log("MOCK MODE: Simulating successful label generation for AWB:", awbNumbers.join(','));
-        // Return a sample PDF base64 string or path to a local test PDF 
-        return 'data:application/pdf;base64,JVBERi0xL...'; // Sample PDF data
-    }
+    // if (process.env.MOCK_ECOM_EXPRESS === 'true') {
+    //     console.log("MOCK MODE: Simulating successful label generation for AWB:", awbNumbers.join(','));
+    //     // Return a sample PDF base64 string or path to a local test PDF 
+    //     return 'data:application/pdf;base64,JVBERi0xL...'; // Sample PDF data
+    // }
 
     if (!PROD_URLS.label || !this.username || !this.password) {
         console.error("EcomExpressClient: Label API URL or credentials missing.");

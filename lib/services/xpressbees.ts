@@ -23,6 +23,12 @@ interface Dimensions {
     h: number;
 }
 
+interface XpressbeesShipmentDetails {
+    awbNumber: string;
+    shippingId: string;
+    labelUrl: string;
+}
+
 class XpressbeesClient {
     private currentToken: string | null = null;
     private tokenExpiry: number | null = null;
@@ -176,7 +182,7 @@ class XpressbeesClient {
         }
     }
 
-    public async generateAwb(order: any, selectedServiceType: string | undefined, consigneeGstNumber?: string | null): Promise<string | null> {
+    public async generateAwb(order: any, selectedServiceType: string | undefined, consigneeGstNumber?: string | null): Promise<XpressbeesShipmentDetails | null> {
         const token = await this.getValidXpressbeesToken();
         if (!token) {
             console.error("XpressbeesClient: Cannot generate AWB without a valid token.");
@@ -189,11 +195,10 @@ class XpressbeesClient {
         }
         const consignerWarehouse = order.warehouse;
 
-        let courierId = "01"; // Default fallback
+        let courierId = "01";  
         try {
             const courierList = await this.getCourierList();
-            if (courierList && courierList.length > 0) {
-                // Find the courier that matches the selected service type
+            if (courierList && courierList.length > 0) { 
                 const matchedCourier = courierList.find(c =>
                     c.name?.toLowerCase().includes((selectedServiceType || '').toLowerCase())
                 );
@@ -274,7 +279,11 @@ class XpressbeesClient {
             console.log("XpressbeesClient: Xpressbees AWB API Response:", response.data);
 
             if (response.data && response.data.response === true && response.data.awb_number) {
-                return response.data.awb_number;
+                return {
+                    awbNumber: response.data.awb_number,
+                    shippingId: response.data.shipping_id,
+                    labelUrl: response.data.label,
+                };
             } else {
                 console.error("XpressbeesClient: Failed to fetch AWB from Xpressbees:", response.data?.message || "Unknown error from Xpressbees API");
                 return null;
