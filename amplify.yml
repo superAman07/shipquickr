@@ -43,6 +43,7 @@ frontend:
 
         - echo "SHADOWFAX_SERVICEABILITY_API_URL=$SHADOWFAX_SERVICEABILITY_API_URL" >> .env.production 
         - echo "SHADOWFAX_API_TOKEN=$SHADOWFAX_API_TOKEN" >> .env.production 
+        - echo "CRON_API_KEY=$CRON_API_KEY" >> .env.production
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
