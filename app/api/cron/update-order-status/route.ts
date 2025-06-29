@@ -142,9 +142,6 @@ export async function GET(req: NextRequest) {
                     status: normalizedStatus as any,
                     attempts: trackingData.attempts || order.attempts || 0,
                     ageing: Math.ceil((Date.now() - new Date(order.createdAt).getTime()) / (1000 * 60 * 60 * 24)),
-                    // shippingDetails: trackingData && typeof trackingData === "object" && trackingData !== null && "description" in trackingData
-                    //   ? String(trackingData.description)
-                    //   : `Updated from ${order.status} to ${normalizedStatus}`
                     shippingDetails: trackingData?.description || `Updated from ${order.status} to ${normalizedStatus}`
                   }
                 }),
