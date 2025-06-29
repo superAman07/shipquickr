@@ -66,7 +66,7 @@ class XpressbeesClient {
                 return null;
             }
         } catch (error: any) {
-            console.error("XpressbeesClient: Error fetching new token:", error.response?.data || error.message);
+            console.error("XpressbeesClient: Error fetching new token:", error.response?.data || error.message);  
             this.tokenExpiry = null;
             this.currentToken = null;
             return null;
@@ -81,7 +81,7 @@ class XpressbeesClient {
             }
 
             const trackingData = data.tracking_data;
-            
+
             const allEvents = Object.values(trackingData).flat();
             if (allEvents.length === 0) {
                 console.error("XpressbeesClient: No tracking events found in the response.", data);
