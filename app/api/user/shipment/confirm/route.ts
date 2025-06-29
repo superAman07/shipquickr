@@ -19,6 +19,7 @@ interface SelectedCourier {
   codCharges: number;
   totalPrice: number;
   serviceType?: string;
+  weight: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -186,6 +187,7 @@ export async function POST(req: NextRequest) {
           labelUrl: labelUrl,
           courierName: selectedCourier.name,
           shippingCost: finalShippingCost,
+          billableWeight: selectedCourier.weight,
           shippingDetails: selectedCourier.name === "Ecom Express"
             ? `AWB ${actualAwbNumber} assigned and manifested with Ecom Express.`
             : `AWB ${actualAwbNumber} assigned. Pending manifest creation.`,

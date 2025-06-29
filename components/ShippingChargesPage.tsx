@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Calendar as ShadcnCalendar } from '@/components/ui/calendar';  
+import { Calendar as ShadcnCalendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
@@ -26,10 +26,10 @@ type ShippingCharge = {
   courierName: string;
   amount: number;
   waybill: string;
-  orderId: string; 
+  orderId: string;
   transactionId: number;
   type: string;
-  weight: string | number;  
+  weight: string | number;
   zone: string;
   status: string;
   remarks: string;
@@ -59,8 +59,8 @@ const ShippingChargesPage: React.FC = () => {
         const res = await axios.get('/api/user/billing', { params });
 
         setBalance(res.data.balance || 0);
-        setShippingCharges(res.data.shippingCharges || []);  
-        setTotal(res.data.totalCount || 0); 
+        setShippingCharges(res.data.shippingCharges || []);
+        setTotal(res.data.totalCount || 0);
 
       } catch (err) {
         console.error("Failed to fetch shipping charges:", err);
@@ -78,23 +78,23 @@ const ShippingChargesPage: React.FC = () => {
     setPage(1);
   };
 
-  const downloadCSV = () => { 
+  const downloadCSV = () => {
     console.log("Download CSV clicked");
     const headers = ["Date", "Courier", "Amount(Rs.)", "Waybill", "Order ID", "Transaction ID", "Weight", "Zone", "Status", "Remarks"];
     const csvContent = [
-        headers.join(','),
-        ...(shippingCharges || []).map(log => [
-            format(new Date(log.date), "yyyy-MM-dd HH:mm:ss"),
-            log.courierName,
-            log.amount,
-            log.waybill,
-            log.orderId,
-            log.transactionId,
-            log.weight,
-            log.zone,
-            log.status,
-            log.remarks?.replace(/"/g, '""')  
-        ].map(field => `"${field}"`).join(','))  
+      headers.join(','),
+      ...(shippingCharges || []).map(log => [
+        format(new Date(log.date), "yyyy-MM-dd HH:mm:ss"),
+        log.courierName,
+        log.amount,
+        log.waybill,
+        log.orderId,
+        log.transactionId,
+        log.weight,
+        log.zone,
+        log.status,
+        log.remarks?.replace(/"/g, '""')
+      ].map(field => `"${field}"`).join(','))
     ].join('\n');
 
     const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvContent}`);
@@ -111,7 +111,7 @@ const ShippingChargesPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
       <main className="p-6">
-        <div className="max-w-7xl mx-auto"> 
+        <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
               <Home className="h-4 w-4" />
@@ -121,14 +121,14 @@ const ShippingChargesPage: React.FC = () => {
           </div>
 
           <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Shipping Charges</h1>
- 
+
           <div className="mb-6 bg-blue-50 dark:bg-gray-800 p-4 rounded-lg border border-blue-200 dark:border-gray-700">
             <p className="text-sm text-blue-600 dark:text-blue-300">Current Balance</p>
             <p className="text-2xl font-semibold text-blue-800 dark:text-blue-200">
               ₹{balance.toFixed(2)}
             </p>
           </div>
- 
+
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <Popover>
               <PopoverTrigger asChild>
@@ -187,85 +187,85 @@ const ShippingChargesPage: React.FC = () => {
               Download
             </button>
           </div>
-                    <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-                      <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                        <Link
-                          href="/user/dashboard/recharge"
-                          className={cn(
-                            'whitespace-nowrap cursor-pointer py-3 px-1 border-b-2 font-medium text-sm',
-                            pathname === '/user/dashboard/recharge'
-                              ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
-                          )}
-                        >
-                          Recharge Logs
-                        </Link>
-                        <Link
-                          href="/user/dashboard/shipping-charges"
-                          className={cn(
-                            'whitespace-nowrap cursor-pointer py-3 px-1 border-b-2 font-medium text-sm',
-                            pathname === '/user/dashboard/shipping-charges'
-                              ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
-                          )}
-                        >
-                          Shipping Charges
-                        </Link>
-                      </nav>
-                    </div>
+          <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+            <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+              <Link
+                href="/user/dashboard/recharge"
+                className={cn(
+                  'whitespace-nowrap cursor-pointer py-3 px-1 border-b-2 font-medium text-sm',
+                  pathname === '/user/dashboard/recharge'
+                    ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                )}
+              >
+                Recharge Logs
+              </Link>
+              <Link
+                href="/user/dashboard/shipping-charges"
+                className={cn(
+                  'whitespace-nowrap cursor-pointer py-3 px-1 border-b-2 font-medium text-sm',
+                  pathname === '/user/dashboard/shipping-charges'
+                    ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                )}
+              >
+                Shipping Charges
+              </Link>
+            </nav>
+          </div>
           <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
 
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-700">
-                      <TableHead>Date</TableHead>
-                      <TableHead>Courier</TableHead>
-                      <TableHead>Amount (Rs.)</TableHead>
-                      <TableHead>Waybill</TableHead>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Transaction ID</TableHead>
-                      <TableHead>Weight</TableHead>
-                      <TableHead>Zone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Remarks</TableHead>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 dark:bg-gray-700">
+                    <TableHead>Date</TableHead>
+                    <TableHead>Courier</TableHead>
+                    <TableHead>Amount (Rs.)</TableHead>
+                    <TableHead>Waybill</TableHead>
+                    <TableHead>Order ID</TableHead>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead>Weight</TableHead>
+                    <TableHead>Zone</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Remarks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={10} className="text-center text-gray-500 py-7">
+                        <Loading />
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center text-gray-500 py-7">
-                          <Loading />
-                        </TableCell>
+                  ) : (shippingCharges.length > 0 ? (
+                    shippingCharges.map((charge) => (
+                      <TableRow key={charge.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <TableCell>{format(new Date(charge.date), "yyyy-MM-dd HH:mm")}</TableCell>
+                        <TableCell>{charge.courierName}</TableCell>
+                        <TableCell className="text-right">{charge.amount.toFixed(2)}</TableCell>
+                        <TableCell>{charge.waybill}</TableCell>
+                        <TableCell>{charge.orderId}</TableCell>
+                        <TableCell>{charge.transactionId}</TableCell>
+                        <TableCell>{charge.weight}</TableCell>
+                        <TableCell>{charge.zone}</TableCell>
+                        <TableCell>{charge.status}</TableCell>
+                        <TableCell className="max-w-xs truncate">{charge.remarks}</TableCell>
                       </TableRow>
-                    ) : (shippingCharges.length > 0 ? (
-                      shippingCharges.map((charge) => (
-                        <TableRow key={charge.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                          <TableCell>{format(new Date(charge.date), "yyyy-MM-dd HH:mm")}</TableCell>
-                          <TableCell>{charge.courierName}</TableCell>
-                          <TableCell className="text-right">{charge.amount.toFixed(2)}</TableCell>
-                          <TableCell>{charge.waybill}</TableCell>
-                          <TableCell>{charge.orderId}</TableCell>
-                          <TableCell>{charge.transactionId}</TableCell>
-                          <TableCell>{charge.weight}</TableCell>
-                          <TableCell>{charge.zone}</TableCell>
-                          <TableCell>{charge.status}</TableCell>
-                          <TableCell className="max-w-xs truncate">{charge.remarks}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center py-10 text-gray-500">
-                          No shipping charges found for the selected criteria.
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={10} className="text-center py-10 text-gray-500">
+                        No shipping charges found for the selected criteria.
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
           </div>
- 
+
           {!loading && total > 0 && (
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
               <div>
