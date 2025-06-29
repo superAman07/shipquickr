@@ -80,19 +80,38 @@ class XpressbeesClient {
                 return null;
             }
 
-            const trackingData = data.data[0];
+            const trackingData = data.tracking_data;
+            
+            const allEvents = Object.values(trackingData).flat();
+            if (allEvents.length === 0) {
+                console.error("XpressbeesClient: No tracking events found in the response.", data);
+                return null;
+            }
+
+            // Sort events by time to find the latest one... event_time is a Unix timestamp.
+            allEvents.sort((a: any, b: any) => parseInt(b.event_time) - parseInt(a.event_time));
+            const latestStatus = allEvents[0] as any;
+            
+            const attempts = allEvents.reduce((count: number, event: any) => {
+                const statusLower = (event.status || "").toLowerCase(); 
+                if (statusLower.includes("undelivered") || statusLower.includes("failed delivery")) {
+                    return count + 1;
+                }
+                return count;
+            }, 0);
             return {
-                awbNumber: trackingData.awb_number,
-                status: trackingData.status,
-                description: trackingData.description || trackingData.status_description || "",
-                location: trackingData.location || "",
-                date: trackingData.status_date,
-                delivered: trackingData.status.toLowerCase().includes('delivered'),
-                history: (data.data || []).map((item: any) => ({
+                awbNumber: latestStatus.awb_number,
+                status: latestStatus.status,
+                description: latestStatus.message || latestStatus.status,
+                location: latestStatus.location,
+                date: new Date(parseInt(latestStatus.event_time) * 1000).toISOString(),
+                delivered: (latestStatus.ship_status || "").toLowerCase() === 'delivered',
+                attempts: attempts,  
+                history: allEvents.map((item: any) => ({
                     status: item.status,
-                    description: item.description || item.status_description || "",
-                    location: item.location || "",
-                    date: item.status_date
+                    description: item.message,
+                    location: item.location,
+                    date: new Date(parseInt(item.event_time) * 1000).toISOString()
                 }))
             };
         } catch (error) {

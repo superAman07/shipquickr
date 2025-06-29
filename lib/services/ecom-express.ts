@@ -91,6 +91,14 @@ class EcomExpressClient {
                                 }
                             }
 
+                            const attempts = scans.reduce((count, scan) => {
+                                const statusLower = (scan.status || "").toLowerCase();
+                                if (statusLower.includes("undelivered") || statusLower.includes("delivery attempt")) {
+                                    return count + 1;
+                                }
+                                return count;
+                            }, 0);
+
                             function getFieldFromScan(scan: any, name: string) {
                                 const field = scan.field.find((f: any) => f.$.name === name);
                                 return field ? field._ : "";
@@ -103,6 +111,7 @@ class EcomExpressClient {
                                 location: location || "",
                                 date: lastUpdateDate || "",
                                 delivered: (status || "").toLowerCase().includes('delivered'),
+                                attempts: attempts,
                                 history: scans
                             });
                         } catch (error) {
@@ -127,7 +136,15 @@ class EcomExpressClient {
             // Get the most recent status
             const statusDetails = Array.isArray(shipment.status_details) ?
                 shipment.status_details[0] || {} : {};
-
+                
+            const attempts = (shipment.status_details || []).reduce((count: number, item: any) => {
+                const statusLower = (item.status || "").toLowerCase();
+                if (statusLower.includes("undelivered") || statusLower.includes("delivery attempt")) {
+                    return count + 1;
+                }
+                return count;
+            }, 0);
+            
             return {
                 awbNumber: shipment.awb_number || shipment.awb,
                 status: statusDetails.status || shipment.current_status,
@@ -135,6 +152,7 @@ class EcomExpressClient {
                 location: statusDetails.location || "",
                 date: statusDetails.status_date || shipment.last_update_date,
                 delivered: (statusDetails.status || "").toLowerCase().includes('delivered'),
+                attempts: attempts,
                 history: (shipment.status_details || []).map((item: any) => ({
                     status: item.status || "",
                     description: item.reason || item.status_text || "",

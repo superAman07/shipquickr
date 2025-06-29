@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { ecomExpressClient } from "@/lib/services/ecom-express";
 import { xpressbeesClient } from "@/lib/services/xpressbees";
 
-// Statuses that need tracking updates
 type OrderStatus =
   | "manifested"
   | "pending_manifest"
@@ -22,7 +21,7 @@ const TRACKING_STATUSES: OrderStatus[] = [
   "undelivered"
 ];
 
-// Function to map courier status to standard status
+
 function mapEcomStatusToStandard(courierStatus?: string): string | null {
   if (!courierStatus) return null;
 
@@ -86,11 +85,13 @@ export async function GET(req: NextRequest) {
         awbNumber: { not: null },
         courierName: { not: null }
       },
-      select: {
-        id: true,
-        awbNumber: true,
-        courierName: true,
-        status: true
+      include: {
+        trackingHistory: {
+          orderBy: {
+            timestamp: 'desc'
+          },
+          take: 1,
+        }
       }
     });
 
@@ -139,9 +140,12 @@ export async function GET(req: NextRequest) {
                   where: { id: order.id },
                   data: {
                     status: normalizedStatus as any,
-                    shippingDetails: trackingData && typeof trackingData === "object" && trackingData !== null && "description" in trackingData
-                      ? String(trackingData.description)
-                      : `Updated from ${order.status} to ${normalizedStatus}`
+                    attempts: trackingData.attempts || order.attempts || 0,
+                    ageing: Math.ceil((Date.now() - new Date(order.createdAt).getTime()) / (1000 * 60 * 60 * 24)),
+                    // shippingDetails: trackingData && typeof trackingData === "object" && trackingData !== null && "description" in trackingData
+                    //   ? String(trackingData.description)
+                    //   : `Updated from ${order.status} to ${normalizedStatus}`
+                    shippingDetails: trackingData?.description || `Updated from ${order.status} to ${normalizedStatus}`
                   }
                 }),
                 prisma.orderTracking.create({
