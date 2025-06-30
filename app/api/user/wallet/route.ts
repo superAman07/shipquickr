@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
+    console.log("first web app's token check")
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = jwtDecode<TokenDetailsType>(token);
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { amount } = await req.json();
+    console.log("Amount from wallet route:", amount);
     if (!amount || isNaN(amount) || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
@@ -35,7 +37,9 @@ export async function POST(req: NextRequest) {
     const merchantTransactionId = `MUID${decoded.userId}${Date.now()}`;
     const merchantUserId = `CUID${decoded.userId}`;
 
-    await prisma.transaction.create({
+    console.log("Merchant transaction and merchants's user id :", merchantTransactionId, merchantUserId);
+
+    const somethingTemp = await prisma.transaction.create({
       data: {
         userId: parseInt(decoded.userId),
         amount: Number(amount),
@@ -45,9 +49,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    console.log("Something temp log: ", somethingTemp)
     const accessToken = await getPhonePeAccessToken();
+    console.log("Access Token from object to route:", accessToken);
 
-    const payload = {
+    const payload = { 
       merchantOrderId: merchantTransactionId,
       amount: Math.round(amount * 100),
       expireAfter: 1200,
@@ -63,6 +69,7 @@ export async function POST(req: NextRequest) {
         // Optionally add paymentModeConfig here if we want to restrict payment modes
       }
     };
+    console.log("Payload: ", payload);
 
     const apiPath = "/checkout/v2/sdk/order";
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString("base64");
@@ -72,7 +79,9 @@ export async function POST(req: NextRequest) {
     const sha256 = crypto.createHash("sha256").update(stringToHash).digest("hex");
     const checksum = sha256 + "###" + saltIndex;
 
-    const baseUrl = process.env.NODE_ENV === "production" ? "https://api.phonepe.com/apis/pg" : "https://api-preprod.phonepe.com/apis/pg-sandbox";
+    const baseUrl = "https://api.phonepe.com/apis/pg";
+    
+    console.log("Decoded payload:", JSON.parse(Buffer.from(base64Payload, "base64").toString("utf-8")));
 
     const response = await axios.post(
       `${baseUrl}/checkout/v2/sdk/order`,

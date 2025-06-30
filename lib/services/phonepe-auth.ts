@@ -5,6 +5,7 @@ let tokenExpiry: number | null = null;
 
 export async function getPhonePeAccessToken() {
   const now = Math.floor(Date.now() / 1000);
+  console.log("this is from phonepe auth", now);
   if (cachedToken && tokenExpiry && now < tokenExpiry - 60) { 
     return cachedToken;
   }
@@ -21,6 +22,7 @@ export async function getPhonePeAccessToken() {
   });
 
   const { access_token, expires_at } = response.data;
+  console.log("PhonePe access_token:", access_token);
   cachedToken = access_token;
   tokenExpiry = expires_at;
   return access_token;
