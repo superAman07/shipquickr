@@ -19,7 +19,8 @@ frontend:
         - echo "EMAIL_PASS=$EMAIL_PASS" >> .env.production
         - echo "UPSTASH_REDIS_REST_URL=$UPSTASH_REDIS_REST_URL" >> .env.production
         - echo "UPSTASH_REDIS_REST_TOKEN=$UPSTASH_REDIS_REST_TOKEN" >> .env.production
-
+        
+        - echo "NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL" >> .env.production
         - echo "PHONEPE_MERCHANT_ID=$PHONEPE_MERCHANT_ID" >> .env.production
         - echo "PHONEPE_CLIENT_ID=$PHONEPE_CLIENT_ID" >> .env.production
         - echo "PHONEPE_CLIENT_SECRET=$PHONEPE_CLIENT_SECRET" >> .env.production

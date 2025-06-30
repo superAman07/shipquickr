@@ -10,11 +10,6 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 import { useWallet } from "@/contexts/WalletContext";
 
-declare global {
-  interface Window {
-    Razorpay?: any;
-  }
-}
 
 interface Transaction {  
   id: number;
@@ -50,60 +45,18 @@ export default function WalletPage() {
     }
     setAdding(true);
     try {
-      const res = await axios.post("/api/user/wallet", { amount: Number(amount) });
-      const { orderId, keyId } = res.data;
+      // 1. Call our backend to get the PhonePe payment URL
+      const response = await axios.post("/api/user/wallet", { amount: Number(amount) });
 
-      if (!window.Razorpay) {
-        await new Promise<void>((resolve, reject) => { 
-          const script = document.createElement("script");
-          script.src = "https://checkout.razorpay.com/v1/checkout.js";
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
-          document.body.appendChild(script);
-        });
+      if (response.data.success && response.data.paymentUrl) {
+        // 2. Redirect the user to the PhonePe payment page
+        window.location.href = response.data.paymentUrl;
+      } else {
+        toast.error(response.data.error || "Failed to initiate payment.");
       }
-
-      const options = {
-        key: keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: Number(amount) * 100,
-        currency: "INR",
-        name: "ShipQuickr Wallet Recharge",
-        description: "Add money to your wallet",
-        order_id: orderId,
-        handler: async function (response: any) {
-          try {
-            await axios.post("/api/user/wallet/verify", {  
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: Number(amount)
-            });
-            toast.success("Payment successful! Balance updated.");
-            setShowModal(false);
-            setAmount("");
-            await refreshBalance(); 
-            const transRes = await axios.get("/api/user/wallet");
-            setTransactions(transRes.data.transactions || []);
-
-          } catch (verifyError) {
-            toast.error("Payment verification failed. Please contact support.");
-            console.error("Payment verification error:", verifyError);
-          }
-        },
-        prefill: {
-            // name: "User Name", // Optional
-            // email: "user@example.com",
-        },
-        theme: {
-          color: "#7c3aed", 
-          hide_topbar: false,
-        },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      toast.error("Failed to initiate payment. Please try again.");
+    } catch (err: any) {
       console.error("handleAddMoney error:", err);
+      toast.error(err.response?.data?.error || "Failed to initiate payment. Please try again.");
     } finally {
       setAdding(false);
     }
@@ -189,7 +142,7 @@ export default function WalletPage() {
               >
                 {adding ? <Loader2 className="animate-spin" /> : "Proceed to Pay"}
               </Button>
-              <p className="text-xs text-gray-400 mt-2">Powered by Razorpay</p>
+              <p className="text-xs text-gray-400 mt-2">Powered by PhonePe</p>
             </div>
           </div>
         )}
