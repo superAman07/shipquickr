@@ -72,18 +72,18 @@ model Wallet {
 }
 
 model Transaction {
-  id                Int      @id @default(autoincrement())
-  userId            Int
-  amount            Float
-  type              String
-  createdAt         DateTime @default(now())
-  user              User     @relation(fields: [userId], references: [id])
-  razorpayPaymentId String?
-  razorpayOrderId   String?
-  orderId           Int? // Link to the Order for shipping charges
-  order             Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  status            String?
-  remarks           String?
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  amount                Float
+  type                  String
+  createdAt             DateTime @default(now())
+  user                  User     @relation(fields: [userId], references: [id])
+  merchantTransactionId String?  @unique  
+  providerReferenceId   String?
+  orderId               Int? // Link to the Order for shipping charges
+  order                 Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status                String?
+  remarks               String?
 
   @@index([userId])
   @@index([orderId])
@@ -136,6 +136,7 @@ model Order {
   @@index([userId])
   @@index([warehouseId])
 }
+
 // history of order
 model OrderTracking {
   id               Int      @id @default(autoincrement())

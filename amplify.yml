@@ -19,10 +19,13 @@ frontend:
         - echo "EMAIL_PASS=$EMAIL_PASS" >> .env.production
         - echo "UPSTASH_REDIS_REST_URL=$UPSTASH_REDIS_REST_URL" >> .env.production
         - echo "UPSTASH_REDIS_REST_TOKEN=$UPSTASH_REDIS_REST_TOKEN" >> .env.production
-        - echo "RAZORPAY_KEY_ID=$RAZORPAY_KEY_ID" >> .env.production
-        - echo "RAZORPAY_KEY_SECRET=$RAZORPAY_KEY_SECRET" >> .env.production
-        - echo "RAZORPAY_WEBHOOK_SECRET=$RAZORPAY_WEBHOOK_SECRET" >> .env.production
-        - echo "NEXT_PUBLIC_RAZORPAY_KEY_ID=$NEXT_PUBLIC_RAZORPAY_KEY_ID" >> .env.production
+
+        - echo "PHONEPE_MERCHANT_ID=$PHONEPE_MERCHANT_ID" >> .env.production
+        - echo "PHONEPE_CLIENT_ID=$PHONEPE_CLIENT_ID" >> .env.production
+        - echo "PHONEPE_CLIENT_SECRET=$PHONEPE_CLIENT_SECRET" >> .env.production
+        - echo "PHONEPE_WEBHOOK_USER=$PHONEPE_WEBHOOK_USER" >> .env.production
+        - echo "PHONEPE_WEBHOOK_PASS=$PHONEPE_WEBHOOK_PASS" >> .env.production
+        
         - echo "S3_UPLOAD_BUCKET_NAME=$S3_UPLOAD_BUCKET_NAME" >> .env.production
         
         - echo "ECOM_EXPRESS_USERNAME=$ECOM_EXPRESS_USERNAME" >> .env.production
