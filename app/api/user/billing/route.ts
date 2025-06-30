@@ -13,29 +13,14 @@ export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
-
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    let decoded: TokenDetailsType;
-    try {
-      decoded = jwtDecode<TokenDetailsType>(token);
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    if (decoded.exp * 1000 < Date.now()) {
-        return NextResponse.json({ error: "Token expired" }, { status: 401 });
-    }
-
+    const decoded = jwtDecode<TokenDetailsType>(token);
     const userId = parseInt(decoded.userId);
-    if (isNaN(userId)) {
-        return NextResponse.json({ error: "Invalid user ID in token" }, { status: 401 });
-    }
 
     const searchParams = req.nextUrl.searchParams;
-    const search = searchParams.get("search") || undefined;
+    const search = searchParams.get("search");
     const startDateStr = searchParams.get("startDate");
     const endDateStr = searchParams.get("endDate");
     const page = parseInt(searchParams.get("page") || "1");
@@ -71,9 +56,9 @@ export async function GET(req: NextRequest) {
 
 
     if (search) {
-      where.OR = [
-        { razorpayPaymentId: { contains: search, mode: 'insensitive' } },
-        { razorpayOrderId: { contains: search, mode: 'insensitive' } },
+      where.OR = [ 
+        { merchantTransactionId: { contains: search, mode: 'insensitive' } },
+        { providerReferenceId: { contains: search, mode: 'insensitive' } },
         { order: { awbNumber: { contains: search, mode: 'insensitive' } } },
       ];
        const searchAsInt = parseInt(search);
@@ -114,9 +99,9 @@ export async function GET(req: NextRequest) {
       .map((tx) => ({
         id: tx.id,
         date: tx.createdAt,
-        amount: tx.amount,
-        transactionId: tx.id,
-        bankTransactionId: tx.razorpayPaymentId,
+        amount: tx.amount, 
+        transactionId: tx.merchantTransactionId,
+        bankTransactionId: tx.providerReferenceId,
         type: tx.type,
         status: tx.status ?? "Unknown",
       }));
