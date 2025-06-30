@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, paymentUrl });
 
   } catch (err) {
-    console.error("Razorpay order error:", err);
+    console.error("Phonepe order error:", err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }
