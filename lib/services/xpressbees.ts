@@ -374,6 +374,35 @@ class XpressbeesClient {
             return false;
         }
     }
+    public async cancelShipment (awbNumber: string): Promise<{success: boolean; message: string}> {
+        const token = await this.getValidXpressbeesToken();
+        const apiUrl = process.env.XPRESSBEES_CANCEL_SHIPMENT_API_URL;
+        if(!token || !apiUrl) {
+            const errorMsg = "XpressbeesClient: Token or Cancel API URL is missing";
+            console.error(errorMsg);
+            return {success: false, message: errorMsg};
+        }
+        const payload = {
+            awb_number: awbNumber,
+        };
+        try {
+            const response = await axios.post(apiUrl, payload, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            });
+            if(response.data && (response.data.response === true || response.data.status === true)) {
+                return { success: true, message: response.data.message || "Shipment cancelled successfully." };
+            }else {
+                const errorMsg = response.data?.message || "Unknown error during cancellation";
+                return {success: false, message: errorMsg};
+            }
+        }catch (error: any){
+            const errorMsg = error.response?.data?.message || error.message || "An error occurred while cancelling the shipment";
+            return {success: false, message: errorMsg}
+        }
+    }
     async trackShipment(awbNumber: string) {
         try {
             const token = await this.getValidXpressbeesToken(); // Fixed method name

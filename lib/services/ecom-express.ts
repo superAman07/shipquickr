@@ -389,6 +389,37 @@ class EcomExpressClient {
         }
     }
 
+    public async cancelShipment(awbNumber: string): Promise<{success: boolean; message: string}> {
+        const apiUrl = PROD_URLS.cancel
+        if(!apiUrl || !this.username || !this.password) {
+            console.error("EcomExpressClient: Cancel API URL or credentials missing.");
+            return { success: false, message: "API URL or credentials missing." };
+        }
+        const formData = new URLSearchParams();
+        formData.append("username", this.username);
+        formData.append("password", this.password);
+        formData.append("awbs", awbNumber);
+        try {
+            const response = await axios.post(apiUrl, formData, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            if(response.data && Array.isArray(response.data) && response.data.length > 0) {
+                const result = response.data[0];
+                if (result.success === true || result.success === "true") {
+                    return { success: true, message: `Shipment ${awbNumber} cancelled successfully.` };
+                } else {
+                    const errorMsg = result.reason || "Failed to cancel shipment.";
+                    return { success: false, message: errorMsg };
+                }
+            }else {
+                const errorMsg = "Unknown error during cancellation or invalid response format.";
+                return { success: false, message: errorMsg };
+            }
+        }catch(error: any){
+            const errorMsg = error.response?.data?.message || error.message || "An error occured while cancelling the sipment";
+            return {success: false, message: errorMsg}
+        }
+    }
 
 
     async generateShippingLabel(awbNumbers: string[]): Promise<string | null> {
