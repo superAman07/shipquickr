@@ -83,6 +83,7 @@ model Transaction {
   orderId           Int? // Link to the Order for shipping charges
   order             Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   status            String?
+  remarks           String?
 
   @@index([userId])
   @@index([orderId])

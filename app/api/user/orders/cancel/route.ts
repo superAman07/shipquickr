@@ -42,30 +42,36 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: `Cancellation for courier ${order.courierName} is not supported` }, { status: 400 });
         }
         if (cancellationResult.success) {
-            await prisma.order.update({
-                where: { id: order.id },
-                data: {
-                    status: "cancelled",
-                    shippingDetails: `Shipment cancelled by user. Courier confirmation: ${cancellationResult.message}`
-                },
-            });
-            if (order.shippingCost && order.shippingCost > 0) {
-                await tx.wallet.update({
-                    where: { userId: userId },
-                    data: { balance: { increment: order.shippingCost } },
-                });
- 
-                await tx.transaction.create({
+            await prisma.$transaction(async (tx) => {
+                // 1. Update the order status
+                await tx.order.update({
+                    where: { id: order.id },
                     data: {
-                        userId: userId,
-                        amount: order.shippingCost,
-                        type: "credit",
-                        status: "Success",
-                        orderId: order.id,
-                        remarks: "Refund for cancelled shipment"
-                    }
+                        status: "cancelled",
+                        shippingDetails: `Shipment cancelled by user. Courier confirmation: ${cancellationResult.message}`
+                    },
                 });
-            }
+
+                // 2. Refund the shipping cost to the wallet, regardless of payment mode
+                if (order.shippingCost && order.shippingCost > 0) {
+                    await tx.wallet.update({
+                        where: { userId: userId },
+                        data: { balance: { increment: order.shippingCost } },
+                    });
+
+                    // 3. Create a credit transaction for the user's history
+                    await tx.transaction.create({
+                        data: {
+                            userId: userId,
+                            amount: order.shippingCost,
+                            type: "credit",
+                            status: "Success",
+                            orderId: order.id,
+                            remarks: "Refund for cancelled shipment"
+                        }
+                    });
+                }
+            });
             return NextResponse.json({ success: true, message: "Order cancelled successfully" });
         } else {
             return NextResponse.json({ error: `Failed to cancel shipment with courier: ${cancellationResult.message}` }, { status: 502 });
