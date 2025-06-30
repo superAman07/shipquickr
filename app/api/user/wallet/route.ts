@@ -89,8 +89,12 @@ export async function POST(req: NextRequest) {
     const paymentUrl = response.data.data?.instrumentResponse?.redirectInfo?.url || response.data.data?.redirectUrl;
     return NextResponse.json({ success: true, paymentUrl });
 
-  } catch (err) {
-    console.error("Phonepe order error:", err);
+  } catch (err: any) {
+    if (err.response) {
+      console.error("PhonePe API error:", err.response.data);
+    } else {
+      console.error("PhonePe order error:", err);
+    }
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }
