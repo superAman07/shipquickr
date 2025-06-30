@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import { getPhonePeAccessToken } from "@/lib/services/phonepe-auth";
 
 interface TokenDetailsType {
   userId: string;
@@ -44,38 +45,48 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const accessToken = await getPhonePeAccessToken();
+
     const payload = {
-      merchantId: process.env.PHONEPE_MERCHANT_ID,
-      merchantTransactionId: merchantTransactionId,
-      merchantUserId: merchantUserId,
-      amount: Math.round(amount * 100), // Amount in paise
-      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet?status=success`,
-      redirectMode: "REDIRECT",
-      callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/user/wallet/webhook`,
-      paymentInstrument: {
-        type: "PAY_PAGE",
+      merchantOrderId: merchantTransactionId,
+      amount: Math.round(amount * 100),
+      expireAfter: 1200,
+      metaInfo: {
+        udf1: decoded.userId,
+        udf2: decoded.email,
+        udf3: "",
+        udf4: "",
+        udf5: ""
       },
+      paymentFlow: {
+        type: "PG_CHECKOUT"
+        // Optionally add paymentModeConfig here if we want to restrict payment modes
+      }
     };
 
+    const apiPath = "/checkout/v2/sdk/order";
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString("base64");
     const salt = process.env.PHONEPE_CLIENT_SECRET;
     const saltIndex = 1;
-    const stringToHash = base64Payload + "/pg/v1/pay" + salt;
+    const stringToHash = base64Payload + apiPath + salt;
     const sha256 = crypto.createHash("sha256").update(stringToHash).digest("hex");
     const checksum = sha256 + "###" + saltIndex;
 
+    const baseUrl = process.env.NODE_ENV === "production" ? "https://api.phonepe.com/apis/pg" : "https://api-preprod.phonepe.com/apis/pg-sandbox";
+
     const response = await axios.post(
-      "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay",
+      `${baseUrl}/checkout/v2/sdk/order`,
       { request: base64Payload },
       {
         headers: {
           "Content-Type": "application/json",
           "X-VERIFY": checksum,
+          "Authorization": `O-Bearer ${accessToken}`,
         },
       }
     );
 
-    const paymentUrl = response.data.data.instrumentResponse.redirectInfo.url;
+    const paymentUrl = response.data.data?.instrumentResponse?.redirectInfo?.url || response.data.data?.redirectUrl;
     return NextResponse.json({ success: true, paymentUrl });
 
   } catch (err) {
