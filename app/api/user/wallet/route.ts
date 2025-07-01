@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
 
     // PhonePe returns { orderId, state, expireAt, token }
     console.log("order token:", data.token);
-    return NextResponse.json({ success: true, orderToken: data.token });
+    return NextResponse.json({ success: true, orderToken: data.token , orderId: data.orderId,});
   } catch (err: any) {
     console.error("error:", err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
