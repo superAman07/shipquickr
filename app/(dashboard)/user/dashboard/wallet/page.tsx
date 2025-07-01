@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useWallet } from "@/contexts/WalletContext";
 
 
-interface Transaction {  
+interface Transaction {
   id: number;
   createdAt: string;
   type: "recharge" | "debit" | "credit";
@@ -26,12 +26,23 @@ export default function WalletPage() {
   const [amount, setAmount] = useState("");
   const [adding, setAdding] = useState(false);
 
-  const { balance: contextBalance, isLoadingBalance: isContextLoading, refreshBalance } = useWallet(); 
+  const { balance: contextBalance, isLoadingBalance: isContextLoading, refreshBalance } = useWallet();
 
+  const searchParams = useSearchParams();
+  const paymentStatus = searchParams.get("status");
+
+  useEffect(() => {
+    if (paymentStatus === "SUCCESS") {
+      toast.success("Wallet recharge successful!");
+      refreshBalance();
+    } else if (paymentStatus === "FAILED") {
+      toast.error("Payment failed or cancelled.");
+    }
+  }, [paymentStatus]);
   useEffect(() => {
     setLoading(true);
     axios.get("/api/user/wallet")
-      .then(res => { 
+      .then(res => {
         setTransactions(res.data.transactions || []);
       })
       .catch(() => toast.error("Failed to load wallet info"))
@@ -48,9 +59,22 @@ export default function WalletPage() {
       // 1. Call our backend to get the PhonePe payment URL
       const response = await axios.post("/api/user/wallet", { amount: Number(amount) });
 
-      if (response.data.success && response.data.orderToken) {
-        // 2. Redirect the user to the PhonePe payment page
-        window.location.href = `https://www.phonepe.com/pg/payments?token=${response.data.orderToken}&merchantId=${process.env.PHONEPE_MERCHANT_ID}`;
+      if (response.data.success && response.data.orderToken && response.data.orderId) {
+        // A form and submit it to PhonePe
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+
+        form.innerHTML = `
+          <input type="hidden" name="merchantId" value="${process.env.NEXT_PUBLIC_PHONEPE_MERCHANT_ID}" />
+          <input type="hidden" name="orderId" value="${response.data.orderId}" />
+          <input type="hidden" name="paymentToken" value="${response.data.orderToken}" />
+          <input type="hidden" name="redirectUrl" value="${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet" />
+          <input type="hidden" name="redirectMode" value="GET" />
+        `;
+        document.body.appendChild(form);
+        form.submit();
+        return;
       } else {
         toast.error(response.data.error || "Failed to initiate payment.");
       }
@@ -115,7 +139,7 @@ export default function WalletPage() {
             </p>
           </CardContent>
         </Card>
- 
+
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 w-full max-w-xs sm:max-w-sm relative">
