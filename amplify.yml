@@ -26,6 +26,7 @@ frontend:
         - echo "PHONEPE_CLIENT_SECRET=$PHONEPE_CLIENT_SECRET" >> .env.production
         - echo "PHONEPE_WEBHOOK_USER=$PHONEPE_WEBHOOK_USER" >> .env.production
         - echo "PHONEPE_WEBHOOK_PASS=$PHONEPE_WEBHOOK_PASS" >> .env.production
+        - echo "PHONEPE_CALLBACK_URL=$PHONEPE_CALLBACK_URL" >> .env.production
         
         - echo "S3_UPLOAD_BUCKET_NAME=$S3_UPLOAD_BUCKET_NAME" >> .env.production
         

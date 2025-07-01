@@ -20,90 +20,92 @@ export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
-    console.log("first web app's token check")
+    console.log("token:", token);
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = jwtDecode<TokenDetailsType>(token);
+    console.log("decoded token:", decoded);
     if (decoded.exp * 1000 < Date.now()) {
       return NextResponse.json({ error: "Token expired" }, { status: 401 });
     }
 
     const { amount } = await req.json();
-    console.log("Amount from wallet route:", amount);
+    console.log("amount:", amount);
     if (!amount || isNaN(amount) || amount < 1) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    const merchantTransactionId = `MUID${decoded.userId}${Date.now()}`;
-    const merchantUserId = `CUID${decoded.userId}`;
+    const merchantOrderId = `MUID${decoded.userId}${Date.now()}`;
+    console.log("merchantOrderId:", merchantOrderId);
 
-    console.log("Merchant transaction and merchants's user id :", merchantTransactionId, merchantUserId);
-
-    const somethingTemp = await prisma.transaction.create({
+    const temp = await prisma.transaction.create({
       data: {
         userId: parseInt(decoded.userId),
         amount: Number(amount),
         type: "recharge",
         status: "Pending",
-        merchantTransactionId: merchantTransactionId,
+        merchantTransactionId: merchantOrderId,
       },
     });
+    console.log("prisma record:", temp);
 
-    console.log("Something temp log: ", somethingTemp)
     const accessToken = await getPhonePeAccessToken();
-    console.log("Access Token from object to route:", accessToken);
+    console.log("phonepe accessToken:", accessToken);
 
-    const payload = { 
-      merchantOrderId: merchantTransactionId,
+    const payload = {
+      merchantOrderId,
       amount: Math.round(amount * 100),
       expireAfter: 1200,
       metaInfo: {
-        udf1: decoded.userId,
+        udf1: String(decoded.userId),
         udf2: decoded.email,
         udf3: "",
         udf4: "",
-        udf5: ""
+        udf5: "",
       },
-      paymentFlow: {
-        type: "PG_CHECKOUT"
-        // Optionally add paymentModeConfig here if we want to restrict payment modes
-      }
+      paymentFlow: { type: "PG_CHECKOUT" },
     };
-    console.log("Payload: ", payload);
+    console.log("payload object:", payload);
 
     const apiPath = "/checkout/v2/sdk/order";
-    const base64Payload = Buffer.from(JSON.stringify(payload)).toString("base64");
-    const salt = process.env.PHONEPE_CLIENT_SECRET;
-    const saltIndex = 1;
-    const stringToHash = base64Payload + apiPath + salt;
-    const sha256 = crypto.createHash("sha256").update(stringToHash).digest("hex");
-    const checksum = sha256 + "###" + saltIndex;
+    const jsonBody = JSON.stringify(payload);
+    console.log("jsonBody:", jsonBody);
 
-    const baseUrl = "https://api.phonepe.com/apis/pg";
-    
-    console.log("Decoded payload:", JSON.parse(Buffer.from(base64Payload, "base64").toString("utf-8")));
+    const salt = process.env.PHONEPE_CLIENT_SECRET!;
+    const toSign = jsonBody + apiPath + salt;
+    const signature = crypto.createHash("sha256").update(toSign).digest("hex");
+    const checksum = `${signature}###1`;
+    console.log("checksum:", checksum);
 
-    const response = await axios.post(
-      `${baseUrl}/checkout/v2/sdk/order`,
-      { request: base64Payload },
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-VERIFY": checksum,
+      "X-CLIENT-ID": process.env.PHONEPE_CLIENT_ID!,
+      "Authorization": `O-Bearer ${accessToken}`,
+    };
+    if (process.env.PHONEPE_CALLBACK_URL) {
+      headers["X-CALLBACK-URL"] = process.env.PHONEPE_CALLBACK_URL;
+    }
+    console.log("request headers:", headers);
+
+    const resp = await fetch(
+      `https://api.phonepe.com/apis/pg${apiPath}`,
       {
-        headers: {
-          "Content-Type": "application/json",
-          "X-VERIFY": checksum,
-          "Authorization": `O-Bearer ${accessToken}`,
-        },
+        method: "POST",
+        headers,
+        body: jsonBody,
       }
     );
+    const data = await resp.json();
+    console.log("http status:", resp.status, "response data:", data);
 
-    const paymentUrl = response.data.data?.instrumentResponse?.redirectInfo?.url || response.data.data?.redirectUrl;
-    return NextResponse.json({ success: true, paymentUrl });
+    if (!resp.ok) throw new Error(JSON.stringify(data));
 
+    // PhonePe returns { orderId, state, expireAt, token }
+    console.log("order token:", data.token);
+    return NextResponse.json({ success: true, orderToken: data.token });
   } catch (err: any) {
-    if (err.response) {
-      console.error("PhonePe API error:", err.response.data);
-    } else {
-      console.error("PhonePe order error:", err);
-    }
+    console.error("error:", err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }

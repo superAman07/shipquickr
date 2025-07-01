@@ -48,9 +48,9 @@ export default function WalletPage() {
       // 1. Call our backend to get the PhonePe payment URL
       const response = await axios.post("/api/user/wallet", { amount: Number(amount) });
 
-      if (response.data.success && response.data.paymentUrl) {
+      if (response.data.success && response.data.orderToken) {
         // 2. Redirect the user to the PhonePe payment page
-        window.location.href = response.data.paymentUrl;
+        window.location.href = `https://www.phonepe.com/pg/payments?token=${response.data.orderToken}&merchantId=${process.env.PHONEPE_MERCHANT_ID}`;
       } else {
         toast.error(response.data.error || "Failed to initiate payment.");
       }
