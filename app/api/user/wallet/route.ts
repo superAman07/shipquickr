@@ -35,8 +35,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    const merchantOrderId = `MUID${decoded.userId}${Date.now()}`;
-    console.log("merchantOrderId:", merchantOrderId);
+    // const merchantOrderId = `MUID${decoded.userId}${Date.now()}`;
+    // console.log("merchantOrderId:", merchantOrderId);
+
+    const merchantTransactionId = `MUID${decoded.userId}${Date.now()}`;
 
     const temp = await prisma.transaction.create({
       data: {
@@ -44,7 +46,8 @@ export async function POST(req: NextRequest) {
         amount: Number(amount),
         type: "recharge",
         status: "Pending",
-        merchantTransactionId: merchantOrderId,
+        merchantTransactionId,
+        // merchantTransactionId: merchantOrderId,
       },
     });
     console.log("prisma record:", temp);
@@ -52,58 +55,77 @@ export async function POST(req: NextRequest) {
     const accessToken = await getPhonePeAccessToken();
     console.log("phonepe accessToken:", accessToken);
 
-    const payload = {
-      merchantOrderId,
+    // const payload = {
+    //   merchantOrderId,
+    //   amount: Math.round(amount * 100),
+    //   expireAfter: 1200,
+    //   metaInfo: {
+    //     udf1: String(decoded.userId),
+    //     udf2: decoded.email,
+    //     udf3: "",
+    //     udf4: "",
+    //     udf5: "",
+    //   },
+    //   paymentFlow: { type: "PG_CHECKOUT" },
+    // };
+    const phonepePayload = {
+      merchantId: process.env.PHONEPE_MERCHANT_ID!,
+      merchantTransactionId,
+      merchantUserId: decoded.userId,
       amount: Math.round(amount * 100),
-      expireAfter: 1200,
-      metaInfo: {
-        udf1: String(decoded.userId),
-        udf2: decoded.email,
-        udf3: "",
-        udf4: "",
-        udf5: "",
-      },
-      paymentFlow: { type: "PG_CHECKOUT" },
+      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet`,
+      redirectMode: "REDIRECT",
+      callbackUrl: process.env.PHONEPE_CALLBACK_URL!,
+      mobileNumber: decoded.mobile || "",
+      paymentInstrument: { type: "PAY_PAGE" },
     };
-    console.log("payload object:", payload);
+    const base64Payload = Buffer.from(JSON.stringify(phonepePayload)).toString("base64");
 
-    const apiPath = "/checkout/v2/sdk/order";
-    const jsonBody = JSON.stringify(payload);
-    console.log("jsonBody:", jsonBody);
+    console.log("Phone pe payload:", phonepePayload)
+    return NextResponse.json({
+      success: true,
+      phonepePayload: base64Payload,
+    });
 
-    const salt = process.env.PHONEPE_CLIENT_SECRET!;
-    const toSign = jsonBody + apiPath + salt;
-    const signature = crypto.createHash("sha256").update(toSign).digest("hex");
-    const checksum = `${signature}###1`;
-    console.log("checksum:", checksum);
+    // console.log("payload object:", payload);
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "X-VERIFY": checksum,
-      "X-CLIENT-ID": process.env.PHONEPE_CLIENT_ID!,
-      "Authorization": `O-Bearer ${accessToken}`,
-    };
-    if (process.env.PHONEPE_CALLBACK_URL) {
-      headers["X-CALLBACK-URL"] = process.env.PHONEPE_CALLBACK_URL;
-    }
-    console.log("request headers:", headers);
+    // const apiPath = "/checkout/v2/sdk/order";
+    // const jsonBody = JSON.stringify(payload);
+    // console.log("jsonBody:", jsonBody);
 
-    const resp = await fetch(
-      `https://api.phonepe.com/apis/pg${apiPath}`,
-      {
-        method: "POST",
-        headers,
-        body: jsonBody,
-      }
-    );
-    const data = await resp.json();
-    console.log("http status:", resp.status, "response data:", data);
+    // const salt = process.env.PHONEPE_CLIENT_SECRET!;
+    // const toSign = jsonBody + apiPath + salt;
+    // const signature = crypto.createHash("sha256").update(toSign).digest("hex");
+    // const checksum = `${signature}###1`;
+    // console.log("checksum:", checksum);
 
-    if (!resp.ok) throw new Error(JSON.stringify(data));
+    // const headers: Record<string, string> = {
+    //   "Content-Type": "application/json",
+    //   "X-VERIFY": checksum,
+    //   "X-CLIENT-ID": process.env.PHONEPE_CLIENT_ID!,
+    //   "Authorization": `O-Bearer ${accessToken}`,
+    // };
+    // if (process.env.PHONEPE_CALLBACK_URL) {
+    //   headers["X-CALLBACK-URL"] = process.env.PHONEPE_CALLBACK_URL;
+    // }
+    // console.log("request headers:", headers);
 
-    // PhonePe returns { orderId, state, expireAt, token }
-    console.log("order token:", data.token);
-    return NextResponse.json({ success: true, orderToken: data.token , orderId: data.orderId,});
+    // const resp = await fetch(
+    //   `https://api.phonepe.com/apis/pg${apiPath}`,
+    //   {
+    //     method: "POST",
+    //     headers,
+    //     body: jsonBody,
+    //   }
+    // );
+    // const data = await resp.json();
+    // console.log("http status:", resp.status, "response data:", data);
+
+    // if (!resp.ok) throw new Error(JSON.stringify(data));
+
+    // // PhonePe returns { orderId, state, expireAt, token }
+    // console.log("order token:", data.token);
+    // return NextResponse.json({ success: true, orderToken: data.token , orderId: data.orderId,});
   } catch (err: any) {
     console.error("error:", err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
@@ -112,7 +134,12 @@ export async function POST(req: NextRequest) {
 
 interface TokenDetailsType {
   userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
   exp: number;
+  mobile?: string;
 }
 
 export async function GET() {
