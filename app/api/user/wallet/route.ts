@@ -35,9 +35,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    // const merchantOrderId = `MUID${decoded.userId}${Date.now()}`;
-    // console.log("merchantOrderId:", merchantOrderId);
-
     const merchantTransactionId = `MUID${decoded.userId}${Date.now()}`;
 
     const temp = await prisma.transaction.create({
@@ -46,88 +43,67 @@ export async function POST(req: NextRequest) {
         amount: Number(amount),
         type: "recharge",
         status: "Pending",
-        merchantTransactionId,
-        // merchantTransactionId: merchantOrderId,
+        merchantTransactionId, 
       },
     });
     console.log("prisma record:", temp);
 
-    const accessToken = await getPhonePeAccessToken();
-    console.log("phonepe accessToken:", accessToken);
+    // const accessToken = await getPhonePeAccessToken();
+    // console.log("phonepe accessToken:", accessToken);
 
-    // const payload = {
-    //   merchantOrderId,
-    //   amount: Math.round(amount * 100),
-    //   expireAfter: 1200,
-    //   metaInfo: {
-    //     udf1: String(decoded.userId),
-    //     udf2: decoded.email,
-    //     udf3: "",
-    //     udf4: "",
-    //     udf5: "",
-    //   },
-    //   paymentFlow: { type: "PG_CHECKOUT" },
-    // };
     const phonepePayload = {
       merchantId: process.env.PHONEPE_MERCHANT_ID!,
-      merchantTransactionId,
-      merchantUserId: decoded.userId,
-      amount: Math.round(amount * 100),
+      merchantTransactionId: merchantTransactionId,
+      merchantUserId: String(decoded.userId),
+      name: decoded.firstName + " " + decoded.lastName,
+      amount:(amount * 100),
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet`,
-      redirectMode: "REDIRECT",
-      callbackUrl: process.env.PHONEPE_CALLBACK_URL!,
+      redirectMode: "POST",
+      callbackUrl: process.env.PHONEPE_CALLBACK_URL!, 
       mobileNumber: decoded.mobile || "",
       paymentInstrument: { type: "PAY_PAGE" },
     };
-    const base64Payload = Buffer.from(JSON.stringify(phonepePayload)).toString("base64");
 
-    console.log("Phone pe payload:", phonepePayload)
-    return NextResponse.json({
-      success: true,
-      phonepePayload: base64Payload,
-    });
+    console.log("Phone pe payload: ", phonepePayload);
 
-    // console.log("payload object:", payload);
+    const payload = JSON.stringify(phonepePayload);
+    const payloadMain = Buffer.from(payload).toString("base64");
+    const keyIndex = 1;
+    const string = payloadMain + "/pg/v1/pay" + process.env.PHONEPE_CLIENT_SECRET!;
+    const sha256 = crypto.createHash("sha256").update(string).digest("hex");
+    const checksum = sha256 + "###" + keyIndex;
 
-    // const apiPath = "/checkout/v2/sdk/order";
-    // const jsonBody = JSON.stringify(payload);
-    // console.log("jsonBody:", jsonBody);
+    // const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+    const uat_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
 
-    // const salt = process.env.PHONEPE_CLIENT_SECRET!;
-    // const toSign = jsonBody + apiPath + salt;
-    // const signature = crypto.createHash("sha256").update(toSign).digest("hex");
-    // const checksum = `${signature}###1`;
-    // console.log("checksum:", checksum);
+    const options = {
+      method: "POST",
+      url: uat_URL,
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        "X-VERIFY": checksum,
+      },
+      data: {
+        request: payloadMain,
+      },
+    };
 
-    // const headers: Record<string, string> = {
-    //   "Content-Type": "application/json",
-    //   "X-VERIFY": checksum,
-    //   "X-CLIENT-ID": process.env.PHONEPE_CLIENT_ID!,
-    //   "Authorization": `O-Bearer ${accessToken}`,
-    // };
-    // if (process.env.PHONEPE_CALLBACK_URL) {
-    //   headers["X-CALLBACK-URL"] = process.env.PHONEPE_CALLBACK_URL;
-    // }
-    // console.log("request headers:", headers);
+    console.log("Options after payload:", options);
 
-    // const resp = await fetch(
-    //   `https://api.phonepe.com/apis/pg${apiPath}`,
-    //   {
-    //     method: "POST",
-    //     headers,
-    //     body: jsonBody,
-    //   }
-    // );
-    // const data = await resp.json();
-    // console.log("http status:", resp.status, "response data:", data);
+    const phonepeRes = await axios(options);
+    console.log("PhonePe API response:", phonepeRes.data);
 
-    // if (!resp.ok) throw new Error(JSON.stringify(data));
+    const redirectUrl = phonepeRes.data?.data?.instrumentResponse?.redirectInfo?.url;
+    console.log("Redirect URL:", redirectUrl);
 
-    // // PhonePe returns { orderId, state, expireAt, token }
-    // console.log("order token:", data.token);
-    // return NextResponse.json({ success: true, orderToken: data.token , orderId: data.orderId,});
+    if (!redirectUrl) {
+      return NextResponse.json({ error: "Failed to get PhonePe redirect URL" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, redirectUrl });
   } catch (err: any) {
-    console.error("error:", err);
+    console.error("error:", err.response?.data || err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }

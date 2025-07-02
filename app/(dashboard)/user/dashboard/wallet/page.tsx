@@ -56,21 +56,11 @@ export default function WalletPage() {
       return;
     }
     setAdding(true);
-    try {
-      // 1. Call our backend to get the PhonePe payment URL
+    try { 
       const response = await axios.post("/api/user/wallet", { amount: Number(amount) });
 
-      if (response.data.success && response.data.phonepePayload) {
-        // A form and submit it to PhonePe
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
-
-        form.innerHTML = `
-          <input type="hidden" name="request" value="${response.data.phonepePayload}" />
-        `;
-        document.body.appendChild(form);
-        form.submit();
+      if (response.data.success && response.data.redirectUrl) {
+        window.location.href = response.data.redirectUrl;
         return;
       } else {
         toast.error(response.data.error || "Failed to initiate payment.");
