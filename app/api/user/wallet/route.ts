@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       name: decoded.firstName + " " + decoded.lastName,
       amount:(amount * 100),
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet`,
-      redirectMode: "POST",
+      redirectMode: "REDIRECT",
       callbackUrl: process.env.PHONEPE_CALLBACK_URL!, 
       mobileNumber: decoded.mobile || "",
       paymentInstrument: { type: "PAY_PAGE" },

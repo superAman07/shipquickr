@@ -31,6 +31,7 @@ export default function WalletPage() {
 
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get("status");
+  const paymentStatusCode = searchParams.get("code");
 
   useEffect(() => {
     if (paymentStatus === "SUCCESS") {
