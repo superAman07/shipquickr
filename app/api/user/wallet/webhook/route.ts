@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
     try { 
-        const webhookUser = req.headers.get("x-username");
-        const webhookPass = req.headers.get("x-password");
+        // const webhookUser = req.headers.get("x-username");
+        // const webhookPass = req.headers.get("x-password");
 
         // console.log("--- Webhook Credentials Debug ---");
         // console.log("Received Username:", `"${webhookUser}"`);
@@ -15,10 +15,10 @@ export async function POST(req: NextRequest) {
         // console.log("Password Match:", webhookPass === process.env.PHONEPE_WEBHOOK_PASS);
         // console.log("--- End Debugging Logs ---");
 
-        if (webhookUser !== process.env.PHONEPE_WEBHOOK_USER || webhookPass !== process.env.PHONEPE_WEBHOOK_PASS) {
-            console.error("PhonePe Webhook: Invalid credentials received.");
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        // if (webhookUser !== process.env.PHONEPE_WEBHOOK_USER || webhookPass !== process.env.PHONEPE_WEBHOOK_PASS) {
+        //     console.error("PhonePe Webhook: Invalid credentials received.");
+        //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        // }
  
         const body = await req.json();
         
