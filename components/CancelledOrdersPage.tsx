@@ -124,7 +124,7 @@ const CancelledOrdersPage: React.FC = () => {
 
   return (
       <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-full mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
@@ -164,7 +164,7 @@ const CancelledOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
+          <div className="overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">

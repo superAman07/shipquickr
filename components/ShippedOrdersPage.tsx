@@ -17,7 +17,7 @@ interface OrderItem {
 interface Order {
   id: string;
   orderId: string;
-  orderDate: string; 
+  orderDate: string;
   items: OrderItem[];
   paymentMode: string;
   customerName: string;
@@ -36,7 +36,7 @@ interface Order {
   warehouse?: {
     warehouseName: string;
     warehouseCode: string;
-  }| null;
+  } | null;
 }
 
 const tabs = [
@@ -50,7 +50,7 @@ const ShippedOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
   useEffect(() => {
     fetchOrders();
@@ -80,11 +80,11 @@ const ShippedOrdersPage: React.FC = () => {
   const handleDeleteOrder = async (orderId: string) => {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
     try {
-        await axios.delete(`/api/user/orders/single-order/${orderId}`);
-        setOrders(orders.filter(order => order.id !== orderId));
-        toast.success(`Order ${orderId} deleted successfully`);
+      await axios.delete(`/api/user/orders/single-order/${orderId}`);
+      setOrders(orders.filter(order => order.id !== orderId));
+      toast.success(`Order ${orderId} deleted successfully`);
     } catch (error) {
-        toast.error("Failed to delete order. Please try again.");
+      toast.error("Failed to delete order. Please try again.");
     }
   };
 
@@ -127,13 +127,14 @@ const ShippedOrdersPage: React.FC = () => {
   }
 
   return (
-      <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
-        <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
+      <main className="p-6">
+        <div className="max-w-full mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Shipped Orders</h2>
-                 <OrderTabs tabs={tabs} pathname={pathname} />
+                <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
                   <Link
                     href="/user/dashboard"
@@ -161,14 +162,14 @@ const ShippedOrdersPage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              <button type="button" onClick={()=>{window.location.href='/user/dashboard/single-order'}} className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition dark:bg-blue-700 dark:hover:bg-blue-800">
+              <button type="button" onClick={() => { window.location.href = '/user/dashboard/single-order' }} className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition dark:bg-blue-700 dark:hover:bg-blue-800">
                 <Plus className="h-5 w-5" />
                 <span>New Order</span>
               </button>
             </div>
           </div>
 
-          <div className="rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
+          <div className="overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
@@ -197,27 +198,27 @@ const ShippedOrdersPage: React.FC = () => {
                         {order.orderId}
                       </td>
                       <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
-                          {order.items && order.items.length > 0 ? (
-                            <div className="space-y-1">
-                              {order.items.map((item: OrderItem, index: number) => (
-                                <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
-                                  <span className="font-medium">{item.productName}</span> ({item.quantity}x)
-                                  {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
-                                </div>
-                              ))}
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
-                                {(order.length && order.breadth && order.height)
-                                  ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
-                                  : ""}
-                                {order.physicalWeight
-                                  ? `Wt: ${order.physicalWeight}Kg`
-                                  : ""}
+                        {order.items && order.items.length > 0 ? (
+                          <div className="space-y-1">
+                            {order.items.map((item: OrderItem, index: number) => (
+                              <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
+                                <span className="font-medium">{item.productName}</span> ({item.quantity}x)
+                                {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
                               </div>
+                            ))}
+                            <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
+                              {(order.length && order.breadth && order.height)
+                                ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
+                                : ""}
+                              {order.physicalWeight
+                                ? `Wt: ${order.physicalWeight}Kg`
+                                : ""}
                             </div>
-                          ) : (
-                            <span className="text-gray-400">No items</span>
-                          )}
-                        </td>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">No items</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm">
                         {order.paymentMode}
                       </td>
@@ -232,9 +233,9 @@ const ShippedOrdersPage: React.FC = () => {
                         <div>{order.warehouse?.warehouseName || "-"}</div>
                         {order.warehouse?.warehouseCode && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            ({order.warehouse.warehouseCode})  
+                            ({order.warehouse.warehouseCode})
                           </div>
-                        )} 
+                        )}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
@@ -249,7 +250,7 @@ const ShippedOrdersPage: React.FC = () => {
                       </td>
                       <td>
                         {order.labelUrl ? (
-                        <a href={order.labelUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Download</a>
+                          <a href={order.labelUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Download</a>
                         ) : "-"}
                       </td>
 

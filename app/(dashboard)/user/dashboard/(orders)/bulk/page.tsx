@@ -1,17 +1,18 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck, MoreHorizontal } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "@/components/orderTabs";
-import { Router } from "next/router";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface OrderItem {
   id?: number;
   productName: string;
-  category: string; 
+  category: string;
   quantity: number;
   orderValue: number;
   hsn: string;
@@ -20,8 +21,8 @@ interface OrderItem {
 interface Order {
   id: string;
   orderId: string;
-  orderDate: string; 
-  items: OrderItem[]; 
+  orderDate: string;
+  items: OrderItem[];
   paymentMode: string;
   customerName: string;
   mobile: string;
@@ -36,7 +37,7 @@ interface Order {
   warehouse?: {
     warehouseName: string;
     warehouseCode: string;
-  }| null;
+  } | null;
 }
 
 const tabs = [
@@ -51,7 +52,7 @@ const BulkOrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
 
   useEffect(() => {
@@ -64,7 +65,7 @@ const BulkOrdersPage: React.FC = () => {
       const response = await axios.get("/api/user/orders/single-order");
       const ordersWithItems = response.data.orders.map((order: any) => ({
         ...order,
-        items: order.items || [], 
+        items: order.items || [],
       }));
       setOrders(ordersWithItems);
     } catch (error) {
@@ -82,11 +83,11 @@ const BulkOrdersPage: React.FC = () => {
   const handleDeleteOrder = async (orderId: string) => {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
     try {
-        await axios.delete(`/api/user/orders/single-order/${orderId}`);
-        setOrders(orders.filter(order => order.id !== orderId));
-        toast.success(`Order ${orderId} deleted successfully`);
+      await axios.delete(`/api/user/orders/single-order/${orderId}`);
+      setOrders(orders.filter(order => order.id !== orderId));
+      toast.success(`Order ${orderId} deleted successfully`);
     } catch (error) {
-        toast.error("Failed to delete order. Please try again.");
+      toast.error("Failed to delete order. Please try again.");
     }
   };
 
@@ -133,9 +134,9 @@ const BulkOrdersPage: React.FC = () => {
 
 
   return (
-      <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
       <main className="p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-full mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
@@ -168,14 +169,14 @@ const BulkOrdersPage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              <button type="button" onClick={()=>{window.location.href='/user/dashboard/single-order'}} className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition dark:bg-blue-700 dark:hover:bg-blue-800">
+              <button type="button" onClick={() => { window.location.href = '/user/dashboard/single-order' }} className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition dark:bg-blue-700 dark:hover:bg-blue-800">
                 <Plus className="h-5 w-5" />
                 <span>New Order</span>
               </button>
             </div>
           </div>
 
-          <div className="rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
+          <div className="overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800  ">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
@@ -200,15 +201,15 @@ const BulkOrdersPage: React.FC = () => {
                       <td className="px-3 py-2 whitespace-nowrap text-sm font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
-                      <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]"> 
+                      <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
                         {order.items && order.items.length > 0 ? (
                           <div className="space-y-1">
-                            {order.items.map((item: OrderItem, index: number) => ( 
+                            {order.items.map((item: OrderItem, index: number) => (
                               <div key={index} className={index > 0 ? "pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
                                 <span className="font-medium">{item.productName}</span> ({item.quantity}x)
                                 {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
                               </div>
-                            ))} 
+                            ))}
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
                               {(order.length && order.breadth && order.height)
                                 ? `Dims: ${order.length}x${order.breadth}x${order.height} cm | `
@@ -236,7 +237,7 @@ const BulkOrdersPage: React.FC = () => {
                         <div>{order.warehouse?.warehouseName || "-"}</div>
                         {order.warehouse?.warehouseCode && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            ({order.warehouse.warehouseCode})  
+                            ({order.warehouse.warehouseCode})
                           </div>
                         )}
                       </td>
@@ -245,7 +246,7 @@ const BulkOrdersPage: React.FC = () => {
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-center">
+                      <td className="px-3 py-2 text-sm font-medium text-center">
                         <div className="flex justify-center gap-2">
                           <button
                             type="button"
@@ -255,7 +256,7 @@ const BulkOrdersPage: React.FC = () => {
                           >
                             <Copy className="h-5 w-5 cursor-pointer" />
                           </button>
-                          {order.status === 'unshipped' && ( 
+                          {order.status === 'unshipped' && (
                             <button
                               type="button"
                               onClick={() => handleShipOrder(order.id)}
@@ -274,6 +275,35 @@ const BulkOrdersPage: React.FC = () => {
                             <Trash2 className="h-5 w-5 cursor-pointer" />
                           </button>
                         </div>
+
+                        {/* <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end"> 
+                            <DropdownMenuItem onClick={() => handleCloneOrder(order.id)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              <span>Clone Order</span>
+                            </DropdownMenuItem>
+                            {order.status === 'unshipped' && (
+                              <DropdownMenuItem onClick={() => handleShipOrder(order.id)}>
+                                <Truck className="mr-2 h-4 w-4" />
+                                <span>Ship Order</span>
+                              </DropdownMenuItem>
+                            )} 
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteOrder(order.id)}
+                              className="text-red-600 focus:text-red-600 dark:focus:text-red-400"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete Order</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>  */}
                       </td>
                     </tr>
                   ))}
