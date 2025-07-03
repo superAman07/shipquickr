@@ -195,10 +195,10 @@ const BulkOrdersPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2   text-sm">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      <td className="px-3 py-2   text-sm font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
                       <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
@@ -223,17 +223,17 @@ const BulkOrdersPage: React.FC = () => {
                           <span className="text-gray-400">No items</span>
                         )}
                       </td>
-                      <td className="px-3 text-center py-2 whitespace-nowrap text-xs font-semibold">
+                      <td className="px-3 text-center py-2   text-xs font-semibold">
                         {order.paymentMode}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
+                      <td className="px-3 py-2  ">
                         <div className="text-sm font-medium">{order.customerName}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
                       </td>
                       <td className="px-3 py-2 text-sm max-w-xs truncate">
                         {order.address}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2   text-sm">
                         <div>{order.warehouse?.warehouseName || "-"}</div>
                         {order.warehouse?.warehouseCode && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -241,13 +241,13 @@ const BulkOrdersPage: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
+                      <td className="px-3 py-2  ">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-sm font-medium text-center">
-                        <div className="flex justify-center gap-2">
+                        {/* <div className="flex justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleCloneOrder(order.id)}
@@ -274,9 +274,9 @@ const BulkOrdersPage: React.FC = () => {
                           >
                             <Trash2 className="h-5 w-5 cursor-pointer" />
                           </button>
-                        </div>
+                        </div> */}
 
-                        {/* <DropdownMenu>
+                        <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
                               <span className="sr-only">Open menu</span>
@@ -303,7 +303,7 @@ const BulkOrdersPage: React.FC = () => {
                               <span>Delete Order</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
-                        </DropdownMenu>  */}
+                        </DropdownMenu> 
                       </td>
                     </tr>
                   ))}
