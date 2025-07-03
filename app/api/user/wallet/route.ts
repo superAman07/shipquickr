@@ -73,12 +73,13 @@ export async function POST(req: NextRequest) {
     const sha256 = crypto.createHash("sha256").update(string).digest("hex");
     const checksum = sha256 + "###" + keyIndex;
 
-    // const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+    const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
     const uat_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
 
+    const final_URL = process.env.NODE_ENV === 'production' ? prod_URL : uat_URL;
     const options = {
       method: "POST",
-      url: uat_URL,
+      url: final_URL,
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",
