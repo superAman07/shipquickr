@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     const promises = [
       ecomExpressClient.getEcomExpressOptions(commonShipmentData, cw),
       xpressbeesClient.getXpressbeesOptions(commonShipmentData, cw, dimensions), // Call the method on the imported instance
-      fetchShadowfaxRates(commonShipmentData, cw, dimensions),
+      // fetchShadowfaxRates(commonShipmentData, cw, dimensions),
     ];
 
     const results = await Promise.allSettled(promises);
