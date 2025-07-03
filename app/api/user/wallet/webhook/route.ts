@@ -3,22 +3,42 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
     try { 
-        const webhookUser = req.headers.get("x-username");
-        const webhookPass = req.headers.get("x-password");
+        // const webhookUser = req.headers.get("x-username");
+        // const webhookPass = req.headers.get("x-password");
 
-        if (
-            webhookUser !== process.env.PHONEPE_WEBHOOK_USER ||
-            webhookPass !== process.env.PHONEPE_WEBHOOK_PASS
-        ) {
-            console.error("PhonePe Webhook: Invalid credentials received.");
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        // console.log("--- Webhook Credentials Debug ---");
+        // console.log("Received Username:", `"${webhookUser}"`);
+        // console.log("Expected Username:", `"${process.env.PHONEPE_WEBHOOK_USER}"`);
+        // console.log("Received Password:", `"${webhookPass}"`);
+        // console.log("Expected Password:", `"${process.env.PHONEPE_WEBHOOK_PASS}"`);
+        // console.log("Username Match:", webhookUser === process.env.PHONEPE_WEBHOOK_USER);
+        // console.log("Password Match:", webhookPass === process.env.PHONEPE_WEBHOOK_PASS);
+        // console.log("--- End Debugging Logs ---");
+
+        // if (
+        //     webhookUser !== process.env.PHONEPE_WEBHOOK_USER ||
+        //     webhookPass !== process.env.PHONEPE_WEBHOOK_PASS
+        // ) {
+        //     console.error("PhonePe Webhook: Invalid credentials received.");
+        //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        // }
  
-        const event = await req.json();
-        console.log("PhonePe Webhook Event Received:", JSON.stringify(event, null, 2));
+        const body = await req.json();
+        
+        // 1. Get the Base64 string from the 'response' property
+        const base64Payload = body.response;
+        if (!base64Payload) {
+            console.error("PhonePe Webhook: 'response' field is missing from the payload.");
+            return NextResponse.json({ error: "Invalid payload structure" }, { status: 400 });
+        }
+
+        // 2. Decode the Base64 string and parse it as JSON
+        const event = JSON.parse(Buffer.from(base64Payload, 'base64').toString('utf-8'));
+
+        console.log("Decoded PhonePe Webhook Event:", JSON.stringify(event, null, 2));
  
         // Handle successful payment
-        if (event.code === "pg.order.completed") {
+        if (event.code === "PAYMENT_SUCCESS") {
             const { merchantTransactionId, providerReferenceId, amount } = event.data;
             const paymentAmount = amount / 100;
 
@@ -41,9 +61,13 @@ export async function POST(req: NextRequest) {
                     return;
                 }
                 
-                await tx.wallet.update({
+                await tx.wallet.upsert({
                     where: { userId: pendingTransaction.userId },
-                    data: { balance: { increment: paymentAmount } },
+                    update: {balance: {increment: paymentAmount}},
+                    create: {
+                        userId : pendingTransaction.userId,
+                        balance: paymentAmount
+                    },
                 });
     
                 await tx.transaction.update({
@@ -59,7 +83,7 @@ export async function POST(req: NextRequest) {
             console.log(`Successfully processed wallet recharge for merchantTransactionId: ${merchantTransactionId}`);
 
         // Handle failed payment
-        } else if (event.code === "pg.order.failed") {
+        } else if (event.code === "PAYMENT_ERROR" || event.code === "PAYMENT_CANCELLED" || event.code === "TIMED_OUT") {
             const { merchantTransactionId, providerReferenceId } = event.data;
             if (!merchantTransactionId) {
                 console.error("PhonePe Webhook: merchantTransactionId is missing from FAILED payload.");
