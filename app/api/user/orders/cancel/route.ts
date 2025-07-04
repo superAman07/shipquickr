@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         }
         if (cancellationResult.success) {
             await prisma.$transaction(async (tx) => {
-                // 1. Update the order status
+                 
                 await tx.order.update({
                     where: { id: order.id },
                     data: {
@@ -52,14 +52,12 @@ export async function POST(req: NextRequest) {
                     },
                 });
 
-                // 2. Refund the shipping cost to the wallet, regardless of payment mode
                 if (order.shippingCost && order.shippingCost > 0) {
                     await tx.wallet.update({
                         where: { userId: userId },
                         data: { balance: { increment: order.shippingCost } },
                     });
 
-                    // 3. Create a credit transaction for the user's history
                     await tx.transaction.create({
                         data: {
                             userId: userId,
