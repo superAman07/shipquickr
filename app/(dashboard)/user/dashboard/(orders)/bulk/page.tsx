@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck, MoreHorizontal } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck, MoreHorizontal, XCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -88,6 +88,25 @@ const BulkOrdersPage: React.FC = () => {
       toast.success(`Order ${orderId} deleted successfully`);
     } catch (error) {
       toast.error("Failed to delete order. Please try again.");
+    }
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to request cancellation for this shipped order? This cannot be undone.")) return;
+    const toastId = toast.loading("Requesting cancellation...");
+    try {
+      const response = await axios.post('/api/user/orders/cancel', { orderId });
+      if (response.data.success) {
+        toast.update(toastId, { render: "Order cancelled successfully. Shipping cost refunded.", type: "success", isLoading: false, autoClose: 5000 });
+        // Update the order status in the local state
+        setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+      } else {
+        toast.update(toastId, { render: `Cancellation failed: ${response.data.error}`, type: "error", isLoading: false, autoClose: 5000 });
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || "An unexpected error occurred.";
+      toast.update(toastId, { render: `Cancellation failed: ${errorMessage}`, type: "error", isLoading: false, autoClose: 5000 });
+      console.error("Failed to cancel order:", error);
     }
   };
 
@@ -278,32 +297,38 @@ const BulkOrdersPage: React.FC = () => {
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end"> 
-                            <DropdownMenuItem onClick={() => handleCloneOrder(order.id)}>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleCloneOrder(order.id)} className="cursor-pointer">
                               <Copy className="mr-2 h-4 w-4" />
                               <span>Clone Order</span>
                             </DropdownMenuItem>
                             {order.status === 'unshipped' && (
-                              <DropdownMenuItem onClick={() => handleShipOrder(order.id)}>
+                              <DropdownMenuItem onClick={() => handleShipOrder(order.id)} className="cursor-pointer">
                                 <Truck className="mr-2 h-4 w-4" />
                                 <span>Ship Order</span>
                               </DropdownMenuItem>
-                            )} 
+                            )}
+                            {['shipped', 'manifested', 'in_transit', 'out_for_delivery', 'undelivered'].includes(order.status) && (
+                              <DropdownMenuItem onClick={() => handleCancelOrder(order.id)} className="text-orange-600 focus:text-orange-600 dark:text-orange-500 dark:focus:text-orange-500 cursor-pointer">
+                                <XCircle className="mr-2 h-4 w-4" />
+                                <span>Cancel Order</span>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteOrder(order.id)}
-                              className="text-red-600 focus:text-red-600 dark:focus:text-red-400"
+                              className="text-red-600 focus:text-red-600 dark:focus:text-red-400 cursor-pointer"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               <span>Delete Order</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
-                        </DropdownMenu> 
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}
