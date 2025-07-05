@@ -1,11 +1,13 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck, MoreHorizontal } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "./orderTabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
 
 interface OrderItem {
   productName: string;
@@ -241,7 +243,7 @@ const UnshippedOrdersPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-center">
-                        <div className="flex justify-center gap-2">
+                        {/* <div className="flex justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleCloneOrder(order.id)}
@@ -268,7 +270,35 @@ const UnshippedOrdersPage: React.FC = () => {
                           >
                             <Trash2 className="h-5 w-5" />
                           </button>
-                        </div>
+                        </div> */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleCloneOrder(order.id)} className="cursor-pointer">
+                              <Copy className="mr-2 h-4 w-4" />
+                              <span>Clone Order</span>
+                            </DropdownMenuItem>
+                            {order.status === 'unshipped' && (
+                              <DropdownMenuItem onClick={() => handleShipOrder(order.id)} className="cursor-pointer">
+                                <Truck className="mr-2 h-4 w-4" />
+                                <span>Ship Order</span>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteOrder(order.id)}
+                              className="text-red-600 focus:text-red-600 dark:text-red-500 dark:focus:text-red-500 cursor-pointer"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete Order</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}
