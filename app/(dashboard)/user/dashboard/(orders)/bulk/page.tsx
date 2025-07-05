@@ -266,7 +266,7 @@ const BulkOrdersPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-3 py-2 text-sm font-medium text-center">
-                        {/* <div className="flex justify-center gap-2">
+                        <div className="flex justify-center gap-2 md:hidden">
                           <button
                             type="button"
                             onClick={() => handleCloneOrder(order.id)}
@@ -285,6 +285,16 @@ const BulkOrdersPage: React.FC = () => {
                               <Truck className="h-5 w-5 cursor-pointer" />
                             </button>
                           )}
+                          {['shipped', 'manifested', 'in_transit', 'out_for_delivery', 'undelivered'].includes(order.status) && (
+                            <button
+                              type="button"
+                              onClick={() => handleCancelOrder(order.id)}
+                              className="p-2 rounded-full border border-transparent text-orange-600 hover:bg-orange-100 hover:border-orange-400 transition dark:text-orange-500 dark:hover:bg-orange-900 dark:hover:border-orange-700"
+                              title="Cancel Order"
+                            >
+                              <XCircle className="h-5 w-5 cursor-pointer" />
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => handleDeleteOrder(order.id)}
@@ -293,8 +303,8 @@ const BulkOrdersPage: React.FC = () => {
                           >
                             <Trash2 className="h-5 w-5 cursor-pointer" />
                           </button>
-                        </div> */}
-
+                        </div>
+                        <div className="hidden md:block">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
@@ -329,6 +339,7 @@ const BulkOrdersPage: React.FC = () => {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        </div>
                       </td>
                     </tr>
                   ))}
