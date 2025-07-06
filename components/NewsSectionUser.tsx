@@ -15,7 +15,7 @@ function NewsItemDisplay({ content }: { content: string }) {
   
   return (
     <div className="flex py-1.5 items-start text-gray-700 dark:text-gray-300"> 
-      <AlertCircle className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2 mt-0.5 flex-shrink-0" />
+      {/* <AlertCircle className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2 mt-0.5 flex-shrink-0" /> */}
       <div 
         className="rich-content text-sm"  
         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
