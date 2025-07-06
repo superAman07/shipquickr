@@ -190,7 +190,7 @@ async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: {
       length: String(dimensions.l),
       height: String(dimensions.h),
       breadth: String(dimensions.w), 
-      cod_amount: String(shipmentData.codAmount), 
+      cod_amount: String(Math.max(shipmentData.declaredValue, 1)), 
       cod: shipmentData.productType === "cod" ? "yes" : "no",
       product_value: String(shipmentData.declaredValue)
   };
