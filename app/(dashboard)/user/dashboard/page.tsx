@@ -1,9 +1,9 @@
 import React from 'react';
-import { Package, Truck, Info, Calculator, TrendingUp, AlertCircle } from 'lucide-react'; 
+import { Package, Truck, Info, Calculator, TrendingUp, AlertCircle } from 'lucide-react';
 import DashboardWelcome from '@/components/DashboardWelcome';
 import DashboardHorizontalNavUser from '@/components/DashboardHorizontalNav-user';
-import { cookies } from 'next/headers'; 
-import { jwtDecode } from 'jwt-decode';   
+import { cookies } from 'next/headers';
+import { jwtDecode } from 'jwt-decode';
 import NewsSection from '@/components/NewsSectionUser';
 import { prisma } from '@/lib/prisma';
 
@@ -49,12 +49,12 @@ const getProgressBarColor = (status: string): string => {
   if (lowerStatus.includes('rto in-transit')) return 'bg-orange-500';
   if (lowerStatus.includes('rto delivered')) return 'bg-lime-500';
   if (lowerStatus.includes('lost')) return 'bg-neutral-500';
-  return 'bg-indigo-500';  
+  return 'bg-indigo-500';
 };
 
 function StatusCard({ count, percentage, status, color }: StatusCardProps) {
   const progressBarColor = getProgressBarColor(status);
-  const displayCount = `${count}(${percentage})`;  
+  const displayCount = `${count}(${percentage})`;
 
   return (
     <div className={`${color} rounded-lg p-5 flex flex-col items-center text-center transition-all hover:shadow-md h-full`}>
@@ -62,11 +62,11 @@ function StatusCard({ count, percentage, status, color }: StatusCardProps) {
         <h4 className="text-lg font-bold text-gray-800 dark:text-white">{displayCount}</h4>
       </div>
       <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3 flex-grow capitalize">{status}</p>
-      
+
       <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-auto">
         <div
           className={`${progressBarColor} h-2 rounded-full`}
-          style={{ width: percentage }}  
+          style={{ width: percentage }}
         ></div>
       </div>
     </div>
@@ -78,7 +78,7 @@ interface TokenDetailsType {
   email: string;
   role: string;
 }
-export default async function Dashboard() { 
+export default async function Dashboard() {
   const cookieStore = await cookies();
   const token = cookieStore.get('userToken')?.value;
   let firstName = 'User';
@@ -126,23 +126,23 @@ export default async function Dashboard() {
         },
       },
     });
-totalShipments = orderStats.length;
-    
+    totalShipments = orderStats.length;
+
     orderStats.forEach(order => {
       statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
- 
+
       const orderDate = new Date(order.createdAt);
       if (orderDate >= today) {
         todayShipments++;
       } else if (orderDate >= yesterday && orderDate < today) {
         yesterdayShipments++;
       }
- 
+
       const orderTotalValue = order.items.reduce((sum, item) => sum + (item.orderValue * item.quantity), 0);
       totalLoad += Number(order.physicalWeight || 0);
       avgShipmentCost += orderTotalValue;
     });
-    
+
     if (totalShipments > 0) {
       avgShipmentCost /= totalShipments;
     }
@@ -187,16 +187,16 @@ totalShipments = orderStats.length;
   });
   return (
     <main className=" px-4 md:px-8 pb-8">
-      <DashboardWelcome name={firstName}/>
+      <DashboardWelcome name={firstName} />
       <DashboardHorizontalNavUser />
-      <div className="max-w-7xl mx-auto"> 
+      <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 pt-4 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
           {shipmentCards.map((card, index) => (
             <ShipmentCard key={index} {...card} />
           ))}
-        </div> 
-        <div className="flex flex-col lg:flex-row gap-6 mb-8"> 
-          <div className="lg:w-2/3 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"> 
+        </div>
+        <div className="flex flex-col lg:flex-row gap-6 mb-8">
+          <div className="lg:w-2/3 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
                 Shipment Details
@@ -211,8 +211,8 @@ totalShipments = orderStats.length;
               ))}
             </div>
           </div>
- 
-          <div className="lg:w-1/3 bg-white h-[65dvh] overflow-hidden dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col">  
+
+          <div className="lg:w-1/3 bg-white h-[65dvh] overflow-hidden dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col">
             <NewsSection />
           </div>
         </div>
