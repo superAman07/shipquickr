@@ -599,14 +599,13 @@ const BulkOrdersPage: React.FC = () => {
           </div>
 
           {/* Mobile Card Layout */}
-          <div className="block lg:hidden">
-            {/* Cards Container with Fixed Height and Scroll */}
+          <div className="block lg:hidden"> 
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="h-[calc(100vh-280px)] overflow-y-auto">
                 <div className="space-y-3 p-4">
                   {filteredOrders.map((order) => (
                     <div key={order.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                      {/* Order Header */}
+                      
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm mb-1">
@@ -616,46 +615,45 @@ const BulkOrdersPage: React.FC = () => {
                             {new Date(order.orderDate).toLocaleDateString()}
                           </div>
                         </div>
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                        <span className={`px-2 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </div>
-
-                      {/* Customer Details */}
+ 
                       <div className="grid grid-cols-2 gap-3 mb-3">
                         <div>
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Customer Details</div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.customerName}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{order.customerName}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
                         </div>
                         <div>
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Payment</div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.paymentMode}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{order.paymentMode}</div>
                         </div>
                       </div>
 
-                      {/* Pickup Address */}
-                      <div className="mb-3">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Pickup Address</div>
-                        <div className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
-                          {order.warehouse?.warehouseName || "Not specified"}
-                        </div>
-                        {order.warehouse?.warehouseCode && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Code: {order.warehouse.warehouseCode}
+                      <div className="grid grid-cols-2 gap-3 mb-3">
+
+                        <div className="mb-1">
+                          <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Pickup Address</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
+                            {order.warehouse?.warehouseName || "Not specified"}
                           </div>
-                        )}
-                      </div>
-
-                      {/* Customer Address */}
-                      <div className="mb-3">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Customer Address</div>
-                        <div className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
-                          {order.address}
+                          {order.warehouse?.warehouseCode && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Code: {order.warehouse.warehouseCode}
+                            </div>
+                          )}
+                        </div>
+  
+                        <div className="mb-1">
+                          <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Customer Address</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
+                            {order.address}
+                          </div>
                         </div>
                       </div>
-
-                      {/* Product Details */}
+ 
                       <div className="mb-3">
                         <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Product Details</div>
                         {order.items && order.items.length > 0 ? (
@@ -678,8 +676,7 @@ const BulkOrdersPage: React.FC = () => {
                           <div className="text-sm text-gray-400">No items</div>
                         )}
                       </div>
-
-                      {/* Dimensions & Weight */}
+ 
                       {(order.length && order.breadth && order.height) || order.physicalWeight ? (
                         <div className="mb-3">
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Dimensions & Weight</div>
@@ -690,8 +687,7 @@ const BulkOrdersPage: React.FC = () => {
                           </div>
                         </div>
                       ) : null}
-
-                      {/* Action Buttons */}
+ 
                       <div className="flex justify-center pt-3 border-t border-gray-200 dark:border-gray-600">
                         <div className="flex gap-2">
                           <button
