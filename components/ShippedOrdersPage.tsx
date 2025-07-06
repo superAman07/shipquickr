@@ -1,11 +1,13 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight,MoreHorizontal, XCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { OrderTabs } from "./orderTabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface OrderItem {
   productName: string;
@@ -85,6 +87,32 @@ const ShippedOrdersPage: React.FC = () => {
       toast.success(`Order ${orderId} deleted successfully`);
     } catch (error) {
       toast.error("Failed to delete order. Please try again.");
+    }
+  };
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to request cancellation for this shipped order? This cannot be undone.")) return;
+    const toastId = toast.loading("Requesting cancellation...");
+    try {
+      const response = await axios.post('/api/user/orders/cancel', { orderId });
+      if (response.data.success) {
+        toast.update(toastId, {
+          render: response.data.message || "Cancellation requested successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 5000,
+        });
+        fetchOrders();  
+      } else {
+        throw new Error(response.data.message || "Failed to request cancellation.");
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "An unknown error occurred.";
+      toast.update(toastId, {
+        render: `Cancellation failed: ${errorMessage}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 7000,
+      });
     }
   };
 
@@ -191,10 +219,10 @@ const ShippedOrdersPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2  text-sm">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      <td className="px-3 py-2  text-sm font-semibold text-blue-700 dark:text-blue-300">
                         {order.orderId}
                       </td>
                       <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
@@ -219,17 +247,17 @@ const ShippedOrdersPage: React.FC = () => {
                           <span className="text-gray-400">No items</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2  text-sm">
                         {order.paymentMode}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
+                      <td className="px-3 py-2 ">
                         <div className="text-sm font-medium">{order.customerName}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
                       </td>
                       <td className="px-3 py-2 text-sm max-w-xs truncate">
                         {order.address}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2  text-sm">
                         <div>{order.warehouse?.warehouseName || "-"}</div>
                         {order.warehouse?.warehouseCode && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -237,15 +265,15 @@ const ShippedOrdersPage: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
+                      <td className="px-3 py-2 ">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2  text-sm">
                         {order.shippingId || "-"}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm">
+                      <td className="px-3 py-2  text-sm">
                         {order.awbNumber || "-"}
                       </td>
                       <td>
@@ -254,8 +282,8 @@ const ShippedOrdersPage: React.FC = () => {
                         ) : "-"}
                       </td>
 
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-center">
-                        <div className="flex justify-center gap-3">
+                      <td className="px-3 py-2  text-sm font-medium text-center">
+                        <div className="flex justify-center gap-3 md:hidden">
                           <button
                             type="button"
                             onClick={() => handleCloneOrder(order.id)}
@@ -266,12 +294,33 @@ const ShippedOrdersPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteOrder(order.id)}
-                            className="p-2 rounded-full border border-transparent text-red-600 hover:bg-red-100 hover:border-red-400 transition dark:text-red-300 dark:hover:bg-red-900 dark:hover:border-red-700"
-                            title="Delete Order"
+                            onClick={() => handleCancelOrder(order.id)}
+                            className="p-2 rounded-full border border-transparent text-orange-600 hover:bg-orange-100 hover:border-orange-400 transition dark:text-orange-500 dark:hover:bg-orange-900 dark:hover:border-orange-700"
+                            title="Cancel Order"
                           >
-                            <Trash2 className="h-5 w-5" />
+                            <XCircle className="h-5 w-5" />
                           </button>
+                        </div>
+                        <div className="hidden md:block">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleCloneOrder(order.id)} className="cursor-pointer">
+                                <Copy className="mr-2 h-4 w-4" />
+                                <span>Clone Order</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleCancelOrder(order.id)} className="text-orange-600 focus:text-orange-600 dark:text-orange-500 dark:focus:text-orange-500 cursor-pointer">
+                                <XCircle className="mr-2 h-4 w-4" />
+                                <span>Cancel Order</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </td>
                     </tr>
