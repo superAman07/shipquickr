@@ -5,6 +5,7 @@ import DashboardHorizontalNavUser from '@/components/DashboardHorizontalNav-user
 import { cookies } from 'next/headers'; 
 import { jwtDecode } from 'jwt-decode';   
 import NewsSection from '@/components/NewsSectionUser';
+import { prisma } from '@/lib/prisma';
 
 interface ShipmentCardProps {
   title: string;
@@ -81,34 +82,109 @@ export default async function Dashboard() {
   const cookieStore = await cookies();
   const token = cookieStore.get('userToken')?.value;
   let firstName = 'User';
+  let userId = '';
 
   if (token) {
     try {
       const decoded = jwtDecode<TokenDetailsType>(token);
       firstName = decoded.firstName;
+      userId = decoded.userId;
     } catch (error) {
       console.error('Failed to decode token:', error);
     }
   }
+  let statusCounts: { [key: string]: number } = {};
+  let totalShipments = 0;
+  let todayShipments = 0;
+  let yesterdayShipments = 0;
+  let totalLoad = 0;
+  let avgShipmentCost = 0;
+  if (userId) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const orderStats = await prisma.order.findMany({
+      where: {
+        userId: Number(userId),
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: {
+        status: true,
+        createdAt: true,
+        physicalWeight: true,
+        items: {
+          select: {
+            quantity: true,
+            orderValue: true,
+          },
+        },
+      },
+    });
+totalShipments = orderStats.length;
+    
+    orderStats.forEach(order => {
+      statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+ 
+      const orderDate = new Date(order.createdAt);
+      if (orderDate >= today) {
+        todayShipments++;
+      } else if (orderDate >= yesterday && orderDate < today) {
+        yesterdayShipments++;
+      }
+ 
+      const orderTotalValue = order.items.reduce((sum, item) => sum + (item.orderValue * item.quantity), 0);
+      totalLoad += Number(order.physicalWeight || 0);
+      avgShipmentCost += orderTotalValue;
+    });
+    
+    if (totalShipments > 0) {
+      avgShipmentCost /= totalShipments;
+    }
+  }
+
   const shipmentCards = [
-    { title: "Total Shipment", value: "1", info: "Last 30 days", color: "bg-[linear-gradient(to_right,#7f12e1,#3e0ead)] rounded-xl p-4 shadow-lg", icon: <Package className="h-6 w-6 text-white" /> },
-    { title: "Today Shipment", value: "0", info: "20-12-2024", color: "bg-[linear-gradient(to_right,#3b82f6,#1e40af)] rounded-xl p-4 shadow-lg", icon: <Truck className="h-6 w-6 text-white" /> },
-    { title: "Yesterday Shipment", value: "0", info: "19-12-2024", color: "bg-[linear-gradient(to_right,#6366f1,#312e81)] rounded-xl p-4 shadow-lg", icon: <Info className="h-6 w-6 text-white" /> },
-    { title: "Total Load", value: "0", info: "In Kg", color: "bg-[linear-gradient(to_right,#f97316,#c2410c)] rounded-xl p-4 shadow-lg", icon: <TrendingUp className="h-6 w-6 text-white" /> },
-    { title: "Avg. Shipment Cost", value: "0", info: "Know More", color: "bg-[linear-gradient(to_right,#22c55e,#15803d)] rounded-xl p-4 shadow-lg", icon: <Calculator className="h-6 w-6 text-white" /> },
+    { title: "Total Shipment", value: totalShipments.toString(), info: "Last 30 days", color: "bg-[linear-gradient(to_right,#7f12e1,#3e0ead)] rounded-xl p-4 shadow-lg", icon: <Package className="h-6 w-6 text-white" /> },
+    { title: "Today Shipment", value: todayShipments.toString(), info: new Date().toLocaleDateString(), color: "bg-[linear-gradient(to_right,#3b82f6,#1e40af)] rounded-xl p-4 shadow-lg", icon: <Truck className="h-6 w-6 text-white" /> },
+    { title: "Yesterday Shipment", value: yesterdayShipments.toString(), info: new Date(Date.now() - 86400000).toLocaleDateString(), color: "bg-[linear-gradient(to_right,#6366f1,#312e81)] rounded-xl p-4 shadow-lg", icon: <Info className="h-6 w-6 text-white" /> },
+    { title: "Total Load", value: `${totalLoad.toFixed(2)} Kg`, info: "In Kg", color: "bg-[linear-gradient(to_right,#f97316,#c2410c)] rounded-xl p-4 shadow-lg", icon: <TrendingUp className="h-6 w-6 text-white" /> },
+    { title: "Avg. Shipment Cost", value: `₹${avgShipmentCost.toFixed(2)}`, info: "Know More", color: "bg-[linear-gradient(to_right,#22c55e,#15803d)] rounded-xl p-4 shadow-lg", icon: <Calculator className="h-6 w-6 text-white" /> },
   ];
 
-  const statusCards = [
-    { count: "1", percentage: "100%", status: "Unshipped", color: "bg-gray-100 dark:bg-gray-800" },
-    { count: "0", percentage: "0%", status: "Pickup Scheduled", color: "bg-red-100 dark:bg-red-900/20" },
-    { count: "0", percentage: "0%", status: "In-Transit", color: "bg-yellow-100 dark:bg-yellow-900/20" },
-    { count: "0", percentage: "0%", status: "Delivered", color: "bg-green-100 dark:bg-green-900/20" },
-    { count: "0", percentage: "0%", status: "Un-Delivered", color: "bg-blue-100 dark:bg-blue-900/20" },
-    { count: "0", percentage: "0%", status: "OFD", color: "bg-purple-100 dark:bg-purple-900/20" },
-    { count: "0", percentage: "0%", status: "RTO In-Transit", color: "bg-white dark:bg-gray-800" },
-    { count: "0", percentage: "0%", status: "RTO Delivered", color: "bg-white dark:bg-gray-800" },
-    { count: "0", percentage: "0%", status: "LOST Shipments", color: "bg-white dark:bg-gray-800" },
+  const getStatusCount = (statuses: string[]) => {
+    return statuses.reduce((acc, status) => acc + (statusCounts[status] || 0), 0);
+  };
+
+  const calculatePercentage = (count: number) => {
+    return totalShipments > 0 ? ((count / totalShipments) * 100).toFixed(0) + "%" : "0%";
+  };
+
+  const statusCardData = [
+    { status: "Unshipped", dbStatuses: ["unshipped"], color: "bg-gray-100 dark:bg-gray-800" },
+    { status: "Pickup Scheduled", dbStatuses: ["pending_manifest", "manifested"], color: "bg-red-100 dark:bg-red-900/20" },
+    { status: "In-Transit", dbStatuses: ["in_transit"], color: "bg-yellow-100 dark:bg-yellow-900/20" },
+    { status: "Delivered", dbStatuses: ["delivered"], color: "bg-green-100 dark:bg-green-900/20" },
+    { status: "Un-Delivered", dbStatuses: ["undelivered"], color: "bg-blue-100 dark:bg-blue-900/20" },
+    { status: "OFD", dbStatuses: ["out_for_delivery"], color: "bg-purple-100 dark:bg-purple-900/20" },
+    { status: "RTO In-Transit", dbStatuses: ["rto_intransit"], color: "bg-white dark:bg-gray-800" },
+    { status: "RTO Delivered", dbStatuses: ["rto_delivered"], color: "bg-white dark:bg-gray-800" },
+    { status: "LOST Shipments", dbStatuses: ["lost_shipment"], color: "bg-white dark:bg-gray-800" },
   ];
+
+  const statusCards = statusCardData.map(card => {
+    const count = getStatusCount(card.dbStatuses);
+    return {
+      count: count.toString(),
+      percentage: calculatePercentage(count),
+      status: card.status,
+      color: card.color,
+    };
+  });
   return (
     <main className=" px-4 md:px-8 pb-8">
       <DashboardWelcome name={firstName}/>
