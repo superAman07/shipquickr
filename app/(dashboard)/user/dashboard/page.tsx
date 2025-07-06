@@ -118,15 +118,11 @@ export default async function Dashboard() {
         status: true,
         createdAt: true,
         physicalWeight: true,
-        items: {
-          select: {
-            quantity: true,
-            orderValue: true,
-          },
-        },
+        shippingCost: true,
       },
     });
     totalShipments = orderStats.length;
+    let shippedOrdersCount = 0;
 
     orderStats.forEach(order => {
       statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
@@ -138,9 +134,12 @@ export default async function Dashboard() {
         yesterdayShipments++;
       }
 
-      const orderTotalValue = order.items.reduce((sum, item) => sum + (item.orderValue * item.quantity), 0);
       totalLoad += Number(order.physicalWeight || 0);
-      avgShipmentCost += orderTotalValue;
+
+      if (order.shippingCost !== null && order.shippingCost > 0) {
+        avgShipmentCost += Number(order.shippingCost);
+        shippedOrdersCount++;
+      }
     });
 
     if (totalShipments > 0) {
