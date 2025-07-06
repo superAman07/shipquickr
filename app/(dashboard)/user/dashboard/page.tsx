@@ -142,8 +142,8 @@ export default async function Dashboard() {
       }
     });
 
-    if (totalShipments > 0) {
-      avgShipmentCost /= totalShipments;
+    if (shippedOrdersCount > 0) {
+      avgShipmentCost /= shippedOrdersCount;
     }
   }
 
