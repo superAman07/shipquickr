@@ -49,7 +49,7 @@ const UnshippedOrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1;
+  const itemsPerPage = 10;
 
   const pathname = usePathname();
   const router = useRouter();
@@ -255,30 +255,31 @@ const UnshippedOrdersPage: React.FC = () => {
                 </div>
               </div>
               {/* Mobile Pagination */}
-              <div className="px-4 py-3 flex items-center justify-between border-t bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800">
-                <div className="text-sm text-gray-700 dark:text-gray-400">
-                  Showing <span className="font-bold">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold">{Math.min(currentPage * itemsPerPage, filteredOrders.length)}</span> of <span className="font-bold">{filteredOrders.length}</span> orders
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePreviousPage}
-                    className="px-3 py-1 rounded-md cursor-pointer shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                  <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                    {currentPage} / {totalPages || 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleNextPage}
-                    className="px-3 py-1 rounded-md cursor-pointer shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                    disabled={currentPage === totalPages || filteredOrders.length === 0}
-                  >
-                    Next
-                  </button>
+              <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-sm text-gray-700 dark:text-gray-400">
+                    Showing <span className="font-bold">{filteredOrders.length}</span> orders
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handlePreviousPage}
+                      className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                      {currentPage}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleNextPage}
+                      className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      disabled={currentPage === totalPages || filteredOrders.length === 0}
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
