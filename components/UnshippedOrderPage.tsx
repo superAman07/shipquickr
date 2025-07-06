@@ -231,6 +231,36 @@ const UnshippedOrdersPage: React.FC = () => {
                         </div>
                       </div>
 
+                      <div className="mb-3">
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Product Details</div>
+                        <div className="p-2 rounded-md bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                          {order.items && order.items.length > 0 ? (
+                            <div className="space-y-1 text-xs">
+                              {order.items.map((item: OrderItem, index: number) => (
+                                <div key={index} className={index > 0 ? "pt-1 border-t border-gray-300 dark:border-gray-600" : ""}>
+                                  <span className="font-medium text-gray-800 dark:text-gray-100">{item.productName}</span> (Qty: {item.quantity})
+                                  {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400">No items</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Dimensions & Weight */}
+                      {(order.length && order.breadth && order.height) || order.physicalWeight ? (
+                        <div className="mb-3">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Dimensions & Weight</div>
+                          <div className="text-sm text-gray-800 dark:text-gray-100">
+                            {(order.length && order.breadth && order.height) && `${order.length} × ${order.breadth} × ${order.height} cm`}
+                            {(order.length && order.breadth && order.height) && order.physicalWeight && " | "}
+                            {order.physicalWeight && `${order.physicalWeight} Kg`}
+                          </div>
+                        </div>
+                      ) : null}
+
                       <div className="flex justify-center pt-3 border-t border-gray-200 dark:border-gray-600">
                         <div className="flex gap-2">
                           <button onClick={() => handleCloneOrder(order.id)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition dark:text-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800">

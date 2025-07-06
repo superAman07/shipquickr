@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight,MoreHorizontal, XCircle } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, MoreHorizontal, XCircle, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -52,6 +52,9 @@ const ShippedOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const pathname = usePathname();
 
   useEffect(() => {
@@ -79,16 +82,6 @@ const ShippedOrdersPage: React.FC = () => {
     window.location.href = `/user/dashboard/clone-order/${orderId}`;
   };
 
-  const handleDeleteOrder = async (orderId: string) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-    try {
-      await axios.delete(`/api/user/orders/single-order/${orderId}`);
-      setOrders(orders.filter(order => order.id !== orderId));
-      toast.success(`Order ${orderId} deleted successfully`);
-    } catch (error) {
-      toast.error("Failed to delete order. Please try again.");
-    }
-  };
   const handleCancelOrder = async (orderId: string) => {
     if (!window.confirm("Are you sure you want to request cancellation for this shipped order? This cannot be undone.")) return;
     const toastId = toast.loading("Requesting cancellation...");
@@ -101,7 +94,7 @@ const ShippedOrdersPage: React.FC = () => {
           isLoading: false,
           autoClose: 5000,
         });
-        fetchOrders();  
+        fetchOrders();
       } else {
         throw new Error(response.data.message || "Failed to request cancellation.");
       }
@@ -123,6 +116,24 @@ const ShippedOrdersPage: React.FC = () => {
     (order.awbNumber && order.awbNumber.toLowerCase().includes(searchTerm.toLowerCase())) || // Search AWB
     order.mobile.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     const baseColors = {
@@ -156,9 +167,9 @@ const ShippedOrdersPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
-      <main className="p-6">
+      <main className="p-3 sm:p-6">
         <div className="max-w-full mx-auto">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 lg:mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
               <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Shipped Orders</h2>
@@ -197,7 +208,136 @@ const ShippedOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
+          {/* Mobile Card Layout */}
+          <div className="block lg:hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="h-[calc(70vh-280px)] overflow-y-auto">
+                <div className="space-y-3 p-4">
+                  {paginatedOrders.map((order) => (
+                    <div key={order.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm mb-1 break-all">{order.orderId}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(order.orderDate).toLocaleDateString()}</div>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)} ml-2`}>
+                          {order.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3 text-sm">
+                        <div className="col-span-1">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">AWB Number</div>
+                          <div className="font-semibold text-gray-800 dark:text-gray-100 break-words">{order.awbNumber || '-'}</div>
+                        </div>
+                        <div className="col-span-1">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Shipping ID</div>
+                          <div className="font-semibold text-gray-800 dark:text-gray-100">{order.shippingId || '-'}</div>
+                        </div>
+                        <div className="col-span-1">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Customer</div>
+                          <div className="font-semibold text-gray-800 dark:text-gray-100">{order.customerName}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
+                        </div>
+                        <div className="col-span-1">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Payment</div>
+                          <div className="font-semibold text-gray-800 dark:text-gray-100">{order.paymentMode}</div>
+                        </div>
+                        <div className="col-span-1">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Pickup Address</div>
+                          <div className="text-gray-800 dark:text-gray-100 leading-relaxed">
+                            {order.warehouse?.warehouseName || "Not specified"}
+                            {order.warehouse?.warehouseCode && ` (${order.warehouse.warehouseCode})`}
+                          </div>
+                        </div>
+                        <div className="col-span-1">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Customer Address</div>
+                          <div className="text-gray-800 dark:text-gray-100 leading-relaxed">{order.address}</div>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Product Details</div>
+                        <div className="p-2 rounded-md bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                          {order.items && order.items.length > 0 ? (
+                            <div className="space-y-1 text-xs">
+                              {order.items.map((item: OrderItem, index: number) => (
+                                <div key={index} className={index > 0 ? "pt-1 border-t border-gray-300 dark:border-gray-600" : ""}>
+                                  <span className="font-medium text-gray-800 dark:text-gray-100">{item.productName}</span> (Qty: {item.quantity})
+                                  {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400">No items</span>
+                          )}
+                        </div>
+                      </div>
+ 
+                      {(order.length && order.breadth && order.height) || order.physicalWeight ? (
+                        <div className="mb-3">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Dimensions & Weight</div>
+                          <div className="text-sm text-gray-800 dark:text-gray-100">
+                            {(order.length && order.breadth && order.height) && `${order.length} × ${order.breadth} × ${order.height} cm`}
+                            {(order.length && order.breadth && order.height) && order.physicalWeight && " | "}
+                            {order.physicalWeight && `${order.physicalWeight} Kg`}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {order.labelUrl && (
+                        <div className="mb-3">
+                          <a href={order.labelUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition dark:text-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800">
+                            <Download className="h-4 w-4" />
+                            Download Label
+                          </a>
+                        </div>
+                      )}
+
+                      <div className="flex justify-center pt-3 border-t border-gray-200 dark:border-gray-600">
+                        <div className="flex gap-2">
+                          <button onClick={() => handleCloneOrder(order.id)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition dark:text-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800">
+                            <Copy className="h-3 w-3" /> Clone
+                          </button>
+                          <button onClick={() => handleCancelOrder(order.id)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-md transition dark:text-orange-500 dark:bg-orange-900 dark:hover:bg-orange-800">
+                            <XCircle className="h-3 w-3" /> Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredOrders.length === 0 && (
+                    <div className="py-12 text-center">
+                      <Package className="h-12 w-12 mb-4 text-gray-400 mx-auto" />
+                      <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No orders found</h3>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Mobile Pagination */}
+              <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-sm text-gray-700 dark:text-gray-400">
+                    Showing <span className="font-bold">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold">{Math.min(currentPage * itemsPerPage, filteredOrders.length)}</span> of <span className="font-bold">{filteredOrders.length}</span> orders
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handlePreviousPage} className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" disabled={currentPage === 1}>
+                      Previous
+                    </button>
+                    <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                      {currentPage}
+                    </span>
+                    <button onClick={handleNextPage} className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" disabled={currentPage === totalPages || filteredOrders.length === 0}>
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Desktop Table Layout */}
+          <div className="hidden lg:block overflow-hidden shadow-2xl bg-white dark:bg-gray-900 rounded-lg">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
@@ -217,7 +357,7 @@ const ShippedOrdersPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {filteredOrders.map((order) => (
+                  {paginatedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                       <td className="px-3 py-2  text-sm">
                         {new Date(order.orderDate).toLocaleDateString()}
@@ -343,24 +483,16 @@ const ShippedOrdersPage: React.FC = () => {
 
             <div className="px-6 py-4 flex items-center justify-between border-t bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800">
               <div className="text-sm text-gray-700 dark:text-gray-400">
-                Showing <span className="font-bold">{filteredOrders.length}</span> orders
+                Showing <span className="font-bold">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold">{Math.min(currentPage * itemsPerPage, filteredOrders.length)}</span> of <span className="font-bold">{filteredOrders.length}</span> orders
               </div>
               <div className="flex gap-2">
-                <button
-                  className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={true}
-                >
+                <button onClick={handlePreviousPage} className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" disabled={currentPage === 1}>
                   Previous
                 </button>
-                <button
-                  className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                >
-                  1
-                </button>
-                <button
-                  className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={true}
-                >
+                <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                  {currentPage} / {totalPages || 1}
+                </span>
+                <button onClick={handleNextPage} className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" disabled={currentPage === totalPages || filteredOrders.length === 0}>
                   Next
                 </button>
               </div>
