@@ -169,14 +169,6 @@ export async function GET() {
     });
 
     return NextResponse.json({ balance: wallet?.balance || 0, transactions: formattedTransactions });
-
-    // const transactions = await prisma.transaction.findMany({
-    //   where: { userId: parseInt(userId) },
-    //   orderBy: { createdAt: "desc" },
-    //   take: 20,
-    // })
-    // return NextResponse.json({ balance: wallet?.balance || 0, transactions });
-
   } catch (err) {
     console.error("Error fetching wallet data:", err);
     return NextResponse.json({ error: "Failed to fetch wallet data" }, { status: 500 });
