@@ -188,7 +188,7 @@ export default async function Dashboard() {
     <main className=" px-4 md:px-8 pb-8">
       <DashboardWelcome name={firstName} />
       <DashboardHorizontalNavUser />
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-full mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 pt-4 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
           {shipmentCards.map((card, index) => (
             <ShipmentCard key={index} {...card} />
