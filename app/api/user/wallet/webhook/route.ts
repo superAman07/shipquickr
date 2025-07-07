@@ -33,8 +33,7 @@ export async function POST(req: NextRequest) {
         const event = JSON.parse(Buffer.from(base64Payload, 'base64').toString('utf-8'));
 
         console.log("Decoded PhonePe Webhook Event:", JSON.stringify(event, null, 2));
- 
-        // Handle successful payment
+  
         if (event.code === "PAYMENT_SUCCESS") {
             const { merchantTransactionId, providerReferenceId, amount } = event.data;
             const paymentAmount = amount / 100;
