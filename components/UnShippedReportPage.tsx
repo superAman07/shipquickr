@@ -421,7 +421,10 @@ const UnShippedPage: React.FC = () => {
                   return (
                     <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                       <td className="px-3 py-2">{idx + 1}</td>
-                      <td className="px-3 py-2">{order.orderId}</td>
+                      <td className="px-3 py-2">
+                        <div className="font-semibold">{order.orderId}</div>
+                        <div className="text-xs text-gray-500">{new Date(order.orderDate).toLocaleDateString()}</div>
+                      </td>
                       <td className="px-3 py-2 text-xs align-top break-words min-w-[250px]">
                         {order.items && order.items.length > 0 ? (
                           <div className="space-y-1">
