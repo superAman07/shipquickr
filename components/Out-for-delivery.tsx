@@ -253,7 +253,7 @@ const OutForDeliveryPage: React.FC = () => {
             <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="h-[calc(70vh-280px)] overflow-y-auto">
                 <div className="space-y-3 p-4">
-                  {paginatedOrders.map((order) => {
+                  {paginatedOrders.length > 0 ? (paginatedOrders.map((order) => {
                     const totalValue = calculateTotalOrderValue(order.items);
                     return (
                       <div key={order.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
@@ -335,7 +335,18 @@ const OutForDeliveryPage: React.FC = () => {
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                  ) : (
+                    <div className="py-12 text-center flex flex-col items-center">
+                      <Package className="h-12 w-12 mb-4 text-gray-400" />
+                      <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                        No orders found
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Try adjusting your search or filters.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
