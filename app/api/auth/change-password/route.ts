@@ -54,6 +54,12 @@ export async function POST(req: NextRequest){
                 { status: 404 }
             );
         }
+        if (!user.password) {
+            return NextResponse.json(
+                { message: "No password is set for this account. Please use 'Forgot Password' to set one." },
+                { status: 400 }
+            );
+        }
         const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
         if (!isPasswordValid) {
             return NextResponse.json(
