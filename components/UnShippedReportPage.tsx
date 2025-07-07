@@ -284,9 +284,9 @@ const UnShippedPage: React.FC = () => {
                           <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm mb-1">{order.orderId}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(order.orderDate).toLocaleDateString()}</div>
                         </div>
-                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
+                        {/* <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
                           {order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                        </span>
+                        </span> */}
                       </div>
 
                       <div className="mb-3">
