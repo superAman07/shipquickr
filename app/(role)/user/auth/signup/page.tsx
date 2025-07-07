@@ -69,7 +69,7 @@ export default function SignUp() {
       <div className="absolute w-[250px] sm:w-[300px] md:w-[400px] h-[250px] sm:h-[300px] md:h-[400px] rounded-full bg-indigo-500/20 right-0 bottom-0 animate-pulse delay-700"></div>
 
         <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-l-2xl overflow-x-visible shadow-2xl backdrop-blur-sm bg-white/5">
-          <div className="w-full md:w-5/12 backdrop-blur-3xl p-6 rounded-l-2xl sm:p-8 text-white relative overflow-x-visible">
+          <div className="w-full md:w-5/12 backdrop-blur-3xl p-6 rounded-l-2xl sm:p-8 text-white relative overflow-x-visible hidden md:flex md:flex-col">
             <div className="col-lg-5 col-md-5 col-12 auth-left-side d-flex justify-center center">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 md:mb-10 mt-2 md:mt-4">
                 Start Shipping Today with 3 Simple Steps!
@@ -121,7 +121,7 @@ export default function SignUp() {
             <div className="absolute bottom-0 left-0 w-56 sm:w-64 md:w-80 h-56 sm:h-64 md:h-80 rounded-full bg-indigo-800 opacity-20 -ml-28 -mb-28"></div>
           </div>
 
-          <div className="w-full md:w-7/12 rounded-r-2xl bg-white p-6 sm:p-8">
+          <div className="w-full md:w-7/12 rounded-2xl md:rounded-r-2xl md:rounded-l-none bg-white p-6 sm:p-8">
             <div className="flex justify-center mb-4 sm:mb-6">
               <div className="flex items-center">
                 <div className="h-8 w-8 sm:h-10 sm:w-10 bg-blue-600 transform rotate-45"></div>
