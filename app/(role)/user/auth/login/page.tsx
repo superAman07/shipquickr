@@ -110,11 +110,15 @@ export default function SignIn() {
 
           <div className="w-full md:w-7/12 rounded-t-2xl md:rounded-r-2xl md:rounded-t-none bg-white p-6 sm:p-8">
             <div className="flex justify-center mb-4 sm:mb-6">
-              <div className="flex items-center">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 bg-blue-600 transform rotate-45"></div>
-                <div className="h-8 w-8 sm:h-10 sm:w-10 bg-blue-400 transform rotate-45 -ml-4 mt-4"></div>
-                <h1 className="text-blue-900 font-bold text-xl sm:text-2xl ml-2">SHIPQUICKR</h1>
-              </div>
+              <Link href="/" className="flex items-center gap-2">
+                <Image
+                  src="/shipquickr.png"
+                  alt="ShipQuickr Logo"
+                  width={40}
+                  height={40}
+                  className="h-15 w-40"
+                />
+              </Link>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Log In</h2>
