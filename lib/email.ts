@@ -19,3 +19,14 @@ export async function sendResetEmail(to: string, token: string, role: string) {
 
   await transporter.sendMail(mailOptions);
 }
+
+export async function sendEmail(options: { to: string; subject: string; html: string }) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+  };
+
+  await transporter.sendMail(mailOptions);
+}

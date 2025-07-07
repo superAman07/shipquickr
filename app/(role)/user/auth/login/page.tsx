@@ -3,8 +3,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
-import axios from "axios"
-import { useRouter } from "next/navigation"  
+import axios from "axios"  
 import ButtonLoading from "@/components/buttonLoading"
 import { toast } from "react-toastify"
 
@@ -12,27 +11,55 @@ export default function SignIn() {
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState(""); 
   const [loading,setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
 
-  const router = useRouter()
+  const handleSendOtp = async () => {
+    if (!email) {
+      toast.error("Please enter your email first.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.post('/api/auth/send-login-otp', { email });
+      toast.success(response.data.message);
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to send OTP.";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const [showPassword, setShowPassword] = useState(false) 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
   const handleClick = async (e: React.FormEvent)=>{
     e.preventDefault();
     setLoading(true)
-    try { 
-      const response = await axios.post('/api/auth/login', { email, password });
-      toast.success(response.data.message); 
-      // router.push('/user/dashboard');
-      window.location.href = '/user/dashboard'; // hard reload k liye
-    } catch (error:any) {
+    try {
+      const payload = loginMethod === 'password' ? { email, password } : { email, otp };
+      const response = await axios.post('/api/auth/login', payload);
+      toast.success(response.data.message);
+      window.location.href = '/user/dashboard';
+    } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong";
       toast.error(message);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
+    
+    // try { 
+    //   const response = await axios.post('/api/auth/login', { email, password });
+    //   toast.success(response.data.message);  
+    //   window.location.href = '/user/dashboard'; 
+    // } catch (error:any) {
+    //   const message = error.response?.data?.message || "Something went wrong";
+    //   toast.error(message);
+    // } finally {
+    //   setLoading(false); 
+    // }
   }  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8 relative overflow-hidden">
@@ -103,6 +130,21 @@ export default function SignIn() {
 
             <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Log In</h2>
 
+            <div className="flex justify-center border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setLoginMethod('password')}
+              className={`px-6 py-2 text-sm cursor-pointer font-medium transition-colors ${loginMethod === 'password' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Login with Password
+            </button>
+            <button
+              onClick={() => setLoginMethod('otp')}
+              className={`px-6 py-2 text-sm cursor-pointer font-medium transition-colors ${loginMethod === 'otp' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Login with OTP
+            </button>
+          </div>
+
             <form onSubmit={handleClick} className="space-y-4 sm:space-y-6 px-10 text-[#252525]">
               <div>
                 <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-1">
@@ -120,7 +162,7 @@ export default function SignIn() {
                 />
               </div>
  
-              <div className="w-full ">
+              {/* <div className="w-full ">
                 <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
                   Password <span className="text-red-500">*</span>
                 </label>
@@ -145,7 +187,56 @@ export default function SignIn() {
                   </button>
                 </div>
                 <Link href={'/user/auth/forget'} className="text-[#28259d] flex justify-end center h-[0px]">Forgot password?</Link>
-              </div> 
+              </div>  */}
+              {loginMethod === 'password' ? (
+              <div className="w-full ">
+                <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password" name="password" value={password}
+                    onChange={(e) => { setPassword(e.target.value) }}
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    placeholder="Enter password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <Link href={'/user/auth/forget'} className="text-[#28259d] flex justify-end center h-[0px]">Forgot password?</Link>
+              </div>
+            ) : (
+              <div>
+                <label htmlFor="otp" className="block text-gray-700 text-sm font-medium mb-1">
+                  One-Time Password (OTP) <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text" id="otp" name="otp" value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    placeholder="Enter 6-digit OTP"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={loading}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold disabled:opacity-50"
+                  >
+                    {loading ? "Sending..." : "Send OTP"}
+                  </button>
+                </div>
+              </div>
+            )}
 
               <button 
                 type="submit"

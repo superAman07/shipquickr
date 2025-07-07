@@ -10,9 +10,13 @@ export const signupSchema = z.object({
 
 export const signinSchema = z.object({
     email: z.string().email("Invalid email format"),
-    password: z.string().min(8,"Password is invalid"),
+    password: z.string().min(8,"Password is invalid").optional(),
+    otp: z.string().optional(),
     isAdmin: z.boolean().optional(),
-})
+}).refine(data => data.password || data.otp, {
+  message: "Password or OTP is required",
+  path: ["password"],  
+});
 
 export const forgetPasswordSchema = z.object({
     email: z.string().email("Invalid email format"),
