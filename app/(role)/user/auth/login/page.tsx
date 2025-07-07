@@ -13,7 +13,7 @@ export default function SignIn() {
   const [loading,setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("");
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('otp');
 
   const handleSendOtp = async () => {
     if (!email) {
@@ -218,19 +218,19 @@ export default function SignIn() {
                 <label htmlFor="otp" className="block text-gray-700 text-sm font-medium mb-1">
                   One-Time Password (OTP) <span className="text-red-500">*</span>
                 </label>
-                <div className="flex gap-2">
+                <div className="relative">
                   <input
                     type="text" id="otp" name="otp" value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pr-28"
                     placeholder="Enter 6-digit OTP"
                   />
                   <button
                     type="button"
                     onClick={handleSendOtp}
                     disabled={loading}
-                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold disabled:opacity-50"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Sending..." : "Send OTP"}
                   </button>
