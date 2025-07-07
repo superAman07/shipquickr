@@ -17,11 +17,14 @@ interface Transaction {
   createdAt: string;
   type: "recharge" | "debit" | "credit";
   amount: number;
+  description: string;
+  status: string;
+  referenceId?: string | null;
 }
 
 export default function WalletPage() {
   const title = "My Wallet", subtitle = "Manage your wallet balance and transactions"
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState("");
@@ -100,7 +103,7 @@ export default function WalletPage() {
           </div>
         </div>
       </header>
-      <div className="max-w-3xl mx-auto py-4 px-2 sm:px-4">
+      <div className="max-w-4xl mx-auto py-4 px-2 sm:px-4">
         <Card className="mb-6 shadow-lg bg-white dark:bg-gray-900 border-0">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center gap-3 w-full">
@@ -180,23 +183,44 @@ export default function WalletPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Amount</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Type</TableHead> 
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {transactions.map((txn, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="whitespace-nowrap">
+                    {transactions.map((txn) => (
+                      <TableRow key={txn.id}>
+                        <TableCell className="whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                           {new Date(txn.createdAt).toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          <span className={`font-semibold ${txn.type === "recharge" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                          <p className="font-medium text-gray-800 dark:text-gray-200">{txn.description}</p>
+                          {txn.referenceId && <p className="text-xs text-gray-500">Ref: {txn.referenceId}</p>}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-semibold text-xs px-2 py-1 rounded-full ${
+                            txn.type === "recharge" || txn.type === "credit"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+                              : "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300"
+                          }`}>
                             {txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
                           </span>
                         </TableCell>
                         <TableCell>
-                          ₹ {txn.amount.toFixed(2)}
+                          <span className={`font-semibold text-xs px-2 py-1 rounded-full ${
+                            txn.status.toLowerCase() === "completed" || txn.status.toLowerCase() === "success"
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
+                          }`}>
+                            {txn.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className={`text-right font-bold ${
+                          txn.type === "recharge" || txn.type === "credit" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                        }`}>
+                          {txn.type === "recharge" || txn.type === "credit" ? "+" : "-"} ₹{txn.amount.toFixed(2)}
                         </TableCell>
                       </TableRow>
                     ))}

@@ -137,8 +137,45 @@ export async function GET() {
       where: { userId: parseInt(userId) },
       orderBy: { createdAt: "desc" },
       take: 20,
-    })
-    return NextResponse.json({ balance: wallet?.balance || 0, transactions });
+      include: {
+        order: {
+          select: {
+            orderId: true,
+            awbNumber: true,
+          },
+        },
+      },
+    });
+
+    const formattedTransactions = transactions.map((tx) => {
+      let description = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+      if (tx.type === 'debit' && tx.order) {
+        description = `Shipment Fee: ${tx.order.orderId || tx.order.awbNumber || ''}`;
+      } else if (tx.type === 'recharge') {
+        description = `Wallet Recharge`;
+      } else if (tx.type === 'credit') {
+        description = `Refund/Credit`;
+      }
+
+      return {
+        id: tx.id,
+        createdAt: tx.createdAt,
+        type: tx.type,
+        amount: tx.amount,
+        description: description,
+        status: tx.status || 'Completed',
+        referenceId: tx.order?.orderId || tx.merchantTransactionId,
+      };
+    });
+
+    return NextResponse.json({ balance: wallet?.balance || 0, transactions: formattedTransactions });
+
+    // const transactions = await prisma.transaction.findMany({
+    //   where: { userId: parseInt(userId) },
+    //   orderBy: { createdAt: "desc" },
+    //   take: 20,
+    // })
+    // return NextResponse.json({ balance: wallet?.balance || 0, transactions });
 
   } catch (err) {
     console.error("Error fetching wallet data:", err);
