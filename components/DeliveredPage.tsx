@@ -250,7 +250,131 @@ const DeliveredPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
+          {/* Mobile Card Layout */}
+          <div className="block lg:hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="h-[calc(70vh-280px)] overflow-y-auto">
+                <div className="space-y-3 p-4">
+                  {paginatedOrders.length > 0 ? (
+                    paginatedOrders.map((order) => {
+                      const totalValue = calculateTotalOrderValue(order.items);
+                      return (
+                        <div key={order.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1">
+                              <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm mb-1">{order.orderId}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Ordered: {new Date(order.orderDate).toLocaleDateString()}</div>
+                              {order.deliveredDate && <div className="text-xs text-gray-500 dark:text-gray-400">Delivered: {new Date(order.deliveredDate).toLocaleDateString()}</div>}
+                            </div>
+                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)} whitespace-nowrap`}>
+                              {order.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>
+                          </div>
+
+                          <div className="mb-3">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Product Details</div>
+                            <div className="p-2 rounded-md bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
+                              {order.items && order.items.length > 0 ? (
+                                <div className="space-y-1 text-xs">
+                                  {order.items.map((item: OrderItem, index: number) => (
+                                    <div key={index} className={index > 0 ? "pt-1 border-t border-gray-300 dark:border-gray-600" : ""}>
+                                      <span className="font-medium text-gray-800 dark:text-gray-100">{item.productName}</span> (Qty: {item.quantity})
+                                      {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
+                                    </div>
+                                  ))}
+                                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t border-dashed border-gray-300 dark:border-gray-600">
+                                    {(order.length && order.breadth && order.height)
+                                      ? `Dims: ${order.length}x${order.breadth}x${order.height}cm | `
+                                      : ""}
+                                    {order.physicalWeight
+                                      ? `Wt: ${order.physicalWeight}Kg`
+                                      : ""}
+                                  </div>
+                                </div>
+                              ) : <span className="text-gray-400 text-xs">No items</span>}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                              <div className="font-medium text-gray-500 dark:text-gray-400">Customer</div>
+                              <div className="text-gray-800 dark:text-gray-100">{order.customerName}</div>
+                              <div className="text-gray-500 dark:text-gray-400">{order.mobile}</div>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-500 dark:text-gray-400">Order Value</div>
+                              <div className="font-semibold text-gray-800 dark:text-gray-100">₹{totalValue.toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-500 dark:text-gray-400">AWB No.</div>
+                              <div className="text-gray-800 dark:text-gray-100">{order.awbNumber || "-"}</div>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-500 dark:text-gray-400">Billable Wt.</div>
+                              <div className="text-gray-800 dark:text-gray-100">{order.billableWeight ?? "N/A"}</div>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-500 dark:text-gray-400">Ageing</div>
+                              <div className="text-gray-800 dark:text-gray-100">{order.ageing ?? "0"}</div>
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-500 dark:text-gray-400">Attempts</div>
+                              <div className="text-gray-800 dark:text-gray-100">{order.attempts ?? "0"}</div>
+                            </div>
+                            <div className="col-span-2">
+                              <div className="font-medium text-gray-500 dark:text-gray-400">Shipping Details</div>
+                              <div className="text-gray-800 dark:text-gray-100">{order.shippingDetails || "-"}</div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-center pt-3 mt-3 border-t border-gray-200 dark:border-gray-600">
+                            <button
+                              type="button"
+                              onClick={() => handleCloneOrder(order.id)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition dark:text-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800"
+                            >
+                              <Copy className="h-3 w-3" />
+                              Clone
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="py-12 text-center flex flex-col items-center">
+                      <Package className="h-12 w-12 mb-4 text-gray-400" />
+                      <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                        No orders found
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        There are no delivered orders to display.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-sm text-gray-700 dark:text-gray-400">
+                    Showing <span className="font-bold">{paginatedOrders.length}</span> of <span className="font-bold">{filteredOrders.length}</span> orders
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handlePreviousPage} className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" disabled={currentPage === 1}>
+                      Prev
+                    </button>
+                    <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                      {currentPage}/{totalPages || 1}
+                    </span>
+                    <button onClick={handleNextPage} className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" disabled={currentPage === totalPages || filteredOrders.length === 0}>
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden lg:block overflow-hidden shadow-2xl bg-white dark:bg-gray-900">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
@@ -274,7 +398,10 @@ const DeliveredPage: React.FC = () => {
                       return(
                         <tr key={order.id} className="hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors duration-150">
                             <td className="px-4 py-3">{idx + 1}</td>
-                            <td className="px-4 py-3">{order.orderId}</td>
+                            <td className="px-4 py-3">
+                              <div className="font-semibold">{order.orderId}</div>
+                        <div className="text-xs text-gray-500">{new Date(order.orderDate).toLocaleDateString()}</div>
+                            </td>
                             <td className="px-4 py-2 text-xs align-top break-words min-w-[250px]">
                               {order.items && order.items.length > 0 ? (
                                 <div className="space-y-1">
