@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     const otp = randomInt(100000, 999999).toString();
     const hashedOtp = await bcrypt.hash(otp, 10);
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);  
 
     await prisma.user.update({
       where: { email },
@@ -29,8 +29,7 @@ export async function POST(req: NextRequest) {
         otpExpires,
       },
     });
-
-    // Send the OTP via email
+ 
     await sendEmail({
       to: email,
       subject: "Your Login OTP for ShipQuickr",

@@ -37,8 +37,7 @@ export async function POST(req:NextRequest) {
               { status: 404 }
             );
         }
-
-        // --- Conditional Authentication Logic ---
+ 
         if (otp) {
             if (!user.hashedOtp || !user.otpExpires) {
                 return NextResponse.json({ message: "No OTP has been sent for this account." }, { status: 400 });
@@ -49,8 +48,7 @@ export async function POST(req:NextRequest) {
             const isOtpValid = await bcrypt.compare(otp, user.hashedOtp);
             if (!isOtpValid) {
                 return NextResponse.json({ message: "Invalid OTP provided." }, { status: 401 });
-            }
-            // Invalidate OTP after use for security
+            } 
             await prisma.user.update({ where: { email }, data: { hashedOtp: null, otpExpires: null } });
         } else if (password) {
             const isPasswordValid = await bcrypt.compare(password, user.password!);
@@ -61,14 +59,6 @@ export async function POST(req:NextRequest) {
                 );
             }
         }
-
-        // const isPasswordValid = await bcrypt.compare(password, user.password);
-        // if (!isPasswordValid) {
-        //     return NextResponse.json(
-        //         { message: "Invalid password." },
-        //         { status: 401 }
-        //     );
-        // }
         if(user.status=== false){
             return NextResponse.json(
                 { message: "Your account has been deactivated. Please contact support." },
