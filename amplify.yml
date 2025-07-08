@@ -1,4 +1,3 @@
-# filepath: d:\users\ASUS\Codes\Web-Development\major project\shipquickr\amplify.yml
 version: 1.0
 frontend:
   phases:
@@ -52,6 +51,11 @@ frontend:
         - echo "SHADOWFAX_SERVICEABILITY_API_URL=$SHADOWFAX_SERVICEABILITY_API_URL" >> .env.production 
         - echo "SHADOWFAX_API_TOKEN=$SHADOWFAX_API_TOKEN" >> .env.production 
         - echo "CRON_API_KEY=$CRON_API_KEY" >> .env.production
+
+        - echo "EMAIL_HOST=$EMAIL_HOST" >> .env.production
+        - echo "EMAIL_PORT=$EMAIL_PORT" >> .env.production
+        - echo "EMAIL_USER=$EMAIL_USER" >> .env.production
+        - echo "EMAIL_PASS=$EMAIL_PASS" >> .env.production
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
