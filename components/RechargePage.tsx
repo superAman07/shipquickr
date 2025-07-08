@@ -16,8 +16,7 @@ import {
 } from '@/components/ui/popover';
 import { usePathname } from 'next/navigation';
 
-const PAGE_SIZE = 10;
- 
+
 type RechargeLog = {
   id: number;
   date: string;
@@ -37,6 +36,7 @@ const RechargePage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pathname = usePathname();
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -205,8 +205,8 @@ const RechargePage: React.FC = () => {
             </nav>
           </div>
  
-          <div className="rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-900">
-            <div>
+          <div className="overflow-hidden shadow-lg bg-white dark:bg-gray-900">
+            <div className="hidden lg:block">
               <div className="overflow-x-auto p-4">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                   <thead className="bg-gray-50 dark:bg-gray-800">
@@ -248,27 +248,79 @@ const RechargePage: React.FC = () => {
                 </table>
               </div>
             </div>
-            <div className="px-6 py-4 flex items-center justify-between border-t bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800">
-              <div className="text-sm text-gray-700 dark:text-gray-400">
-                Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, total)} of {total} entries
+            {/* Mobile View */}
+            <div className="block lg:hidden">
+              <div className="h-[calc(100vh-550px)] overflow-y-auto p-4">
+                {loading ? (
+                  <Loading />
+                ) : rechargeLogs.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">No data available</div>
+                ) : (
+                  <div className="space-y-4">
+                    {rechargeLogs.map((log) => (
+                      <div key={log.id} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                          <div className={`font-bold text-lg ${log.type === 'recharge' || log.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            ₹{log.amount.toFixed(2)}
+                          </div>
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                              log.status === 'Success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                              : log.status === 'Failed' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'
+                          }`}>
+                            {log.status}
+                          </span>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Transaction ID</div>
+                            <div className="text-gray-800 dark:text-gray-200 font-mono text-xs">{log.transactionId}</div>
+                          </div>
+                          {log.bankTransactionId && (
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">Bank Txn ID</div>
+                              <div className="text-gray-800 dark:text-gray-200 font-mono text-xs">{log.bankTransactionId}</div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Type</div>
+                            <div className="text-gray-800 dark:text-gray-200 capitalize">{log.type}</div>
+                          </div>
+                        </div>
+                        <div className="text-right text-xs text-gray-500 dark:text-gray-400 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                          {format(new Date(log.date), "PPpp")}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1 cursor-pointer rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={page === 1}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-3 py-1 cursor-pointer rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={page === totalPages || totalPages === 0}
-                >
-                  Next
-                </button>
+            </div>
+            <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="text-sm text-gray-700 dark:text-gray-400">
+                  Showing <span className="font-bold">{(page - 1) * PAGE_SIZE + 1}</span> to <span className="font-bold">{Math.min(page * PAGE_SIZE, total)}</span> of <span className="font-bold">{total}</span> entries
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                    {page}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                    disabled={page === totalPages || totalPages === 0}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </div>
           </div>
