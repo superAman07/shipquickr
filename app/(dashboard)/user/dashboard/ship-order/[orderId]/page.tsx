@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { ArrowLeft, ChevronRight, Home, Loader2, Package, Truck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface OrderItem {
   productName: string;
@@ -72,6 +73,7 @@ export default function ShipOrderPage() {
   const [availableCouriers, setAvailableCouriers] = useState<CourierRate[]>([]);
   const [selectedCourier, setSelectedCourier] = useState<CourierRate | null>(null);
   const [isShipping, setIsShipping] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const getCourierLogo = (courierName: string): string | undefined => {
     const nameLower = courierName?.toLowerCase() || "";
@@ -209,7 +211,7 @@ export default function ShipOrderPage() {
     setSelectedCourier(courier);
   };
 
-  const handleConfirmShipment = async () => {
+  const executeShipment = async () => {
     if (!selectedCourier || !order) {
       toast.warn("Please select a courier partner first.");
       return;
@@ -235,6 +237,7 @@ export default function ShipOrderPage() {
       toast.update(toastId, { render: `Failed to create shipment: ${errorMessage}`, type: "error", isLoading: false, autoClose: 7000 });
     } finally {
       setIsShipping(false);
+      setShowConfirmDialog(false);
     }
   };
 
@@ -321,8 +324,8 @@ export default function ShipOrderPage() {
               <div
                 key={`${courier.name}-${courier.serviceType}-${index}`}
                 className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-4 ${selectedCourier?.name === courier.name && selectedCourier?.serviceType === courier.serviceType
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-400'
-                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-400'
+                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
                   }`}
                 onClick={() => handleSelectCourier(courier)}
               >
@@ -371,29 +374,51 @@ export default function ShipOrderPage() {
         </div>
 
         {!ratesLoading && availableCouriers.length > 0 && (
-          <div className="mt-8 flex justify-end">
-            <button
-              type="button"
-              onClick={handleConfirmShipment}
-              disabled={!selectedCourier || isShipping}
-              className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors duration-200 flex items-center justify-center shadow-md ${!selectedCourier || isShipping
-                  ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
-                  : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
-                }`}
-            >
-              {isShipping ? (
-                <>
-                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                  Shipping...
-                </>
-              ) : (
-                <>
-                  <Truck className="h-5 w-5 mr-2" />
-                  Ship Now
-                </>
-              )}
-            </button>
-          </div>
+          <>
+            <div className="mt-8 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowConfirmDialog(true)}
+                disabled={!selectedCourier || isShipping}
+                className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors duration-200 flex items-center justify-center shadow-md ${!selectedCourier || isShipping
+                    ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
+                    : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
+                  }`}
+              >
+                {isShipping && !showConfirmDialog ? (
+                  <>
+                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Truck className="h-5 w-5 mr-2" />
+                    Ship Now
+                  </>
+                )}
+              </button>
+            </div>
+            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Shipment</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You are about to ship this order with <strong>{selectedCourier?.name}</strong> for a base fee of <strong>₹{selectedCourier?.totalPrice.toFixed(2)}</strong>.
+                    <br />
+                    The final amount, including applicable taxes, will be deducted from your wallet.
+                    <br /><br />
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isShipping}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={executeShipment} disabled={isShipping}>
+                    {isShipping ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm & Ship"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
         )}
 
       </div>
