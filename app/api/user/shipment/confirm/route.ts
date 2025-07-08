@@ -150,7 +150,10 @@ export async function POST(req: NextRequest) {
     }
 
     const dbTransactionResult = await prisma.$transaction(async (tx) => {
-      const finalShippingCost = selectedCourier.totalPrice;
+      const baseShippingCost = selectedCourier.totalPrice;
+      const gstRate = 0.18;
+      const finalShippingCost = baseShippingCost * (1 + gstRate);
+
       let updatedWalletBalance: number | undefined = undefined;
 
       if (order.paymentMode === "Prepaid" || order.paymentMode === "COD") {
