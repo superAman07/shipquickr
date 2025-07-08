@@ -9,7 +9,7 @@ export const transporter = nodemailer.createTransport({
 });
 
 export async function sendResetEmail(to: string, token: string, role: string) {
-  const resetLink = `http://localhost:3000/${role}/auth/reset-password?token=${token}`;
+  const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/${role}/auth/reset-password?token=${token}`;
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to,
