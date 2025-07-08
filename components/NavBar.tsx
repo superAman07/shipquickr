@@ -25,6 +25,14 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
   const dropdownRef = useRef<HTMLDivElement>(null);  
   const { balance, isLoadingBalance } = useConditionalWallet(userRole);
 
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    const firstName = names[0] || '';
+    const lastName = names.length > 1 ? names[names.length - 1] : '';
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,24 +69,22 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
               </Link>
             </div>
           )} 
-            <button
+            {/* <button
               type="button"
               onClick={()=>setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 cursor-pointer rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>  
+            </button>   */}
             <div className="relative cursor-pointer">
               <button
                 type='button'
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt="Profile"
-                  className="h-8 w-8 rounded-full"
-                />
+                <div className="h-8 w-8 rounded-full bg-[#0a0c37] dark:bg-gray-700 flex items-center justify-center text-sm font-semibold text-gray-200 dark:text-gray-200">
+                  {getInitials(userName)}
+                </div>
                 <span className="cursor-pointer hidden md:block text-gray-700 dark:text-gray-300">{userName}</span>
                 <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
