@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Download, Search, Home, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { Download, Search, Home, ChevronRight, Calendar as CalendarIcon, Package } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 import Loading from '@/app/loading';
@@ -213,7 +213,7 @@ const ShippingChargesPage: React.FC = () => {
               </Link>
             </nav>
           </div>
-          <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div className="hidden lg:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
 
             <div className="overflow-x-auto">
               <Table>
@@ -239,20 +239,27 @@ const ShippingChargesPage: React.FC = () => {
                       </TableCell>
                     </TableRow>
                   ) : (shippingCharges.length > 0 ? (
-                    shippingCharges.map((charge) => (
-                      <TableRow key={charge.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        <TableCell>{format(new Date(charge.date), "yyyy-MM-dd HH:mm")}</TableCell>
-                        <TableCell>{charge.courierName}</TableCell>
-                        <TableCell className="text-right">{charge.amount.toFixed(2)}</TableCell>
-                        <TableCell>{charge.waybill}</TableCell>
-                        <TableCell>{charge.orderId}</TableCell>
-                        <TableCell>{charge.transactionId}</TableCell>
-                        <TableCell>{charge.weight}</TableCell>
-                        <TableCell>{charge.zone}</TableCell>
-                        <TableCell>{charge.status}</TableCell>
-                        <TableCell className="max-w-xs truncate">{charge.remarks}</TableCell>
-                      </TableRow>
-                    ))
+                    shippingCharges.map((charge) => {
+                      const baseAmount = charge.amount / 1.18;
+                      const gstAmount = charge.amount - baseAmount;
+                      return (
+                        <TableRow key={charge.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          <TableCell>{format(new Date(charge.date), "yyyy-MM-dd HH:mm")}</TableCell>
+                          <TableCell>{charge.courierName}</TableCell>
+                          <TableCell className="text-right"><div>{charge.amount.toFixed(2)}</div>
+                            <div className="text-xs text-gray-400 whitespace-nowrap">
+                              (Base: {baseAmount.toFixed(2)} + GST: {gstAmount.toFixed(2)})
+                            </div></TableCell>
+                          <TableCell>{charge.waybill}</TableCell>
+                          <TableCell>{charge.orderId}</TableCell>
+                          <TableCell>{charge.transactionId}</TableCell>
+                          <TableCell>{charge.weight}</TableCell>
+                          <TableCell>{charge.zone}</TableCell>
+                          <TableCell>{charge.status}</TableCell>
+                          <TableCell className="max-w-xs truncate">{charge.remarks}</TableCell>
+                        </TableRow>
+                      )
+                    })
                   ) : (
                     <TableRow>
                       <TableCell colSpan={10} className="text-center py-10 text-gray-500">
@@ -264,6 +271,88 @@ const ShippingChargesPage: React.FC = () => {
               </Table>
             </div>
 
+          </div>
+
+          {/* Mobile Card Layout */}
+          <div className="block lg:hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="h-[calc(70vh-280px)] overflow-y-auto">
+                <div className="space-y-3 p-4">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loading />
+                    </div>
+                  ) : shippingCharges.length > 0 ? (
+                    shippingCharges.map((charge) => {
+                      const baseAmount = charge.amount / 1.18;
+                      const gstAmount = charge.amount - baseAmount;
+                      return (
+                      <div key={charge.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm mb-1 break-all">
+                              Order ID: {charge.orderId}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {format(new Date(charge.date), "PPpp")}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-lg font-bold text-red-600 dark:text-red-400 ml-2">
+                              - ₹{charge.amount.toFixed(2)}
+                            </span>
+                            <div className="text-xs text-gray-400 whitespace-nowrap">
+                              (Base: {baseAmount.toFixed(2)} + GST: {gstAmount.toFixed(2)})
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                          <div className="col-span-1">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Waybill</div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100 break-words">{charge.waybill || '-'}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Courier</div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.courierName}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Weight</div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.weight}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Zone</div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.zone}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Status</div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.status}</div>
+                          </div>
+                          <div className="col-span-1">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Transaction ID</div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.transactionId}</div>
+                          </div>
+                          <div className="col-span-2">
+                            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Remarks</div>
+                            <div className="text-gray-800 dark:text-gray-100 text-xs break-words">{charge.remarks || "-"}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )})
+                  ) : (
+                    <div className="p-12 text-center flex flex-col items-center">
+                      <Package className="h-12 w-12 mb-4 text-gray-400" />
+                      <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                        No Shipping Charges
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        No charges found for the selected criteria.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {!loading && total > 0 && (
