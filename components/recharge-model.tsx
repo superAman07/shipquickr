@@ -43,15 +43,14 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
 
     return (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onCloseAction}>
-            <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-br from-blue-100 via-white to-blue-200 dark:bg-[#495057] rounded-3xl w-full max-w-[50vh] mx-auto h-auto max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
 
-                <div className="flex items-center justify-between p-6 pb-4">
+                <div className="flex items-start justify-between pt-6 pl-6 pr-6 pb-0">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Money</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Recharge your wallet instantly</p>
+                        <h2 className="text-xl font-bold text-[#495057] dark:text-white">Add Money</h2>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-full">
+                        <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
                             <Wallet className="h-4 w-4 text-green-600 dark:text-green-400" />
                             <span className="font-semibold text-green-600 dark:text-green-400">₹{currentBalance.toFixed(2)}</span>
                         </div>
@@ -63,6 +62,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                         </button>
                     </div>
                 </div>
+                    <p className="pl-6 pb-4 text-sm text-gray-500 dark:text-gray-400 mt-1">Recharge your wallet instantly</p>
 
                 <div className="px-6 pb-6 space-y-6">
                     {/* Amount Input Section */}
@@ -90,7 +90,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                         key={quickAmount}
                                         variant="outline"
                                         onClick={() => handleAmountSelect(quickAmount)}
-                                        className={`py-3 px-4 rounded-2xl border-2 transition-all font-semibold ${amount === quickAmount
+                                        className={`py-3 px-4 rounded-2xl border-2 transition-all cursor-pointer font-semibold ${amount === quickAmount
                                             ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-md"
                                             : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                                             }`}
@@ -111,7 +111,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                         <Percent className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-gray-900 dark:text-white">FLAT50 Applied!</div>
+                                        <div className="font-bold text-[#495057] dark:text-white">FLAT50 Applied!</div>
                                         <div className="text-sm text-gray-600 dark:text-gray-400">
                                             Get ₹{calculateCashback()} cashback on this recharge
                                         </div>
@@ -138,7 +138,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 space-y-3 border border-gray-200 dark:border-gray-700">
                             <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
                                 <div>
-                                    <div className="font-semibold text-gray-900 dark:text-white">WELCOME10</div>
+                                    <div className="font-semibold text-[#495057] dark:text-white">WELCOME10</div>
                                     <div className="text-sm text-gray-600 dark:text-gray-400">10% off on first recharge</div>
                                 </div>
                                 <Button variant="outline" size="sm" className="rounded-full bg-transparent">
@@ -147,7 +147,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                             </div>
                             <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
                                 <div>
-                                    <div className="font-semibold text-gray-900 dark:text-white">SAVE20</div>
+                                    <div className="font-semibold text-[#495057] dark:text-white">SAVE20</div>
                                     <div className="text-sm text-gray-600 dark:text-gray-400">₹20 off on recharge above ₹500</div>
                                 </div>
                                 <Button variant="outline" size="sm" className="rounded-full bg-transparent" disabled={amount < 500}>
@@ -168,12 +168,12 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                     <CreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div className="text-left">
-                                    <div className="font-semibold text-gray-900 dark:text-white">Amount to be credited</div>
-                                    <div className="text-2xl font-bold text-gray-900 dark:text-white">₹{amount}</div>
+                                    <div className="font-semibold text-[#495057] dark:text-white">Amount to be credited</div>
+                                    <div className="text-2xl font-bold text-[#495057] dark:text-white">₹{amount}</div>
                                 </div>
                             </div>
                             <ChevronDown
-                                className={`h-5 w-5 text-gray-500 transition-transform ${showBillSummary ? "rotate-180" : ""}`}
+                                className={`h-5 w-5 text-gray-500 cursor-pointer transition-transform ${showBillSummary ? "rotate-180" : ""}`}
                             />
                         </button>
 
@@ -181,18 +181,19 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600 dark:text-gray-400">Recharge Amount</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">₹{amount}</span>
+                                    <span className="font-semibold text-[#495057] dark:text-white">₹{amount}</span>
                                 </div>
                                 {calculateCashback() > 0 && (
                                     <div className="flex justify-between items-center">
                                         <span className="text-green-600 dark:text-green-400">Cashback (FLAT50)</span>
-                                        <span className="font-semibold text-green-600 dark:text-green-400">-₹{calculateCashback()}</span>
+                                        <span className="font-semibold text-green-600 dark:text-green-400">0(not yet)</span>
+                                        {/* <span className="font-semibold text-green-600 dark:text-green-400">-₹{calculateCashback()}</span> */}
                                     </div>
                                 )}
                                 <div className="h-px bg-gray-200 dark:bg-gray-600"></div>
                                 <div className="flex justify-between items-center text-lg">
-                                    <span className="font-bold text-gray-900 dark:text-white">You Pay</span>
-                                    <span className="font-bold text-gray-900 dark:text-white">₹{finalAmount}</span>
+                                    <span className="font-bold text-[#495057] dark:text-white">You Pay</span>
+                                    <span className="font-bold text-[#495057] dark:text-white">₹{amount}</span>
                                 </div>
                             </div>
                         )}
@@ -200,7 +201,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
 
                     {/* Pay Button */}
                     <Button
-                        className="w-full py-4 text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
+                        className="w-full py-4 text-lg cursor-pointer font-bold bg-gradient-to-r from-[#0a0c37] to-[#4349b6] hover:from-[#0b0e46] hover:to-[#3d44c1] text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
                         onClick={async () => {
                             setLoading(true);
                             try {
