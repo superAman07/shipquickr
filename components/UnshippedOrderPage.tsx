@@ -150,7 +150,7 @@ const UnshippedOrdersPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
-      <main className="p-3 sm:p-6">
+      <main className="p-6 sm:p-6">
         <div className="max-w-full mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 lg:mb-8">
             <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
