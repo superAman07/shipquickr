@@ -32,7 +32,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
 
     const calculateCashback = () => {
         if (amount >= 200) {
-            return Math.min(amount * 0.25, 50) // 25% cashback, max ₹50
+            return Math.min(amount * 0.25, 50)  
         }
         return 0
     }
@@ -42,9 +42,9 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700">
-                {/* Header */}
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onCloseAction}>
+            <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700" onClick={(e)=> e.stopPropagation()}>
+                
                 <div className="flex items-center justify-between p-6 pb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Money</h2>
