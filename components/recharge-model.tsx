@@ -32,7 +32,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
 
     const calculateCashback = () => {
         if (amount >= 200) {
-            return Math.min(amount * 0.25, 50)  
+            return Math.min(amount * 0.25, 50)
         }
         return 0
     }
@@ -43,8 +43,8 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
 
     return (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onCloseAction}>
-            <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700" onClick={(e)=> e.stopPropagation()}>
-                
+            <div className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
+
                 <div className="flex items-center justify-between p-6 pb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Money</h2>
@@ -91,8 +91,8 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                         variant="outline"
                                         onClick={() => handleAmountSelect(quickAmount)}
                                         className={`py-3 px-4 rounded-2xl border-2 transition-all font-semibold ${amount === quickAmount
-                                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-md"
-                                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-md"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                                             }`}
                                     >
                                         ₹{quickAmount}
@@ -103,7 +103,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                     </div>
 
                     {/* Offers Section */}
-                    {amount >= 200 && (
+                    {/* {amount >= 200 && (
                         <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800 rounded-2xl p-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -122,10 +122,10 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )} */}
 
                     {/* View All Coupons */}
-                    <button
+                    {/* <button
                         onClick={() => setShowAllCoupons(!showAllCoupons)}
                         className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors font-medium"
                     >
@@ -155,7 +155,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                 </Button>
                             </div>
                         </div>
-                    )}
+                    )} */}
 
                     {/* Bill Summary */}
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
@@ -204,7 +204,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                         onClick={async () => {
                             setLoading(true);
                             try {
-                                const res = await axios.post("/api/user/wallet", { amount: finalAmount });
+                                const res = await axios.post("/api/user/wallet", { amount });
                                 if (res.data.success && res.data.redirectUrl) {
                                     window.location.href = res.data.redirectUrl;
                                 } else {
@@ -220,7 +220,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                         disabled={amount < 200 || loading}
                     >
                         <CreditCard className="h-5 w-5 mr-2" />
-                        {loading ? "Processing..." : `Pay ₹${finalAmount}`}
+                        {loading ? "Processing..." : `Pay ₹${amount}`}
                     </Button>
 
                     <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
