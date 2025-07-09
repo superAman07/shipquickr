@@ -60,8 +60,8 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
           </div>
           <div className="flex items-center gap-4">
           {userRole !== "admin" && (
-            <div className="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg">
-              <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-4 ...">
+            <div className="md:flex items-center bg-gray-100 dark:bg-gray-800 px-0 md:px-4 py-2 rounded-lg">
+              <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-2 md:px-4 ...">
                 <Wallet className="..." />
                 <span className="text-green-600 dark:text-green-400 font-semibold">
                   {isLoadingBalance ? "Loading..." : `₹${balance !== null ? balance.toFixed(2) : '0.00'}`}
