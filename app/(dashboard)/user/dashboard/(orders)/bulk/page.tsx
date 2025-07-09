@@ -397,7 +397,7 @@ const BulkOrdersPage: React.FC = () => {
           </div>
 
           {/* Desktop Table Layout */}
-          <div className="hidden lg:block shadow-2xl bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
+          <div className="hidden lg:block shadow-2xl bg-white dark:bg-gray-900 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-indigo-100 dark:bg-indigo-950">
