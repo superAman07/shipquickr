@@ -70,7 +70,7 @@ export default function Navbar({ userRole, userName }: { userRole: string; userN
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-0">
               {userRole !== "admin" && (
                 <div className="flex justify-between space-x-2">
                   <div className="block">
