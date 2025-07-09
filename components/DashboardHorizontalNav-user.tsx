@@ -41,7 +41,7 @@ export default function DashboardHorizontalNavUser() {
   ];
 
   return (
-    <nav className="flex flex-wrap lg:flex-nowrap w-full overflow-hidden justify-between gap-1 sm:gap-2 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-4 shadow mb-2  ">
+    <nav className="flex flex-wrap lg:flex-nowrap w-full overflow-hidden justify-between gap-6 sm:gap-2 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-4 shadow mb-2  ">
       {navItems.map((item) => (
         <Link
           key={item.href}

@@ -282,17 +282,17 @@ export default function DashboardSidebarUser() {
       {isMobile && (
         <Button
           variant="ghost"
-          size="icon"
+          // size="icon"
           aria-label="Toggle mobile menu"
           onClick={toggleSidebar}
           className={cn(
-            "fixed top-20 left-0 z-50 bg-indigo-700 text-[#f9fafb] border border-indigo-900 shadow-lg rounded-full p-1 transition-all duration-200",
+            "fixed top-20 left-0 z-50 bg-indigo-700 text-[#f9fafb] border border-indigo-900 shadow-lg rounded-full p-1 h-9 w-9 transition-all duration-200",
             "hover:bg-indigo-800 hover:scale-110",
             "backdrop-blur bg-indigo-700/90",
           )}
           style={{ boxShadow: "0 4px 12px 0 rgba(0,0,0,0.15)" }}
         >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-4 w-4" />}
+          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
       )}
 
