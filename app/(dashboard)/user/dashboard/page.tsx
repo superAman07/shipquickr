@@ -17,7 +17,7 @@ interface ShipmentCardProps {
 
 function ShipmentCard({ title, value, info, color, icon }: ShipmentCardProps) {
   return (
-    <div className={`${color} rounded-lg p-6 text-white transition-transform hover:scale-105 duration-200`}>
+    <div className={`${color} rounded-lg p-3 md:p-6 text-white transition-transform hover:scale-105 duration-200`}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm opacity-90">{title}</p>
