@@ -28,6 +28,7 @@ type ShippingCharge = {
   waybill: string;
   orderId: string;
   transactionId: number;
+  paymentType: string;
   type: string;
   weight: string | number;
   zone: string;
@@ -225,6 +226,7 @@ const ShippingChargesPage: React.FC = () => {
                     <TableHead>Waybill</TableHead>
                     <TableHead>Order ID</TableHead>
                     <TableHead>Transaction ID</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Weight</TableHead>
                     <TableHead>Zone</TableHead>
                     <TableHead>Status</TableHead>
@@ -253,6 +255,7 @@ const ShippingChargesPage: React.FC = () => {
                           <TableCell>{charge.waybill}</TableCell>
                           <TableCell>{charge.orderId}</TableCell>
                           <TableCell>{charge.transactionId}</TableCell>
+                          <TableCell>{charge.paymentType}</TableCell>
                           <TableCell>{charge.weight}</TableCell>
                           <TableCell>{charge.zone}</TableCell>
                           <TableCell>{charge.status}</TableCell>
@@ -332,7 +335,11 @@ const ShippingChargesPage: React.FC = () => {
                               <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Transaction ID</div>
                               <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.transactionId}</div>
                             </div>
-                            <div className="col-span-2">
+                            <div className="col-span-1">
+                              <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Type</div>
+                              <div className="font-semibold text-gray-800 dark:text-gray-100">{charge.paymentType}</div>
+                            </div>
+                            <div className="col-span-1">
                               <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Remarks</div>
                               <div className="text-gray-800 dark:text-gray-100 text-xs break-words">{charge.remarks || "-"}</div>
                             </div>
