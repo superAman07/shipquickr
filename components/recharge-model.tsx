@@ -62,7 +62,7 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                         </button>
                     </div>
                 </div>
-                    <p className="pl-6 pb-4 text-sm text-gray-500 dark:text-gray-400 mt-1">Recharge your wallet instantly</p>
+                <p className="pl-6 pb-4 text-sm text-gray-500 dark:text-gray-400 mt-1">Recharge your wallet instantly</p>
 
                 <div className="px-6 pb-6 space-y-6">
                     {/* Amount Input Section */}
@@ -80,6 +80,11 @@ export default function RechargeModal({ isOpen, onCloseAction, currentBalance }:
                                         placeholder="0"
                                     />
                                 </div>
+                                {amount > 0 && amount < 200 && (
+                                    <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+                                        Minimum recharge amount is ₹200.
+                                    </div>
+                                )}
                                 <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent mt-2"></div>
                             </div>
 
