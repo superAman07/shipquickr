@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Sun, Moon, Wallet, ChevronDown, User, Lock, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import LogoutButton from './logout';
-import Link from 'next/link';  
+import Link from 'next/link';
 import { useWallet as useActualWallet, WalletContextType } from '@/contexts/WalletContext'; // Renamed and import type
 
 
@@ -12,17 +12,17 @@ const useConditionalWallet = (userRole: string): WalletContextType => {
   if (userRole !== 'admin') {
     return useActualWallet();
   }
-  return { 
-    balance: null, 
-    isLoadingBalance: false, 
-    refreshBalance: async () => {}, 
+  return {
+    balance: null,
+    isLoadingBalance: false,
+    refreshBalance: async () => { },
   };
 };
 
-export default function Navbar({ userRole , userName}: { userRole: string , userName: string}) {
+export default function Navbar({ userRole, userName }: { userRole: string, userName: string }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const dropdownRef = useRef<HTMLDivElement>(null);  
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { balance, isLoadingBalance } = useConditionalWallet(userRole);
 
   const getInitials = (name: string) => {
@@ -37,7 +37,7 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsProfileOpen(false);  
+        setIsProfileOpen(false);
       }
     };
 
@@ -59,16 +59,16 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
             </div>
           </div>
           <div className="flex items-center gap-4">
-          {userRole !== "admin" && (
-            <div className="md:flex items-center bg-gray-100 dark:bg-gray-800 px-0 md:px-4 py-2 rounded-lg">
-              <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-2 md:px-4 ...">
-                <Wallet className="..." />
-                <span className="text-green-600 dark:text-green-400 font-semibold">
-                  {isLoadingBalance ? "Loading..." : `₹${balance !== null ? balance.toFixed(2) : '0.00'}`}
-                </span>
-              </Link>
-            </div>
-          )} 
+            {userRole !== "admin" && (
+              <div className="md:flex items-center bg-gray-100 dark:bg-gray-800 px-0 md:px-4 py-2 rounded-lg">
+                <Link href="/user/dashboard/wallet" className="flex items-center gap-2 px-2 md:px-4 ...">
+                  <Wallet className="..." />
+                  <span className="text-green-600 dark:text-green-400 font-semibold">
+                    {isLoadingBalance ? "Loading..." : `₹${balance !== null ? balance.toFixed(2) : '0.00'}`}
+                  </span>
+                </Link>
+              </div>
+            )}
             {/* <button
               type="button"
               onClick={()=>setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -92,17 +92,17 @@ export default function Navbar({ userRole , userName}: { userRole: string , user
               {isProfileOpen && (
                 <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700">
                   <Link href={`/${userRole}/dashboard/profile`} className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <User className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
+                    <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     Your Profile
                   </Link>
                   <Link href={`/${userRole}/dashboard/change-password`} className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
+                    <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                     Change Password
                   </Link>
                   <hr />
                   <Link href={""} className="flex items-center gap-2 px-4 hover:bg-gray-200 text-gray-700 dark:text-gray-300 ">
-                    <LogOut className="h-5 w-5 text-gray-500 dark:text-gray-400"/>
-                    <LogoutButton propUser={userRole} propStyle={{color: "text-gray-500 dark:text-gray-200"}} />
+                    <LogOut className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                    <LogoutButton propUser={userRole} propStyle={{ color: "text-gray-500 dark:text-gray-200" }} />
                   </Link>
                 </div>
               )}
