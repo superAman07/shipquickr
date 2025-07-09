@@ -176,7 +176,7 @@ const BulkOrdersPage: React.FC = () => {
           {/* Header Section with improved mobile layout */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 lg:mb-8">
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100 mb-2">
+              <h2 className="text-3xl sm:text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100 mt-2">
                 Bulk Orders
               </h2>
               <OrderTabs tabs={tabs} pathname={pathname} />
