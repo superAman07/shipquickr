@@ -81,7 +81,7 @@ const ShippingChargesPage: React.FC = () => {
 
   const downloadCSV = () => {
     console.log("Download CSV clicked");
-    const headers = ["Date", "Courier", "Amount(Rs.)", "Waybill", "Order ID", "Transaction ID", "Weight", "Zone", "Status", "Remarks"];
+    const headers = ["Date", "Courier", "Amount(Rs.)", "Waybill", "Order ID", "Transaction ID", "Weight","Type" ,"Zone", "Status", "Remarks"];
     const csvContent = [
       headers.join(','),
       ...(shippingCharges || []).map(log => [
@@ -92,6 +92,7 @@ const ShippingChargesPage: React.FC = () => {
         log.orderId,
         log.transactionId,
         log.weight,
+        log.paymentType,
         log.zone,
         log.status,
         log.remarks?.replace(/"/g, '""')
