@@ -4,6 +4,7 @@ import type React from "react"
 
 import Navbar from "./NavBar"
 import DashboardSidebarUser from "./dashboard-sidebar-user"
+import DashboardSidebarAdmin from "./dashboard-sidebar-admin"
 
 interface DashboardLayoutWrapperProps {
     userRole: string
@@ -24,7 +25,14 @@ export default function DashboardLayoutWrapper({ userRole, userName, children }:
             />
             <div className="flex bg-gray-50 dark:bg-[#10162A] pt-16">
                 <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
-                    <DashboardSidebarUser mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+                    {userRole === "admin" ? (
+                        <DashboardSidebarAdmin />
+                    ) : (
+                        <DashboardSidebarUser
+                            mobileMenuOpen={mobileMenuOpen}
+                            setMobileMenuOpen={setMobileMenuOpen}
+                        />
+                    )}
                 </aside>
                 <div className="flex-1 flex flex-col min-w-0 w-full">
                     <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-hidden">{children}</main>

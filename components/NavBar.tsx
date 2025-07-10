@@ -8,9 +8,8 @@ import { useWallet as useActualWallet, type WalletContextType } from "@/contexts
 import RechargeModal from "./recharge-model"
 
 const useConditionalWallet = (userRole: string): WalletContextType => {
-  const walletContext = useActualWallet()
   if (userRole !== "admin") {
-    return walletContext
+    return useActualWallet()
   }
   return {
     balance: null,
@@ -67,16 +66,18 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
       <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-50">
         <div className="max-w-8xl mx-auto px-0 sm:px-6 lg:px-12">
           <div className="flex items-center justify-between h-16">
-            <button
-              type="button"
-              className="md:hidden mr-0 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              onClick={() => setMobileMenuOpenAction(!mobileMenuOpen)}
-              aria-label="Open sidebar"
-            >
-              <svg className="h-6 w-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            {userRole !== "admin" && (
+              <button
+                type="button"
+                className="md:hidden mr-0 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                onClick={() => setMobileMenuOpenAction(!mobileMenuOpen)}
+                aria-label="Open sidebar"
+              >
+                <svg className="h-6 w-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
             <div className="flex items-center">
               <Link href={`/${userRole}/dashboard`} className="flex items-center">
                 <img src="/shipquickr.png" alt="Logo" className="h-[57px] w-[145px]" />
@@ -214,8 +215,8 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                 {/* 3-dot Dropdown - Only new features */}
                 <div
                   className={`absolute right-0 mt-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 ease-out transform origin-top-right ${isMobileMenuOpen
-                      ? "opacity-100 scale-100 translate-y-0"
-                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                    ? "opacity-100 scale-100 translate-y-0"
+                    : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
                     }`}
                 >
                   <div className="py-2">
@@ -236,11 +237,13 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
         </div>
       </nav>
 
-      <RechargeModal
-        isOpen={isRechargeModalOpen}
-        onCloseAction={() => setIsRechargeModalOpen(false)}
-        currentBalance={balance || 0}
-      />
+      {userRole !== "admin" && (
+        <RechargeModal
+          isOpen={isRechargeModalOpen}
+          onCloseAction={() => setIsRechargeModalOpen(false)}
+          currentBalance={balance || 0}
+        />
+      )}
     </>
   )
 }
