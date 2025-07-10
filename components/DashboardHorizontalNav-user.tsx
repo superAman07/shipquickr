@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 import { KYCNavIcon } from "./ui/kycNavIcon"
 import axios from "axios"
 import useSWR from "swr"
+import { TransporterInfoModal } from "./transporter-info-model"
+import { useState } from "react"
 
 function CODIcon({ className }: { className?: string }) {
   return (
@@ -22,13 +24,18 @@ function CODIcon({ className }: { className?: string }) {
 
 export default function DashboardHorizontalNavUser() {
   const pathname = usePathname()
+  const [isTransporterModalOpen, setIsTransporterModalOpen] = useState(false)
 
   const fetcher = (url: string) => axios.get(url).then((res) => res.data)
   const { data, error, isLoading } = useSWR("/api/user/kyc", fetcher, {
     refreshInterval: 5000,
   })
 
-  const kycStatus = isLoading ? "loading" : data?.kycStatus || "not_found"
+  const kycStatus = isLoading ? "loading" : data?.kycStatus || "not_found";
+  const handleTransporterClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsTransporterModalOpen(true)
+  }
 
   const navItems = [
     {
@@ -69,11 +76,12 @@ export default function DashboardHorizontalNavUser() {
       showOnMobile: false, // Hide on mobile
     },
     {
-      href: "/user/dashboard/bulk",
+      href: "#",
       icon: Truck,
       label: "Transporter ID",
       shortLabel: "Transporter ID",
       showOnMobile: true,
+      onClick: handleTransporterClick,
     },
   ]
 
@@ -81,8 +89,7 @@ export default function DashboardHorizontalNavUser() {
   const visibleItems = navItems.filter((item) => item.showOnMobile)
 
   return (
-    <div className="w-full mb-6">
-      {/* Desktop Navigation */}
+    <div className="w-full mb-6"> 
       <nav className="hidden lg:flex w-full justify-between gap-3 rounded-2xl bg-white border border-slate-200 p-2 shadow-sm">
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -92,6 +99,7 @@ export default function DashboardHorizontalNavUser() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={item.label === "Transporter ID" ? (e) => { e.preventDefault(); item.onClick?.(e); } : undefined}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center py-4 px-3 rounded-xl font-medium transition-all duration-200 group relative overflow-hidden",
                 isActive
@@ -147,6 +155,7 @@ export default function DashboardHorizontalNavUser() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={item.label === "Transporter ID" ? (e) => { e.preventDefault(); item.onClick?.(e); } : undefined}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center py-3 px-1 rounded-xl font-medium transition-all duration-200 group relative min-w-0",
                 isActive
@@ -198,6 +207,7 @@ export default function DashboardHorizontalNavUser() {
           <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
         </div>
       )} */}
+      <TransporterInfoModal isOpen={isTransporterModalOpen} onCloseAction={() => setIsTransporterModalOpen(false)} />
     </div>
   )
 }
