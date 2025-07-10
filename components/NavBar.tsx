@@ -66,19 +66,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
       <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 z-50">
         <div className="max-w-8xl mx-auto px-0 sm:px-6 lg:px-12">
           <div className="flex items-center justify-between h-16">
-            {userRole !== "admin" && (
-              <button
-                type="button"
-                className="md:hidden mr-0 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                onClick={() => setMobileMenuOpenAction(!mobileMenuOpen)}
-                aria-label="Open sidebar"
-              >
-                <svg className="h-6 w-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            )}
-            <div className="flex items-center">
+            <div className="hidden md:flex items-center">
               <Link href={`/${userRole}/dashboard`} className="flex items-center">
                 <img src="/shipquickr.png" alt="Logo" className="h-[57px] w-[145px]" />
               </Link>
@@ -151,13 +139,40 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
               </div>
             </div>
 
-            <div className="md:hidden flex items-center gap-3">
+            <div className="md:hidden flex items-center justify-between w-full">
+              <div className="flex items-center">
+                {userRole !== "admin" && (
+                  <button
+                    type="button"
+                    className="mr-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    onClick={() => setMobileMenuOpenAction(!mobileMenuOpen)}
+                    aria-label="Open sidebar"
+                  >
+                    <svg
+                      className="h-6 w-6 text-gray-700 dark:text-gray-200"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                )}
+                <Link href={`/${userRole}/dashboard`} className="flex items-center">
+                  <img src="/shipquickr.png" alt="Logo" className="h-[57px] w-[145px]" />
+                </Link>
+              </div>
+              <div className="flex items-center gap-2">
+
               {userRole !== "admin" && (
-                <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                  <Wallet className="h-4 w-4 text-gray-600 dark:text-gray-400 mr-1" />
-                  <span className="text-green-600 dark:text-green-400 font-semibold text-sm">
-                    ₹{balance !== null ? balance.toFixed(2) : "0.00"}
-                  </span>
+                <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-1 py-2 rounded-lg">
+                  <Link href="/user/dashboard/wallet" className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-gray-600 dark:text-gray-400 mr-1" />
+                    <span className="text-green-600 dark:text-green-400 font-semibold text-sm">
+                      ₹{balance !== null ? balance.toFixed(2) : "0.00"}
+                    </span>
+                  </Link>
                 </div>
               )}
 
@@ -231,6 +246,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     )}
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>
