@@ -1,5 +1,5 @@
-import DashboardSidebarUser from "@/components/dashboard-sidebar-user"
-import Navbar from "@/components/NavBar"
+import type React from "react"
+import DashboardLayoutWrapper from "@/components/dashboard-layout-wrapper"
 import RouteLoadingBar from "@/components/RouteLoadingBar"
 import { ThemeProvider } from "@/components/theme-provider"
 import { WalletProvider } from "@/contexts/WalletContext"
@@ -8,20 +8,21 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 interface TokenDetailsType {
-  userId: string,
-  firstName: string,
-  lastName: string,
-  email: string,
-  role: string,
+  userId: string
+  firstName: string
+  lastName: string
+  email: string
+  role: string
 }
+
 export async function generateMetadata() {
-  const cookiesStore = await cookies();
-  const userToken = cookiesStore.get("userToken")?.value;
-  let role = "User";
+  const cookiesStore = await cookies()
+  const userToken = cookiesStore.get("userToken")?.value
+  let role = "User"
   try {
     if (userToken) {
-      const decode: any = jwtDecode(userToken);
-      if (decode.role === 'user') role = "User";
+      const decode: any = jwtDecode(userToken)
+      if (decode.role === "user") role = "User"
     }
   } catch { }
   return {
@@ -35,17 +36,17 @@ export default async function Dashboard({ children }: { children: React.ReactNod
   const token = cookieStore.get("userToken")?.value
   console.log("Token on server:", token)
 
-
   if (!token) {
     console.log("Token not found, redirecting...")
     redirect("/user/auth/login")
   }
 
-  const decoded = jwtDecode<{ exp: number } & TokenDetailsType>(token);
-  const isExpired = decoded.exp * 1000 < Date.now();
+  const decoded = jwtDecode<{ exp: number } & TokenDetailsType>(token)
+  const isExpired = decoded.exp * 1000 < Date.now()
+
   if (isExpired) {
-    console.error("Token expired, redirecting...");
-    redirect("/user/auth/login");
+    console.error("Token expired, redirecting...")
+    redirect("/user/auth/login")
   }
 
   const fullName = `${decoded.firstName} ${decoded.lastName}`
@@ -54,19 +55,10 @@ export default async function Dashboard({ children }: { children: React.ReactNod
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <WalletProvider>
         <div className="flex flex-col min-h-screen">
-
-          <Navbar userRole={decoded.role} userName={fullName} />
-          <div className="flex bg-gray-50 dark:bg-[#10162A] pt-16">
-            <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
-              <DashboardSidebarUser />
-            </aside>
-            <div className="flex-1 flex flex-col min-w-0 w-full">
-              <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-hidden ">
-                <RouteLoadingBar />
-                {children}
-              </main>
-            </div>
-          </div>
+          <RouteLoadingBar />
+          <DashboardLayoutWrapper userRole={decoded.role} userName={fullName}>
+            {children}
+          </DashboardLayoutWrapper>
         </div>
       </WalletProvider>
     </ThemeProvider>
