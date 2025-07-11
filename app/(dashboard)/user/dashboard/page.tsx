@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
 import NewsSection from '@/components/NewsSectionUser';
 import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
 
 interface ShipmentCardProps {
   title: string;
@@ -13,9 +14,10 @@ interface ShipmentCardProps {
   info: string;
   color: string;
   icon: React.ReactNode;
+  link: string;
 }
 
-function ShipmentCard({ title, value, info, color, icon }: ShipmentCardProps) {
+function ShipmentCard({ title, value, info, color, icon, link }: ShipmentCardProps) {
   return (
     <div className={`${color} rounded-lg p-3 md:p-6 text-white transition-transform hover:scale-105 duration-200`}>
       <div className="flex items-start justify-between">
@@ -24,7 +26,9 @@ function ShipmentCard({ title, value, info, color, icon }: ShipmentCardProps) {
           <h3 className="text-3xl font-bold mt-2">{value}</h3>
         </div>
         <div className="p-2 bg-white/20 rounded-lg">
+        <Link href={link}>
           {icon}
+        </Link>
         </div>
       </div>
       <p className="text-sm mt-4 opacity-90">{info}</p>
@@ -148,11 +152,11 @@ export default async function Dashboard() {
   }
 
   const shipmentCards = [
-    { title: "Total Shipment", value: totalShipments.toString(), info: "Last 30 days", color: "bg-[linear-gradient(to_right,#7f12e1,#3e0ead)] rounded-xl p-4 shadow-lg", icon: <Package className="h-6 w-6 text-white" /> },
-    { title: "Today Shipment", value: todayShipments.toString(), info: new Date().toLocaleDateString(), color: "bg-[linear-gradient(to_right,#3b82f6,#1e40af)] rounded-xl p-4 shadow-lg", icon: <Truck className="h-6 w-6 text-white" /> },
-    { title: "Yesterday Shipment", value: yesterdayShipments.toString(), info: new Date(Date.now() - 86400000).toLocaleDateString(), color: "bg-[linear-gradient(to_right,#6366f1,#312e81)] rounded-xl p-4 shadow-lg", icon: <Info className="h-6 w-6 text-white" /> },
-    { title: "Total Load", value: `${totalLoad.toFixed(2)} Kg`, info: "In Kg", color: "bg-[linear-gradient(to_right,#f97316,#c2410c)] rounded-xl p-4 shadow-lg", icon: <TrendingUp className="h-6 w-6 text-white" /> },
-    { title: "Avg. Shipment Cost", value: `₹${avgShipmentCost.toFixed(2)}`, info: "Know More", color: "bg-[linear-gradient(to_right,#22c55e,#15803d)] rounded-xl p-4 shadow-lg", icon: <Calculator className="h-6 w-6 text-white" /> },
+    { title: "Total Shipment", value: totalShipments.toString(), info: "Last 30 days", color: "bg-[linear-gradient(to_right,#7f12e1,#3e0ead)] rounded-xl p-4 shadow-lg", icon: <Package className="h-6 w-6 text-white" /> ,link:"/user/dashboard/reports"},
+    { title: "Today Shipment", value: todayShipments.toString(), info: new Date().toLocaleDateString(), color: "bg-[linear-gradient(to_right,#3b82f6,#1e40af)] rounded-xl p-4 shadow-lg", icon: <Truck className="h-6 w-6 text-white" /> ,link:"/user/dashboard/reports"},
+    { title: "Yesterday Shipment", value: yesterdayShipments.toString(), info: new Date(Date.now() - 86400000).toLocaleDateString(), color: "bg-[linear-gradient(to_right,#6366f1,#312e81)] rounded-xl p-4 shadow-lg", icon: <Info className="h-6 w-6 text-white" /> ,link:"/user/dashboard/reports"},
+    { title: "Total Load", value: `${totalLoad.toFixed(2)} Kg`, info: "In Kg", color: "bg-[linear-gradient(to_right,#f97316,#c2410c)] rounded-xl p-4 shadow-lg", icon: <TrendingUp className="h-6 w-6 text-white" /> ,link:""},
+    { title: "Avg. Shipment Cost", value: `₹${avgShipmentCost.toFixed(2)}`, info: "Know More", color: "bg-[linear-gradient(to_right,#22c55e,#15803d)] rounded-xl p-4 shadow-lg", icon: <Calculator className="h-6 w-6 text-white" /> ,link:"#"},
   ];
 
   const getStatusCount = (statuses: string[]) => {
