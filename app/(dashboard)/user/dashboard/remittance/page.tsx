@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Download, Search, Calendar, Home, ChevronRight } from 'lucide-react';
+import { Download, Search, Calendar, Home, ChevronRight, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import axios from 'axios';
@@ -17,7 +17,7 @@ const RemittancePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
- 
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -58,7 +58,7 @@ const RemittancePage: React.FC = () => {
     setPage(1);
   };
 
-  const downloadCSV = () => { 
+  const downloadCSV = () => {
     const csvContent = `data:text/csv;charset=utf-8,${remittances.map((rem) => [
       rem.remittanceDate,
       rem.utrReference,
@@ -76,13 +76,13 @@ const RemittancePage: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
- 
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
       <main className="p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-full mx-auto">
           <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
               <Home className="h-4 w-4" />
@@ -92,7 +92,7 @@ const RemittancePage: React.FC = () => {
           </div>
 
           <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Remittance</h1>
- 
+
           <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-6" aria-label="Tabs">
               <button
@@ -121,7 +121,7 @@ const RemittancePage: React.FC = () => {
               </button>
             </nav>
           </div>
- 
+
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-4">
               <div className="relative">
@@ -133,7 +133,7 @@ const RemittancePage: React.FC = () => {
                   className="pl-10 pr-4 py-2 w-64 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                 />
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              </div> 
+              </div>
               <div className="relative">
                 <input
                   type="text"
@@ -144,7 +144,7 @@ const RemittancePage: React.FC = () => {
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
-            </div> 
+            </div>
             <button
               type="button"
               onClick={downloadCSV}
@@ -155,10 +155,145 @@ const RemittancePage: React.FC = () => {
               Download
             </button>
           </div>
- 
-          <div className="rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-900">
+
+          {/* Mobile Card Layout */}
+          <div className="block lg:hidden">
+            <div className="space-y-4">
+              {remittances.length > 0 ? remittances.map((rem, idx) => (
+                activeTab === "remittance" ? (
+                  <div key={rem.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">
+                          {rem.utrReference || "-"}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(rem.remittanceDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                        Remittance
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-2">
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Collectable Value</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.collectableValue?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Net Off</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.netOffAmount?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Early COD</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.earlyCodCharge?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">COD Paid</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.codPaid?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Deduction</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{(rem.netOffAmount + rem.earlyCodCharge + (rem.otherDeductions || 0)).toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Remark</div>
+                        <div className="text-gray-800 dark:text-gray-100">{rem.remarks || "-"}</div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
+                      <button className="text-blue-600 hover:underline text-xs">Download</button>
+                    </div>
+                  </div>
+                ) : (
+                  // Net Off Card
+                  <div key={rem.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">
+                          {rem.utrReference || "-"}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(rem.remittanceDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                        Net Off
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-xs mb-2">
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Collectable Value</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.collectableValue?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Net Off</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.netOffAmount?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Early COD</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.earlyCodCharge?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">COD Paid</div>
+                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.codPaid?.toFixed(2) ?? "0.00"}</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-500 dark:text-gray-400">Remark</div>
+                        <div className="text-gray-800 dark:text-gray-100">{rem.remarks || "-"}</div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
+                      <button className="text-blue-600 hover:underline text-xs">Download</button>
+                    </div>
+                  </div>
+                )
+              )) : (
+                <div className="py-12 text-center flex flex-col items-center">
+                  <Package className="h-12 w-12 mb-4 text-gray-400" />
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                    No {activeTab === "remittance" ? "remittance" : "net off"} found
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Try adjusting your search or filters.
+                  </p>
+                </div>
+              )}
+              {/* Mobile Pagination */}
+              <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-sm text-gray-700 dark:text-gray-400">
+                    Showing <span className="font-bold">{remittances.length}</span> of <span className="font-bold">{total}</span> entries
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      disabled={page === 1}
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                      {page}/{totalPages || 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      disabled={page === totalPages || totalPages === 0}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl hidden lg:block overflow-hidden shadow-lg bg-white dark:bg-gray-900">
             {activeTab === 'remittance' && (
-              <div> 
+              <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-gray-200 dark:border-gray-800">
                   <div className="p-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
                     <div className="text-sm font-medium mb-1">Total COD</div>
@@ -185,7 +320,7 @@ const RemittancePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
- 
+
                 <div className="overflow-x-auto p-4">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                     <thead className="bg-gray-50 dark:bg-gray-800">
@@ -206,7 +341,7 @@ const RemittancePage: React.FC = () => {
                       {loading ? (
                         <tr>
                           <td colSpan={10} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            <Loading/>
+                            <Loading />
                           </td>
                         </tr>
                       ) : remittances.length === 0 ? (
@@ -227,7 +362,7 @@ const RemittancePage: React.FC = () => {
                             <td className="px-4 py-3">₹{rem.codPaid.toFixed(2)}</td>
                             <td className="px-4 py-3">₹{(rem.netOffAmount + rem.earlyCodCharge + (rem.otherDeductions || 0)).toFixed(2)}</td>
                             <td className="px-4 py-3">{rem.remarks || "-"}</td>
-                            <td className="px-4 py-3"> 
+                            <td className="px-4 py-3">
                               <button type='button' className="text-blue-600 cursor-pointer hover:underline text-xs">Download</button>
                             </td>
                           </tr>
@@ -240,7 +375,7 @@ const RemittancePage: React.FC = () => {
             )}
 
             {activeTab === 'netoff' && (
-              <div> 
+              <div>
                 <div className="overflow-x-auto p-4">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                     <thead className="bg-gray-50 dark:bg-gray-800">
@@ -260,7 +395,7 @@ const RemittancePage: React.FC = () => {
                       {loading ? (
                         <tr>
                           <td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            <Loading/>
+                            <Loading />
                           </td>
                         </tr>
                       ) : remittances.length === 0 ? (
@@ -291,7 +426,7 @@ const RemittancePage: React.FC = () => {
                 </div>
               </div>
             )}
- 
+
             <div className="px-6 py-4 flex items-center justify-between border-t bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800">
               <div className="text-sm text-gray-700 dark:text-gray-400">
                 Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, total)} of {total} entries
