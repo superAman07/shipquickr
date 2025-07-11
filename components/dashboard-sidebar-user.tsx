@@ -66,7 +66,7 @@ function NavItem({
 function OrdersNavItem({ collapsed, onMobileClick }: { collapsed: boolean; onMobileClick?: () => void }) {
   const pathname = usePathname()
   const [showSubMenu, setShowSubMenu] = useState(false)
-  const active = pathname.includes("/user/dashboard/orders")
+  const active = pathname.includes("/user/dashboard/bulk") || pathname.startsWith("/user/dashboard/unshipped") && !pathname.startsWith("/user/dashboard/unshipped-reports") || pathname.includes("/user/dashboard/shipped") || pathname.includes("/user/dashboard/cancel")
 
   return (
     <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
@@ -331,7 +331,7 @@ export default function DashboardSidebarUser({ mobileMenuOpen, setMobileMenuOpen
             icon={<Info className="h-5 w-5" />}
             label="Reports"
             href="/user/dashboard/reports"
-            active={pathname === "/user/dashboard/reports"}
+            active={pathname === "/user/dashboard/reports" || pathname === "/user/dashboard/in-transit" || pathname === "/user/dashboard/out-for-delivery" || pathname === "/user/dashboard/unshipped-reports" || pathname === "/user/dashboard/delivered" || pathname === "/user/dashboard/undelivered" || pathname === "/user/dashboard/rto-intransit" || pathname === "/user/dashboard/rto-delivered" || pathname === "/user/dashboard/lost-shipment"}
             collapsed={!isMobile && sidebarCollapsed}
             onMobileClick={handleMobileNavClick}
           />
