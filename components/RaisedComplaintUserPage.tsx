@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'; 
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, ChevronRight, Search, Loader2, FileWarning } from 'lucide-react';
 import Link from 'next/link';
 import { ComplaintStatus } from '@prisma/client';
-import { cn } from '@/lib/utils'; 
+import { cn } from '@/lib/utils';
 
 interface Complaint {
     id: number;
@@ -52,16 +52,16 @@ export default function RaisedComplaintUserPage() {
     const [totalComplaints, setTotalComplaints] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<ComplaintStatus | null>(null);
-    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null); 
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const fetchComplaints = useCallback(async (search = searchTerm) => { 
+    const fetchComplaints = useCallback(async (search = searchTerm) => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams({
                 page: currentPage.toString(),
                 pageSize: pageSize.toString(),
             });
-            if (search) {  
+            if (search) {
                 params.append('search', search);
             }
             if (statusFilter) {
@@ -84,24 +84,24 @@ export default function RaisedComplaintUserPage() {
             setCurrentPage(1);
         } finally {
             setIsLoading(false);
-        } 
-    }, [currentPage, pageSize, statusFilter, searchTerm]);
- 
-     useEffect(() => {
-        if (debounceTimeoutRef.current === null) {
-             fetchComplaints();
         }
-    }, [currentPage, pageSize, statusFilter, fetchComplaints]);   
-    useEffect(() => { 
+    }, [currentPage, pageSize, statusFilter, searchTerm]);
+
+    useEffect(() => {
+        if (debounceTimeoutRef.current === null) {
+            fetchComplaints();
+        }
+    }, [currentPage, pageSize, statusFilter, fetchComplaints]);
+    useEffect(() => {
         if (debounceTimeoutRef.current) {
             clearTimeout(debounceTimeoutRef.current);
         }
- 
+
         debounceTimeoutRef.current = setTimeout(() => {
-            setCurrentPage(1);  
-            fetchComplaints(searchTerm);  
-            debounceTimeoutRef.current = null;  
-        }, 500);  
+            setCurrentPage(1);
+            fetchComplaints(searchTerm);
+            debounceTimeoutRef.current = null;
+        }, 500);
 
         return () => {
             if (debounceTimeoutRef.current) {
@@ -113,7 +113,7 @@ export default function RaisedComplaintUserPage() {
 
     const handlePageSizeChange = (value: string) => {
         setPageSize(Number(value));
-        setCurrentPage(1);  
+        setCurrentPage(1);
     };
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,7 +122,7 @@ export default function RaisedComplaintUserPage() {
 
     const handleStatusFilterChange = (status: ComplaintStatus | null) => {
         setStatusFilter(status);
-        setCurrentPage(1); 
+        setCurrentPage(1);
     };
     const handlePreviousPage = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -140,7 +140,7 @@ export default function RaisedComplaintUserPage() {
             <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                     <Home className="h-4 w-4" />
-                </Link> 
+                </Link>
                 <ChevronRight className="h-4 w-4" />
                 <span className="font-medium text-gray-700 dark:text-gray-200">Raised Complaints</span>
             </div>
@@ -169,7 +169,7 @@ export default function RaisedComplaintUserPage() {
                                     statusFilter === status
                                         ? "bg-primary text-primary-foreground"
                                         : "border-border hover:bg-muted",
-                                    "capitalize"  
+                                    "capitalize"
                                 )}
                             >
                                 {status}
@@ -177,7 +177,7 @@ export default function RaisedComplaintUserPage() {
                         ))}
                     </div>
                 </CardHeader>
-                <CardContent> 
+                <CardContent>
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <div className="flex items-center gap-2 text-sm">
                             <span>Show</span>
@@ -206,90 +206,175 @@ export default function RaisedComplaintUserPage() {
                             />
                         </div>
                     </div>
- 
-                    <div className="overflow-x-auto border border-border rounded-md">
-                        <Table className="min-w-full">
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">S.No</TableHead>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint ID</TableHead>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint Date</TableHead>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">AWB No.</TableHead>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Issue</TableHead>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint Remarks</TableHead>
-                                    <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="divide-y divide-border text-sm">
-                                {isLoading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="h-24 text-center">
-                                            <div className="flex justify-center items-center">
-                                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                                                <span className="ml-2">Loading complaints...</span>
+
+                    {/* --- MOBILE CARD LAYOUT --- */}
+                    <div className="block lg:hidden">
+                        <div className="space-y-4">
+                            {isLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                    <span className="ml-2">Loading complaints...</span>
+                                </div>
+                            ) : complaints.length === 0 ? (
+                                <div className="py-12 text-center flex flex-col items-center">
+                                    <FileWarning className="h-10 w-10 mb-2 text-gray-400" />
+                                    <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                                        No complaints found matching your criteria.
+                                    </h3>
+                                </div>
+                            ) : (
+                                complaints.map((complaint, index) => (
+                                    <div key={complaint.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <div>
+                                                <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">
+                                                    Complaint ID: {complaint.id}
+                                                </div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {new Date(complaint.createdAt).toLocaleDateString()}
+                                                </div>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : complaints.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="h-24 text-center">
-                                            <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                                <FileWarning className="h-10 w-10 mb-2" />
-                                                No complaints found matching your criteria.
+                                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(complaint.status)}`}>
+                                                {complaint.status}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 text-xs mb-2">
+                                            <div>
+                                                <div className="font-medium text-gray-500 dark:text-gray-400">AWB No.</div>
+                                                <div className="text-gray-800 dark:text-gray-100">{complaint.awbNumber}</div>
                                             </div>
-                                        </TableCell>
+                                            <div>
+                                                <div className="font-medium text-gray-500 dark:text-gray-400">Issue</div>
+                                                <div className="text-gray-800 dark:text-gray-100 truncate" title={complaint.issue}>{complaint.issue}</div>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <div className="font-medium text-gray-500 dark:text-gray-400">Remarks</div>
+                                                <div className="text-gray-800 dark:text-gray-100">{complaint.remarks || '-'}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            {/* Mobile Pagination */}
+                            {!isLoading && totalComplaints > 0 && (
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 text-sm text-muted-foreground">
+                                    <div>
+                                        Showing {startIndex} to {endIndex} of {totalComplaints} entries
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handlePreviousPage}
+                                            disabled={currentPage === 1}
+                                            className="h-8 border-border hover:bg-muted"
+                                        >
+                                            Previous
+                                        </Button>
+                                        <span className="px-2 font-medium">
+                                            {currentPage} / {totalPages}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleNextPage}
+                                            disabled={currentPage === totalPages}
+                                            className="h-8 border-border hover:bg-muted"
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* --- DESKTOP TABLE LAYOUT --- */}
+                    <div className="hidden lg:block">
+                        <div className="overflow-x-auto border border-border rounded-md">
+                            <Table className="min-w-full">
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">S.No</TableHead>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint ID</TableHead>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint Date</TableHead>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">AWB No.</TableHead>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Issue</TableHead>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint Remarks</TableHead>
+                                        <TableHead className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Complaint Status</TableHead>
                                     </TableRow>
-                                ) : (
-                                    complaints.map((complaint, index) => (
-                                        <TableRow key={complaint.id} className="hover:bg-muted/50 transition-colors">
-                                            <TableCell className="px-4 py-3">{startIndex + index}</TableCell>
-                                            <TableCell className="px-4 py-3 font-medium">{complaint.id}</TableCell>
-                                            <TableCell className="px-4 py-3">{new Date(complaint.createdAt).toLocaleDateString()}</TableCell>
-                                            <TableCell className="px-4 py-3">{complaint.awbNumber}</TableCell>
-                                            <TableCell className="px-4 py-3 max-w-xs truncate" title={complaint.issue}>{complaint.issue}</TableCell>
-                                            <TableCell className="px-4 py-3">{complaint.remarks || '-'}</TableCell> {/* Handle potentially null remarks */}
-                                            <TableCell className="px-4 py-3">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(complaint.status)}`}>
-                                                    {complaint.status}
-                                                </span>
+                                </TableHeader>
+                                <TableBody className="divide-y divide-border text-sm">
+                                    {isLoading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="h-24 text-center">
+                                                <div className="flex justify-center items-center">
+                                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                                    <span className="ml-2">Loading complaints...</span>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
- 
-                    {!isLoading && totalComplaints > 0 && (
-                         <div className="flex flex-wrap items-center justify-between gap-4 pt-4 text-sm text-muted-foreground">
-                            <div>
-                                Showing {startIndex} to {endIndex} of {totalComplaints} entries
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handlePreviousPage}
-                                    disabled={currentPage === 1}
-                                    className="h-8 border-border hover:bg-muted"
-                                >
-                                    Previous
-                                </Button>
-                                <span className="px-2 font-medium">
-                                    {currentPage} / {totalPages}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleNextPage}
-                                    disabled={currentPage === totalPages}
-                                    className="h-8 border-border hover:bg-muted"
-                                >
-                                    Next
-                                </Button>
-                            </div>
+                                    ) : complaints.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="h-24 text-center">
+                                                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                                    <FileWarning className="h-10 w-10 mb-2" />
+                                                    No complaints found matching your criteria.
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        complaints.map((complaint, index) => (
+                                            <TableRow key={complaint.id} className="hover:bg-muted/50 transition-colors">
+                                                <TableCell className="px-4 py-3">{startIndex + index}</TableCell>
+                                                <TableCell className="px-4 py-3 font-medium">{complaint.id}</TableCell>
+                                                <TableCell className="px-4 py-3">{new Date(complaint.createdAt).toLocaleDateString()}</TableCell>
+                                                <TableCell className="px-4 py-3">{complaint.awbNumber}</TableCell>
+                                                <TableCell className="px-4 py-3 max-w-xs truncate" title={complaint.issue}>{complaint.issue}</TableCell>
+                                                <TableCell className="px-4 py-3">{complaint.remarks || '-'}</TableCell>
+                                                <TableCell className="px-4 py-3">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(complaint.status)}`}>
+                                                        {complaint.status}
+                                                    </span>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
                         </div>
-                    )}
+                        {/* Desktop Pagination */}
+                        {!isLoading && totalComplaints > 0 && (
+                            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 text-sm text-muted-foreground">
+                                <div>
+                                    Showing {startIndex} to {endIndex} of {totalComplaints} entries
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handlePreviousPage}
+                                        disabled={currentPage === 1}
+                                        className="h-8 border-border hover:bg-muted"
+                                    >
+                                        Previous
+                                    </Button>
+                                    <span className="px-2 font-medium">
+                                        {currentPage} / {totalPages}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleNextPage}
+                                        disabled={currentPage === totalPages}
+                                        className="h-8 border-border hover:bg-muted"
+                                    >
+                                        Next
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>

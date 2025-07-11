@@ -75,14 +75,14 @@ export default function ComplaintUserPage() {
 
     return (
         <div className="p-4 md:p-6 lg:p-8"> 
-            <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mb-6 flex items-center gap-2 text-sm text-gray-100 sm:text-gray-500 dark:text-gray-400">
                 <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
                     <Home className="h-4 w-4" />
                 </Link>
                 <ChevronRight className="h-4 w-4" />
                 <span>Raise Complaint</span>
             </div>
-            <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Raise Complaints</h1>
+            <h1 className="text-2xl font-semibold mb-6 text-gray-100 sm:text-gray-800 dark:text-gray-200">Raise Complaints</h1>
             <Card className="w-full max-w-2xl mx-auto bg-card text-card-foreground">
                 <CardHeader>
                     <CardTitle className="text-2xl font-semibold">Raise Complaint</CardTitle>
