@@ -88,7 +88,7 @@ export async function POST(req:NextRequest) {
             const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
             
             const cookieName = isAdmin ? "adminToken" : "userToken";
-            response.cookies.set(cookieName, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 });
+            response.cookies.set(cookieName, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 * 2 });
             
             return response;
         } 
@@ -105,7 +105,7 @@ export async function POST(req:NextRequest) {
             if (isAdmin) {
                 const token = signToken({userId: user.id, firstName: user.firstName,lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret");
                 const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
-                response.cookies.set("adminToken", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 });
+                response.cookies.set("adminToken", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 * 2 });
                 return response;
             }
             
