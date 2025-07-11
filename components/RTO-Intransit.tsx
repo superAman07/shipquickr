@@ -216,10 +216,10 @@ const RtoIntransitPage: React.FC = () => {
 
   return (
       <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div className="flex  flex-wrap items-center justify-between gap-4 mb-8">
-              <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
+        <div className="max-w-full mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 lg:mb-8">
+            <div className="flex-1 min-w-0">
+              {/* <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80"> */}
                 <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">RTO Intransit</h2>
                 <OrderTabs tabs={tabs} pathname={pathname} />
                 <div className="flex items-center gap-1 min-w-0">
@@ -233,7 +233,7 @@ const RtoIntransitPage: React.FC = () => {
                   <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1 text-gray-700 dark:text-white" />
                   <span className="font-medium truncate text-gray-700 dark:text-white">RTO Intransit</span>
                 </div>
-              </div>
+              {/* </div> */}
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <div className="relative">

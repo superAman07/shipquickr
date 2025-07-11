@@ -14,7 +14,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("");
   const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('otp');
-  const [otpRequired, setOtpRequired] = useState(false);
+  const [otpRequired, setOtpRequired] = useState(false)
 
   const handleSendOtp = async () => {
     if (!email) {
@@ -39,17 +39,6 @@ export default function SignIn() {
   const handleClick = async (e: React.FormEvent)=>{
     e.preventDefault();
     setLoading(true)
-    // try {
-    //   const payload = loginMethod === 'password' ? { email, password } : { email, otp };
-    //   const response = await axios.post('/api/auth/login', payload);
-    //   toast.success(response.data.message);
-    //   window.location.href = '/user/dashboard';
-    // } catch (error: any) {
-    //   const message = error.response?.data?.message || "Something went wrong";
-    //   toast.error(message);
-    // } finally {
-    //   setLoading(false);
-    // }
     try {
       let payload: any = { email };
       let response;
@@ -87,7 +76,6 @@ export default function SignIn() {
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 md:mb-10 mt-2 md:mt-4">
                 Start Shipping Today with 3 Simple Steps!
               </h2>
-
               <div className="space-y-6 md:space-y-8">
                 <div className="flex items-start gap-3 md:gap-4">
                   <div className="bg-indigo-900 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
@@ -180,56 +168,6 @@ export default function SignIn() {
                   placeholder="Enter your email id"
                 />
               </div>
-
-              {/* {loginMethod === 'password' ? (
-              <div className="w-full ">
-                <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password" name="password" value={password}
-                    onChange={(e) => { setPassword(e.target.value) }}
-                    required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    placeholder="Enter password"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                <Link href={'/user/auth/forget'} className="text-[#28259d] flex justify-end center h-[0px]">Forgot password?</Link>
-              </div>
-            ) : (
-              <div>
-                <label htmlFor="otp" className="block text-gray-700 text-sm font-medium mb-1">
-                  One-Time Password (OTP) <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text" id="otp" name="otp" value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pr-28"
-                    placeholder="Enter 6-digit OTP"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={loading}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? "Sending..." : "Send OTP"}
-                  </button>
-                </div>
-              </div>
-            )} */}
             {loginMethod === 'password' ? (
                 // This block now uses otpRequired to switch between password and OTP
                 otpRequired ? (

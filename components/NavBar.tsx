@@ -31,6 +31,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
   const dropdownRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const { balance, isLoadingBalance } = useConditionalWallet(userRole)
+  // const router = useRouter();
 
   const getInitials = (name: string) => {
     if (!name) return ""
@@ -115,6 +116,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     <Link
                       href={`/${userRole}/dashboard/profile`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      // onClick={() => setIsProfileOpen(false)}
                     >
                       <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       Your Profile
@@ -122,6 +124,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     <Link
                       href={`/${userRole}/dashboard/change-password`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      // onClick={() => setIsProfileOpen(false)}
                     >
                       <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       Change Password
@@ -130,6 +133,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     <Link
                       href={""}
                       className="flex items-center gap-2 px-4 hover:bg-gray-200 text-gray-700 dark:text-gray-300"
+                      // onClick={() => setIsProfileOpen(false)}
                     >
                       <LogOut className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       <LogoutButton propUser={userRole} propStyle={{ color: "text-gray-500 dark:text-gray-200" }} />
