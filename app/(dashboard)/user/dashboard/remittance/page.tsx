@@ -159,7 +159,11 @@ const RemittancePage: React.FC = () => {
           {/* Mobile Card Layout */}
           <div className="block lg:hidden">
             <div className="space-y-4">
-              {remittances.length > 0 ? remittances.map((rem, idx) => (
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loading />
+                </div>
+              ) : remittances.length > 0 ? remittances.map((rem, idx) => (
                 activeTab === "remittance" ? (
                   <div key={rem.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
