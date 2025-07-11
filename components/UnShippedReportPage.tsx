@@ -229,7 +229,7 @@ const UnShippedPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div className="flex-1 min-w-0">
             {/* <div className="mt-2 flex flex-col flex-wrap items-start gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80"> */}
-              <h2 className="text-3xl font-bold tracking-tight text-gray-700 dark:text-gray-100">Unshipped</h2>
+              <h2 className="text-3xl mb-2 font-bold tracking-tight text-gray-700 dark:text-gray-100">Unshipped</h2>
               <OrderTabs tabs={tabs} pathname={pathname} />
               <div className="flex items-center gap-1 min-w-0">
                 <Link
