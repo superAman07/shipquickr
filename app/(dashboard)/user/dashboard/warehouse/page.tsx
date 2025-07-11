@@ -105,7 +105,7 @@ export default function WarehousesPage() {
           </div>
         </div>
       </header>
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 transition-colors duration-200">
+      <div className="min-h-screen  dark:bg-gray-900 p-4 transition-colors duration-200">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -151,183 +151,312 @@ export default function WarehousesPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      S.No
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      Warehouse Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      Contact Person
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      Warehouse Details
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      Make Primary
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-4 text-center">
-                        <div className="flex justify-center">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            {/* --- MOBILE CARD LAYOUT --- */}
+            <div className="block lg:hidden">
+              <div className="space-y-4">
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  </div>
+                ) : filteredWarehouses.length === 0 ? (
+                  <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+                    No matching records found.
+                  </div>
+                ) : (
+                  filteredWarehouses.slice(0, entries).map((warehouse, index) => (
+                    <div key={warehouse.id} className="bg-white dark:bg-gray-800 border border-none dark:border-gray-700 p-4 shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">{warehouse.warehouseName}</div>
+                          <div className="text-xs text-green-600 dark:text-green-400">{warehouse.warehouseCode}</div>
                         </div>
-                      </td>
-                    </tr>
-                  ) : filteredWarehouses.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="px-4 py-4 text-center text-gray-500 dark:text-gray-400"
-                      >
-                        No matching records found.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredWarehouses
-                      .slice(0, entries)
-                      .map((warehouse, index) => (
-                        <tr
-                          key={warehouse.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >
-                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            {index + 1}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium cursor-pointer hover:underline">
-                            <div>{warehouse.warehouseName}</div>
-                            <div className="text-xs text-green-600 dark:text-green-400">
-                              {warehouse.warehouseCode}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            {warehouse.contactName}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            {warehouse.address1}
-                            {warehouse.address2
-                              ? `, ${warehouse.address2}`
-                              : ""}
-                            ,{warehouse.city}, {warehouse.state} -{" "}
-                            {warehouse.pincode}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-center">
-                            <button
-                              type="button"
-                              disabled={
-                                warehouse.status === false ||
-                                updatingId === warehouse.id
-                              }
-                              onClick={async () => {
-                                setUpdatingId(warehouse.id);
-                                await axios.patch(
-                                  `/api/user/warehouses/${warehouse.id}`,
-                                  { isPrimary: !warehouse.isPrimary }
-                                );
-                                await loadWarehouses();
-                                setUpdatingId(null);
-                              }}
-                              className={`w-10 h-6 flex cursor-pointer items-center rounded-full p-1 transition-colors duration-200 ${warehouse.isPrimary ? "bg-blue-500" : "bg-gray-300"} ${warehouse.status === false ? "opacity-50 cursor-not-allowed" : ""}`}
-                              title="Make Primary"
-                            >
-                              <span
-                                className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.isPrimary ? "translate-x-4" : ""}`}
-                              ></span>
-                            </button>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-center">
-                            <button
-                              type="button"
-                              disabled={updatingId === warehouse.id}
-                              onClick={async () => {
-                                setUpdatingId(warehouse.id);
-                                await axios.patch(
-                                  `/api/user/warehouses/${warehouse.id}`,
-                                  { status: !warehouse.status }
-                                );
-                                await loadWarehouses();
-                                setUpdatingId(null);
-                              }}
-                              className={`w-10 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-200 ${warehouse.status ? "bg-green-500" : "bg-gray-300"}`}
-                              title="Active/Inactive"
-                            >
-                              <span
-                                className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.status ? "translate-x-4" : ""}`}
-                              ></span>
-                            </button>
-                          </td>
-                          {/* Action */}
-                          <td className="px-4 py-3 text-sm flex gap-2">
-                            <button
-                              type="button"
-                              className="text-blue-500 cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 p-1 rounded transition-colors"
-                              title="Edit"
-                              onClick={() => setEditWarehouse(warehouse)}
-                            >
-                              <Pencil size={18} />
-                            </button>
-                            <button
-                              type="button"
-                              className="text-red-500 cursor-pointer hover:text-red-700 dark:hover:text-red-400 p-1 rounded transition-colors"
-                              title="Delete"
-                              onClick={() => {
-                                try {
-                                  const response = confirm(
-                                    "Are you sure you want to delete this warehouse?"
-                                  );
-                                  if (response) {
-                                    axios
-                                      .delete(
-                                        `/api/user/warehouses/${warehouse.id}`
-                                      )
-                                      .then(() => {
-                                        loadWarehouses();
-                                      })
-                                      .catch((error) => {
-                                        console.error(
-                                          "Failed to delete warehouse:",
-                                          error
-                                        );
-                                      });
-                                  }
-                                  toast.success(
-                                    "Warehouse deleted successfully"
-                                  );
-                                } catch (e) {
-                                  toast.error("Failed to delete warehouse");
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 p-1 rounded"
+                            title="Edit"
+                            onClick={() => setEditWarehouse(warehouse)}
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1 rounded"
+                            title="Delete"
+                            onClick={() => {
+                              try {
+                                const response = confirm("Are you sure you want to delete this warehouse?");
+                                if (response) {
+                                  axios.delete(`/api/user/warehouses/${warehouse.id}`).then(() => {
+                                    loadWarehouses();
+                                  }).catch((error) => {
+                                    console.error("Failed to delete warehouse:", error);
+                                  });
                                 }
-                              }}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                  )}
-                </tbody>
-              </table>
+                                toast.success("Warehouse deleted successfully");
+                              } catch (e) {
+                                toast.error("Failed to delete warehouse");
+                              }
+                            }}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-xs mb-2">
+                        <div>
+                          <div className="font-medium text-gray-500 dark:text-gray-400">Contact Person</div>
+                          <div className="text-gray-800 dark:text-gray-100">{warehouse.contactName}</div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-500 dark:text-gray-400">Mobile</div>
+                          <div className="text-gray-800 dark:text-gray-100">{warehouse.mobile || "-"}</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="font-medium text-gray-500 dark:text-gray-400">Warehouse Details</div>
+                          <div className="text-gray-800 dark:text-gray-100">
+                            {warehouse.address1}
+                            {warehouse.address2 ? `, ${warehouse.address2}` : ""}
+                            , {warehouse.city}, {warehouse.state} - {warehouse.pincode}
+                          </div>
+                          {warehouse.landmark && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Landmark: {warehouse.landmark}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6 pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Primary</span>
+                          <button
+                            type="button"
+                            disabled={warehouse.status === false || updatingId === warehouse.id}
+                            onClick={async () => {
+                              setUpdatingId(warehouse.id);
+                              await axios.patch(
+                                `/api/user/warehouses/${warehouse.id}`,
+                                { isPrimary: !warehouse.isPrimary }
+                              );
+                              await loadWarehouses();
+                              setUpdatingId(null);
+                            }}
+                            className={`w-10 h-6 flex cursor-pointer items-center rounded-full p-1 transition-colors duration-200 ${warehouse.isPrimary ? "bg-blue-500" : "bg-gray-300"} ${warehouse.status === false ? "opacity-50 cursor-not-allowed" : ""}`}
+                            title="Make Primary"
+                          >
+                            <span
+                              className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.isPrimary ? "translate-x-4" : ""}`}
+                            ></span>
+                          </button>
+                        </div> 
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Status</span>
+                          <button
+                            type="button"
+                            disabled={updatingId === warehouse.id}
+                            onClick={async () => {
+                              setUpdatingId(warehouse.id);
+                              await axios.patch(
+                                `/api/user/warehouses/${warehouse.id}`,
+                                { status: !warehouse.status }
+                              );
+                              await loadWarehouses();
+                              setUpdatingId(null);
+                            }}
+                            className={`w-10 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-200 ${warehouse.status ? "bg-green-500" : "bg-gray-300"}`}
+                            title="Active/Inactive"
+                          >
+                            <span
+                              className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.status ? "translate-x-4" : ""}`}
+                            ></span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div className="px-2 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300">
+                  Showing {filteredWarehouses.length > 0 ? 1 : 0} to {Math.min(entries, filteredWarehouses.length)} of {filteredWarehouses.length} entries
+                </div>
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        S.No
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        Warehouse Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        Contact Person
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        Warehouse Details
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        Make Primary
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-4 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredWarehouses.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="px-4 py-4 text-center text-gray-500 dark:text-gray-400"
+                        >
+                          No matching records found.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredWarehouses
+                        .slice(0, entries)
+                        .map((warehouse, index) => (
+                          <tr
+                            key={warehouse.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                          >
+                            <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                              {index + 1}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium cursor-pointer hover:underline">
+                              <div>{warehouse.warehouseName}</div>
+                              <div className="text-xs text-green-600 dark:text-green-400">
+                                {warehouse.warehouseCode}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                              {warehouse.contactName}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                              {warehouse.address1}
+                              {warehouse.address2
+                                ? `, ${warehouse.address2}`
+                                : ""}
+                              ,{warehouse.city}, {warehouse.state} -{" "}
+                              {warehouse.pincode}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-center">
+                              <button
+                                type="button"
+                                disabled={
+                                  warehouse.status === false ||
+                                  updatingId === warehouse.id
+                                }
+                                onClick={async () => {
+                                  setUpdatingId(warehouse.id);
+                                  await axios.patch(
+                                    `/api/user/warehouses/${warehouse.id}`,
+                                    { isPrimary: !warehouse.isPrimary }
+                                  );
+                                  await loadWarehouses();
+                                  setUpdatingId(null);
+                                }}
+                                className={`w-10 h-6 flex cursor-pointer items-center rounded-full p-1 transition-colors duration-200 ${warehouse.isPrimary ? "bg-blue-500" : "bg-gray-300"} ${warehouse.status === false ? "opacity-50 cursor-not-allowed" : ""}`}
+                                title="Make Primary"
+                              >
+                                <span
+                                  className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.isPrimary ? "translate-x-4" : ""}`}
+                                ></span>
+                              </button>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-center">
+                              <button
+                                type="button"
+                                disabled={updatingId === warehouse.id}
+                                onClick={async () => {
+                                  setUpdatingId(warehouse.id);
+                                  await axios.patch(
+                                    `/api/user/warehouses/${warehouse.id}`,
+                                    { status: !warehouse.status }
+                                  );
+                                  await loadWarehouses();
+                                  setUpdatingId(null);
+                                }}
+                                className={`w-10 h-6 flex items-center cursor-pointer rounded-full p-1 transition-colors duration-200 ${warehouse.status ? "bg-green-500" : "bg-gray-300"}`}
+                                title="Active/Inactive"
+                              >
+                                <span
+                                  className={`h-4 w-4 bg-white rounded-full shadow transform transition-transform duration-200 ${warehouse.status ? "translate-x-4" : ""}`}
+                                ></span>
+                              </button>
+                            </td>
+                            {/* Action */}
+                            <td className="px-4 py-3 text-sm flex gap-2">
+                              <button
+                                type="button"
+                                className="text-blue-500 cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 p-1 rounded transition-colors"
+                                title="Edit"
+                                onClick={() => setEditWarehouse(warehouse)}
+                              >
+                                <Pencil size={18} />
+                              </button>
+                              <button
+                                type="button"
+                                className="text-red-500 cursor-pointer hover:text-red-700 dark:hover:text-red-400 p-1 rounded transition-colors"
+                                title="Delete"
+                                onClick={() => {
+                                  try {
+                                    const response = confirm(
+                                      "Are you sure you want to delete this warehouse?"
+                                    );
+                                    if (response) {
+                                      axios
+                                        .delete(
+                                          `/api/user/warehouses/${warehouse.id}`
+                                        )
+                                        .then(() => {
+                                          loadWarehouses();
+                                        })
+                                        .catch((error) => {
+                                          console.error(
+                                            "Failed to delete warehouse:",
+                                            error
+                                          );
+                                        });
+                                    }
+                                    toast.success(
+                                      "Warehouse deleted successfully"
+                                    );
+                                  } catch (e) {
+                                    toast.error("Failed to delete warehouse");
+                                  }
+                                }}
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+            {/* <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
               <div className="text-sm text-gray-700 dark:text-gray-300">
                 Showing {filteredWarehouses.length > 0 ? 1 : 0} to{" "}
                 {Math.min(entries, filteredWarehouses.length)} of{" "}
                 {filteredWarehouses.length} entries
               </div>
-            </div>
+            </div> */}
           </div>
           <AddWarehouseModal
             open={showAddModal || !!editWarehouse}
@@ -343,17 +472,17 @@ export default function WarehousesPage() {
             editData={
               editWarehouse
                 ? {
-                    id: editWarehouse.id,
-                    warehouseName: editWarehouse.warehouseName || "",
-                    pincode: editWarehouse.pincode || "",
-                    address1: editWarehouse.address1 || "",
-                    address2: editWarehouse.address2 || "",
-                    landmark: editWarehouse.landmark || "",
-                    state: editWarehouse.state || "",
-                    city: editWarehouse.city || "",
-                    contactName: editWarehouse.contactName || "",
-                    mobile: editWarehouse.mobile || "",
-                  }
+                  id: editWarehouse.id,
+                  warehouseName: editWarehouse.warehouseName || "",
+                  pincode: editWarehouse.pincode || "",
+                  address1: editWarehouse.address1 || "",
+                  address2: editWarehouse.address2 || "",
+                  landmark: editWarehouse.landmark || "",
+                  state: editWarehouse.state || "",
+                  city: editWarehouse.city || "",
+                  contactName: editWarehouse.contactName || "",
+                  mobile: editWarehouse.mobile || "",
+                }
                 : undefined
             }
           />
