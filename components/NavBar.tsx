@@ -28,8 +28,8 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const desktopDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileDropdownRef  = useRef<HTMLDivElement>(null)
   const { balance, isLoadingBalance } = useConditionalWallet(userRole)
   // const router = useRouter();
 
@@ -42,14 +42,18 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
   }
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        desktopDropdownRef.current &&
+        !desktopDropdownRef.current.contains(e.target as Node) &&
+        mobileDropdownRef.current &&
+        !mobileDropdownRef.current.contains(e.target as Node)
+      ) {
         setIsProfileOpen(false)
-      }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
         setIsMobileMenuOpen(false)
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
@@ -110,13 +114,14 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                 </button>
                 {isProfileOpen && (
                   <div
-                    ref={dropdownRef}
+                    // ref={dropdownRef}
+                    ref={desktopDropdownRef}
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700"
                   >
                     <Link
                       href={`/${userRole}/dashboard/profile`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      // onClick={() => setIsProfileOpen(false)}
+                      onClick={() => setIsProfileOpen(false)}
                     >
                       <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       Your Profile
@@ -124,7 +129,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     <Link
                       href={`/${userRole}/dashboard/change-password`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      // onClick={() => setIsProfileOpen(false)}
+                      onClick={() => setIsProfileOpen(false)}
                     >
                       <Lock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       Change Password
@@ -133,7 +138,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     <Link
                       href={""}
                       className="flex items-center gap-2 px-4 hover:bg-gray-200 text-gray-700 dark:text-gray-300"
-                      // onClick={() => setIsProfileOpen(false)}
+                      onClick={() => setIsProfileOpen(false)}
                     >
                       <LogOut className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       <LogoutButton propUser={userRole} propStyle={{ color: "text-gray-500 dark:text-gray-200" }} />
@@ -192,8 +197,8 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
 
                 {/* Profile Dropdown - Original one */}
                 {isProfileOpen && (
-                  <div
-                    ref={dropdownRef}
+                  <div 
+                    ref={mobileDropdownRef}
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700"
                   >
                     <Link
@@ -222,7 +227,7 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
               </div>
 
               {/* Mobile 3-dot Menu - Only for new features */}
-              <div className="relative" ref={mobileMenuRef}>
+              <div className="relative" ref={mobileDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
