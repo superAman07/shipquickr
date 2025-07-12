@@ -180,7 +180,7 @@ export default function WalletPage() {
                   No transactions yet.
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[420px] overflow-y-auto">
                   {transactions.map((txn) => (
                     <div key={txn.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
                       <div className="flex justify-between items-center mb-2">
