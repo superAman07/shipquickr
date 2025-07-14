@@ -9,13 +9,21 @@ export async function POST(req: NextRequest) {
         const token = cookieStore.get('userToken')?.value;
         if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        console.log("Token from onboardinng:" , token);
+        console.log("Token from onboardinng:", token);
         const decoded: any = jwtDecode(token);
         const userId = decoded.userId;
         console.log("User id from onboarding: ", userId);
         const { mobile, shipments } = await req.json();
 
-        console.log("Mobile and avg shipments frrom onboarding:" , {mobile, shipments});
+        const user = await prisma.user.findUnique({
+            where: { id: Number(userId) },
+            select: { mobile: true }
+        });
+        if (user?.mobile) {
+            return NextResponse.json({ error: "Onboarding already completed." }, { status: 403 });
+        }
+
+        console.log("Mobile and avg shipments frrom onboarding:", { mobile, shipments });
         const avgshipmentAndMobile = await prisma.user.update({
             where: { id: Number(userId) },
             data: {
@@ -25,7 +33,7 @@ export async function POST(req: NextRequest) {
         });
         console.log("Avg shippments from route: ", avgshipmentAndMobile);
         return NextResponse.json({ success: true });
-    }catch (error){
-        return NextResponse.json({error: "Failed to save mobile/avg shippments data"}, {status: 500})
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to save mobile/avg shippments data" }, { status: 500 })
     }
 }
