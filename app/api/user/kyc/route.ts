@@ -23,6 +23,7 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.S3_UPLOAD_BUCKET_NAME!;
+console.log("S3_UPLOAD_BUCKET_NAME:", process.env.S3_UPLOAD_BUCKET_NAME);
 if (!BUCKET_NAME) {
   console.error("Error: S3_UPLOAD_BUCKET_NAME environment variable is not set.");
 }
