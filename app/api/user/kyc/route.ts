@@ -129,7 +129,11 @@ export async function POST(req: NextRequest) {
   
         } catch (error) {
           console.error(`Error uploading ${filename} to S3:`, error); 
-          throw new Error(`Failed to upload file ${file.name} to S3.`);
+          // throw new Error(`Failed to upload file ${file.name} to S3.`);
+          if (error instanceof Error) {
+            throw new Error(`${error.message}\n${error.stack}`);
+          }
+          throw new Error(JSON.stringify(error));
         }
       }
    
@@ -185,6 +189,7 @@ export async function POST(req: NextRequest) {
       console.error("KYC POST error:", err); 
       const errorMessage = err.message || "Something went wrong during KYC submission.";
       const statusCode = err.status || 500;  
-      return NextResponse.json({ error: errorMessage }, { status: statusCode });
+      // return NextResponse.json({ error: errorMessage }, { status: statusCode });
+      return NextResponse.json({ error: err?.message || "Something went wrong", details: err }, { status: 500 });
     }
   }
