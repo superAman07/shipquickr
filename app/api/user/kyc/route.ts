@@ -9,6 +9,8 @@ import path from "path";
 import { S3Client } from "@aws-sdk/client-s3"; 
 import { Upload } from "@aws-sdk/lib-storage"; 
 
+console.log("ALL ENV:", JSON.stringify(process.env, null, 2));
+
 interface TokenDetailsType {
   userId: string;
   firstName: string;
