@@ -10,6 +10,8 @@ frontend:
         - nvm install 20
         - nvm use 20
         - npm ci
+        - echo ">>> .env.production contents >>>"
+        - cat .env.production
         # --- ADD THIS LINE ---
         - echo "DATABASE_URL=$DATABASE_URL" >> .env.production
         # --- Ensure other runtime vars are also added if needed ---
