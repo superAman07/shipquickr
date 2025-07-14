@@ -30,6 +30,8 @@ export async function GET(req: NextRequest) {
         kycStatus: true,
         role: true,
         createdAt: true,
+        avgShippmentsFromUser: true,
+        mobile: true,
         kycDetail: true,  
       },
     });

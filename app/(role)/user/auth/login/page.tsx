@@ -43,20 +43,29 @@ export default function SignIn() {
       let payload: any = { email };
       let response;
 
-      if (loginMethod === 'password' && !otpRequired) {
-        // Step 1: Send email and password to get an OTP
+      if (loginMethod === 'password' && !otpRequired) { 
         payload.password = password;
         response = await axios.post('/api/auth/login', payload);
         if (response.data.otpRequired) {
           toast.success(response.data.message);
-          setOtpRequired(true); // This will trigger the UI to show the OTP field
+          setOtpRequired(true);  
         }
-      } else {
-        // Step 2: Send email and OTP (for both password and direct OTP login)
+      } else { 
         payload.otp = otpRequired ? otp : (document.getElementById('otp') as HTMLInputElement)?.value;
         response = await axios.post('/api/auth/login', payload);
         toast.success(response.data.message);
-        window.location.href = '/user/dashboard';
+
+        const userRes = await axios.get("/api/user/profile");
+        const user = userRes.data.profile;
+
+        console.log("user Details to check onboarding redirection:" ,user);
+
+        console.log("user user mobile:", user?.mobile);
+        if(!user?.mobile){
+          window.location.href = '/user/onboarding';
+        }else {
+          window.location.href = '/user/dashboard';
+        }
       }
     } catch (error:any) {
       const message = error.response?.data?.message || "Something went wrong";

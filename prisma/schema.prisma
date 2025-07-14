@@ -8,25 +8,27 @@ datasource db {
 }
 
 model User {
-  id               Int                @id @default(autoincrement())
-  firstName        String
-  lastName         String
-  email            String             @unique
-  password         String?
-  hashedOtp        String?
-  otpExpires       DateTime?
-  status           Boolean            @default(true)
-  role             Role               @default(user)
-  createdAt        DateTime           @default(now())
-  kycStatus        KycStatus          @default(pending)
-  kycDetail        KycDetail?
-  orders           Order[]
-  remittances      Remittance[]
-  transactions     Transaction[]
-  wallet           Wallet?
-  warehouses       Warehouse[]
-  complaints       Complaint[]
-  couponRedemption CouponRedemption[]
+  id                    Int                @id @default(autoincrement())
+  firstName             String
+  lastName              String
+  email                 String             @unique
+  password              String?
+  hashedOtp             String?
+  otpExpires            DateTime?
+  status                Boolean            @default(true)
+  role                  Role               @default(user)
+  createdAt             DateTime           @default(now())
+  kycStatus             KycStatus          @default(pending)
+  kycDetail             KycDetail?
+  orders                Order[]
+  remittances           Remittance[]
+  transactions          Transaction[]
+  wallet                Wallet?
+  warehouses            Warehouse[]
+  complaints            Complaint[]
+  couponRedemption      CouponRedemption[]
+  avgShippmentsFromUser String?
+  mobile                String?
 }
 
 model KycDetail {
