@@ -1,5 +1,4 @@
-export const runtime = 'nodejs';
-
+// export const runtime = 'nodejs';
 
 import { prisma } from "@/lib/prisma";
 import { S3Client } from "@aws-sdk/client-s3";
