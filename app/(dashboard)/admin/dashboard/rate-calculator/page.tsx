@@ -234,7 +234,7 @@ export default function RateCalculator() {
 
           {error && !loading && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-          <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">
+          <Button type="submit" disabled={loading} className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {loading ? "Checking Rates..." : "Check Price"}
           </Button>
