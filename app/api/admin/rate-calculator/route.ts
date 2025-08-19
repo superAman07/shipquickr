@@ -204,8 +204,7 @@ async function fetchXpressbeesRates(shipmentData: any, cw: number, dimensions: {
       const validRates = data.message
         .map((rate: any) => {
           const courierCharges = parseFloat(rate.courier_charges);
-          const codCharges = parseFloat(rate.cod_charges);
-          // const calculatedTotal = (isNaN(courierCharges) ? 0 : courierCharges) + (isNaN(codCharges) ? 0 : codCharges);
+          const codCharges = parseFloat(rate.cod_charges); 
           const totalPrice = parseFloat(rate.total_price);
 
           if (!isNaN(courierCharges) && !isNaN(totalPrice)) {
