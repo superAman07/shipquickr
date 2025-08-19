@@ -71,12 +71,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });
     }
     return NextResponse.json({ rates: allRates });
-    // const rawRatesWithTotal = allRates.map(rate => ({
-    //   ...rate,
-    //   totalPrice: Math.round((rate.courierCharges + rate.codCharges) * 100) / 100
-    // }));
-    // return NextResponse.json({ rates: rawRatesWithTotal });
-
   } catch (error: any) {
     console.error("Admin Rate Calculator Main Error:", error);
     if (error instanceof SyntaxError) {
@@ -108,9 +102,7 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
     console.log("Ecom API Response:", JSON.stringify(data, null, 2));
 
     if (Array.isArray(data) && data.length > 0 && data[0].success) {
-      const breakup = data[0].chargesBreakup || {};
-      // const rawCourierCharge = (parseFloat(breakup.FRT) || 0) + (parseFloat(breakup.FUEL) || 0);  
-      // const rawCodCharge = parseFloat(breakup.COD) || 0;
+      const breakup = data[0].chargesBreakup || {}; 
       const totalCharge = parseFloat(breakup.total_charge) || 0;
       const codCharge = parseFloat(breakup.COD) || 0;
       return {
@@ -120,9 +112,6 @@ async function fetchEcomRates(shipmentData: any, cw: number): Promise<RateResult
         courierCharges: totalCharge - codCharge,
         codCharges: codCharge,
         totalPrice: totalCharge,
-        // courierCharges: rawCourierCharge,
-        // codCharges: rawCodCharge,
-        // totalPrice: rawCourierCharge + rawCodCharge,
       };
     } else {
       console.error("Ecom API returned error or unexpected format:", data[0]?.errors?.reason || data);
