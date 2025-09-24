@@ -69,7 +69,7 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-600 p-4 sm:p-6 md:p-8 relative overflow-hidden">
-      <div className="absolute w-[300px] sm:w-[400px] md:w-[500px] h-[300px] sm:h-[400px] md:h-[500px] rounded-full bg-blue-400/20 -left-24 -top-24 animate-pulse"></div>
+      {/* <div className="absolute w-[300px] sm:w-[400px] md:w-[500px] h-[300px] sm:h-[400px] md:h-[500px] rounded-full bg-blue-400/20 -left-24 -top-24 animate-pulse"></div>
       <div className="absolute w-[250px] sm:w-[300px] md:w-[400px] h-[250px] sm:h-[300px] md:h-[400px] rounded-full bg-indigo-500/20 right-0 bottom-0 animate-pulse delay-700"></div>
 
         <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-l-2xl overflow-x-visible shadow-2xl backdrop-blur-sm bg-white/5">
@@ -262,7 +262,8 @@ export default function SignUp() {
               </Link>
             </p>
           </div>
-      </div>
+      </div> */}
+      cannot access admin signup
     </div>
   )
 }
