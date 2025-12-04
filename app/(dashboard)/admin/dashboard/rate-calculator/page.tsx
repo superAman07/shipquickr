@@ -23,6 +23,7 @@ interface Rate {
   codCharges: number;
   totalPrice: number;
   image?: string;
+  expectedDelivery?: string;
 }
 
 export default function RateCalculator() {
