@@ -9,5 +9,7 @@
     "amplify/backend/awscloudformation": true
   },
   "CodeGPT.apiKey": "CodeGPT Plus Beta",
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "prisma.pinToPrisma6": true
 }

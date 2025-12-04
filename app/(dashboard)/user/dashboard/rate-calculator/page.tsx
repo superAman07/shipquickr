@@ -22,6 +22,8 @@ interface Rate {
   courierCharges: number;
   codCharges: number;
   totalPrice: number;
+  image?: string;
+  expectedDelivery?: string;
 }
 
 export default function RateCalculator() {
@@ -274,14 +276,18 @@ export default function RateCalculator() {
             )}
 
             {!loading && rates.length > 0 && rates.map((rate, idx) => {
-              const logo = getCourierLogo(rate.courierName);
+              const logo = rate.image || getCourierLogo(rate.courierName);
               return (
                 <Card key={idx} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                  <CardContent className="p-3 grid grid-cols-2 sm:grid-cols-5 gap-x-3 gap-y-2 items-center">
-                    <div className="col-span-2 sm:col-span-1 flex flex-col items-start">
+                  <CardContent className="p-3 grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-2 items-center">                    <div className="col-span-2 sm:col-span-1 flex flex-col items-start">
                       {logo && (
-                        <div className="relative h-8 w-16 rounded-[2px]">
-                          <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
+                        <div className="relative h-16 w-16 rounded-[2px]">
+                          {/* Use img tag for external URLs to avoid Next.js config issues, Image for local */}
+                          {logo.startsWith("http") ? (
+                             <img src={logo} alt={rate.courierName} className="h-full w-full object-contain" />
+                          ) : (
+                             <Image src={logo} alt={`${rate.courierName} logo`} layout="fill" objectFit="contain" />
+                          )}
                         </div>
                       )}
                       {!logo && (
@@ -293,6 +299,13 @@ export default function RateCalculator() {
                     <div className="text-left">
                       <p className="text-xs text-gray-500 dark:text-gray-400">Weight</p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{rate.weight.toFixed(2)} kg</p>
+                    </div>
+
+                    <div className="text-left hidden sm:block">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">ETD</p>
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                        {rate.expectedDelivery || "3-5 Days"}
+                      </p>
                     </div>
 
                     <div className="text-left">

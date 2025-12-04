@@ -56,6 +56,11 @@ frontend:
         - echo "EMAIL_PORT=$EMAIL_PORT" >> .env.production
         - echo "EMAIL_USER=$EMAIL_USER" >> .env.production
         - echo "EMAIL_PASS=$EMAIL_PASS" >> .env.production
+
+        - echo "SHIPPING_AGGREGATOR_API_URL=$SHIPPING_AGGREGATOR_API_URL" >> .env.production
+        - echo "SHIPPING_AGGREGATOR_EMAIL=$SHIPPING_AGGREGATOR_EMAIL" >> .env.production
+        - echo "SHIPPING_AGGREGATOR_PASSWORD=$SHIPPING_AGGREGATOR_PASSWORD" >> .env.production
+        - echo "SHIPPING_AGGREGATOR_WAREHOUSE_ID=$SHIPPING_AGGREGATOR_WAREHOUSE_ID" >> .env.production
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
