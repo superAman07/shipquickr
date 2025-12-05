@@ -160,6 +160,7 @@ class ShippingAggregatorClient {
             name: item.productName,
             sku_number: "SKU-" + Math.floor(Math.random() * 1000), // Dummy SKU if missing
             quantity: item.quantity,
+            discount: "0",
             unit_price: item.orderValue,
             product_category: item.category || "Other"
         })),

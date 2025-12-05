@@ -22,7 +22,6 @@ interface SelectedCourier {
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authentication
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
     if (!token) {
@@ -34,7 +33,6 @@ export async function POST(req: NextRequest) {
     }
     const userId = decoded.userId;
 
-    // 2. Input Parsing
     const body = await req.json();
     const { orderId, selectedCourier }: { orderId: number; selectedCourier: SelectedCourier } = body;
 
@@ -44,7 +42,6 @@ export async function POST(req: NextRequest) {
 
     console.log(`Shipment Confirmation Request - Order: ${orderId}, User: ${userId}, Courier: ${selectedCourier.name}`);
 
-    // 3. Fetch Order Data
     const order = await prisma.order.findUnique({
       where: { id: orderId, userId: userId },
       include: { items: true, warehouse: true },
@@ -54,7 +51,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order not found or does not belong to user." }, { status: 404 });
     }
 
-    // 4. Validations
     if (!order.warehouse) {
       return NextResponse.json({ error: "Order is missing pickup location (warehouse) information." }, { status: 400 });
     }
@@ -63,20 +59,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Order status is already '${order.status}'. Cannot process again.` }, { status: 400 });
     }
 
-    // 5. Shipping Aggregator Integration (New Flow)
     const warehouseId = process.env.SHIPPING_AGGREGATOR_WAREHOUSE_ID;
     if (!warehouseId) {
         console.error("Env var SHIPPING_AGGREGATOR_WAREHOUSE_ID is missing.");
         return NextResponse.json({ error: "Server configuration error: Warehouse ID missing." }, { status: 500 });
     }
 
-    // A. Push Order
     const pushSuccess = await shippingAggregatorClient.pushOrder(order, warehouseId);
     if (!pushSuccess) {
         return NextResponse.json({ error: "Failed to push order to shipping provider." }, { status: 502 });
     }
 
-    // B. Assign Courier
     const courierPartnerId = selectedCourier.courierPartnerId;
     if (!courierPartnerId) {
          return NextResponse.json({ error: "Invalid Courier ID. Please refresh rates and try again." }, { status: 400 });
@@ -88,13 +81,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Failed to assign courier. Please try again." }, { status: 502 });
     }
 
-    // C. Determine AWB
     const actualAwbNumber = assignResult.awb || order.orderId; 
     const courierName = assignResult.courierName || selectedCourier.name;
 
-    // 6. Database Transaction (Wallet Deduction + Order Update)
     const dbTransactionResult = await prisma.$transaction(async (tx) => {
-      // Wallet Logic
       const finalShippingCost = selectedCourier.totalPrice; 
 
       let updatedWalletBalance: number | undefined = undefined;
@@ -120,12 +110,10 @@ export async function POST(req: NextRequest) {
             type: "debit",
             status: "Success",
             orderId: order.id,
-            // description field removed as it doesn't exist in your schema
           },
         });
       }
 
-      // Order Update
       await tx.order.update({
         where: { id: order.id },
         data: {
@@ -148,7 +136,6 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    // 7. Success Response
     return NextResponse.json({
       success: true,
       message: `Order processed successfully! AWB: ${dbTransactionResult.awbAssigned}`,
@@ -164,11 +151,9 @@ export async function POST(req: NextRequest) {
     
     let errorMessage = "Failed to process shipment due to an unexpected error.";
     let errorStatus = 500;
-
-    // Handle specific wallet error thrown from transaction
     if (error.message?.includes("Insufficient wallet balance")) {
       errorMessage = error.message;
-      errorStatus = 402; // Payment Required
+      errorStatus = 402; 
     } else if (error.message) {
       errorMessage = error.message;
     }
