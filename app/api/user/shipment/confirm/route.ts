@@ -17,7 +17,7 @@ interface SelectedCourier {
   totalPrice: number;
   serviceType?: string;
   weight: number;
-  courierPartnerId?: number; // Added this field as it's needed for the new API
+  courierPartnerId?: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -77,9 +77,6 @@ export async function POST(req: NextRequest) {
     }
 
     // B. Assign Courier
-    // We need the courierPartnerId (e.g., 206) from the Rate Calculator response.
-    // Ensure your frontend passes this in 'selectedCourier'.
-    // If missing, we can't assign the specific courier.
     const courierPartnerId = selectedCourier.courierPartnerId;
     if (!courierPartnerId) {
          return NextResponse.json({ error: "Invalid Courier ID. Please refresh rates and try again." }, { status: 400 });
@@ -92,19 +89,12 @@ export async function POST(req: NextRequest) {
     }
 
     // C. Determine AWB
-    // If the API didn't return an AWB immediately, we use the Order ID as a reference 
-    // and mark it as 'manifested' so the user sees it's processed.
-    // You may need a separate Cron Job to update the actual AWB later if it's generated asynchronously.
     const actualAwbNumber = assignResult.awb || order.orderId; 
     const courierName = assignResult.courierName || selectedCourier.name;
 
     // 6. Database Transaction (Wallet Deduction + Order Update)
     const dbTransactionResult = await prisma.$transaction(async (tx) => {
       // Wallet Logic
-      // Note: In the new Rate Calculator, 'totalPrice' usually includes GST.
-      // If your 'selectedCourier.totalPrice' is inclusive of GST, we use it directly.
-      // If it's base price, we add GST. 
-      // Assuming selectedCourier.totalPrice IS the final amount user saw on screen.
       const finalShippingCost = selectedCourier.totalPrice; 
 
       let updatedWalletBalance: number | undefined = undefined;
@@ -114,7 +104,6 @@ export async function POST(req: NextRequest) {
         const currentBalance = wallet?.balance ?? 0;
         
         if (currentBalance < finalShippingCost) {
-          // Throwing error inside transaction triggers rollback
           throw new Error(`Insufficient wallet balance. Required: ₹${finalShippingCost.toFixed(2)}, Available: ₹${currentBalance.toFixed(2)}`);
         }
 
@@ -131,7 +120,7 @@ export async function POST(req: NextRequest) {
             type: "debit",
             status: "Success",
             orderId: order.id,
-            description: `Shipping charges for Order #${order.orderId} (${courierName})`
+            // description field removed as it doesn't exist in your schema
           },
         });
       }
@@ -140,7 +129,7 @@ export async function POST(req: NextRequest) {
       await tx.order.update({
         where: { id: order.id },
         data: {
-          status: "manifested", // Successfully booked
+          status: "manifested",
           awbNumber: actualAwbNumber,
           courierName: courierName,
           shippingCost: finalShippingCost,
