@@ -50,6 +50,8 @@ interface CourierRate {
   codCharges: number;
   totalPrice: number;
   weight: number;
+  courierPartnerId?: number;
+  expectedDelivery?: string;
 }
 interface RateResult {
   courierName: string;
@@ -58,6 +60,9 @@ interface RateResult {
   courierCharges: number;
   codCharges: number;
   totalPrice: number;
+  courierPartnerId?: number;
+  expectedDelivery?: string;
+  image?: string;
 }
 
 export default function ShipOrderPage() {
@@ -158,13 +163,15 @@ export default function ShipOrderPage() {
               if (ratesRes.data.rates.length > 0) {
                 const mappedCouriers: CourierRate[] = ratesRes.data.rates.map(rate => ({
                   name: rate.courierName,
-                  logoUrl: getCourierLogo(rate.courierName),
+                  logoUrl: rate.image || getCourierLogo(rate.courierName), // Use API image if available
                   serviceType: rate.serviceType || 'Standard',
                   minWeight: 0.5, // dummy
                   rate: rate.courierCharges,
                   codCharges: rate.codCharges,
                   totalPrice: rate.totalPrice,
                   weight: rate.weight,
+                  courierPartnerId: rate.courierPartnerId,
+                  expectedDelivery: rate.expectedDelivery
                 }));
                 setAvailableCouriers(mappedCouriers);
                 console.log("Mapped Couriers:", mappedCouriers);

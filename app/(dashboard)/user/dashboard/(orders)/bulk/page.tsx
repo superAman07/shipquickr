@@ -55,6 +55,7 @@ const BulkOrdersPage: React.FC = () => {
   const itemsPerPage = 10;
 
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     fetchOrders();
@@ -164,7 +165,6 @@ const BulkOrdersPage: React.FC = () => {
     );
   }
 
-  const router = useRouter();
   const handleShipOrder = (orderId: string) => {
     router.push(`/user/dashboard/ship-order/${orderId}`);
   };
