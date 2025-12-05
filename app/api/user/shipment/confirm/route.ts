@@ -65,8 +65,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Server configuration error: Warehouse ID missing." }, { status: 500 });
     }
 
-    const pushSuccess = await shippingAggregatorClient.pushOrder(order, warehouseId);
-    if (!pushSuccess) {
+    // --- FIXED: Only ONE call to pushOrder ---
+    const aggregatorOrderId = await shippingAggregatorClient.pushOrder(order, warehouseId);
+    
+    if (!aggregatorOrderId) {
         return NextResponse.json({ error: "Failed to push order to shipping provider." }, { status: 502 });
     }
 
@@ -75,10 +77,12 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ error: "Invalid Courier ID. Please refresh rates and try again." }, { status: 400 });
     }
 
-    const assignResult = await shippingAggregatorClient.assignCourier(order.orderId, courierPartnerId);
+    const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId, courierPartnerId);
     
     if (!assignResult.success) {
-        return NextResponse.json({ error: "Failed to assign courier. Please try again." }, { status: 502 });
+        // Note: The error "Pincode not serviceable" comes from here. 
+        // It means the courier rejected the shipment for this specific route.
+        return NextResponse.json({ error: "Failed to assign courier. The courier may not service this pincode pair." }, { status: 502 });
     }
 
     const actualAwbNumber = assignResult.awb || order.orderId; 
@@ -159,7 +163,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: false, error: errorMessage }, { status: errorStatus });
-}
+  }
 }
 
 

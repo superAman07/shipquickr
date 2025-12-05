@@ -178,7 +178,10 @@ class ShippingAggregatorClient {
         const response = await axios.post(`${this.baseUrl}/push-order`, payload, { headers });
         console.log("ShippingAggregator Push Response:", response.data);
         
-        return response.data?.result === "1";
+        if (response.data?.result === "1" && response.data.data?.order_id) {
+            return response.data.data.order_id;
+        }
+        return null;
     } catch (error: any) {
         console.error("ShippingAggregator Push Order Error:", error.response?.data || error.message);
         return false;
