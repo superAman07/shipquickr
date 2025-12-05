@@ -171,6 +171,7 @@ class ShippingAggregatorClient {
         width: parseFloat(order.breadth) || 10,
         height: parseFloat(order.height) || 10,
         warehouse_id: warehouseId,
+        gst_ewaybill_number: order.ewaybill || ""
     };
 
     try {
