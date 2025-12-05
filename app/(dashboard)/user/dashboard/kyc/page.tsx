@@ -59,7 +59,7 @@ export default function KYC() {
   const [isUserDataLoading, setIsUserDataLoading] = useState(true);
 
   const { data: kycData, error: kycError, isLoading: isKycStatusLoading } = useSWR<KycStatusResponse>('/api/user/kyc', fetcher, {
-    refreshInterval: 5000,
+    refreshInterval: 30000,
   });
 
   const currentUserKycStatus = isKycStatusLoading ? "loading" : kycError ? "none" : kycData?.kycStatus?.toLowerCase() || "none";
