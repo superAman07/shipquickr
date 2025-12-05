@@ -122,6 +122,7 @@ model Order {
   trackingHistory OrderTracking[]
   ageing          Int?
   attempts        Int?
+  ewaybill        String?
   billableWeight  Float?
   remarks         String?
   shippingDetails String?

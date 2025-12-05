@@ -75,6 +75,7 @@ export async function POST(req: NextRequest){
                   pickupLocation: data.pickupLocation,  
                   warehouseId: numericWarehouseId,
                   codAmount: data.paymentMode === "COD" ? (parseFloat(data.codAmount) || 0) : null,
+                  ewaybill: data.ewaybill || null,
                   customerName: data.customerName,
                   mobile: data.mobile,
                   email: data.email,
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest){
                   city: data.city,
                   landmark: data.landmark,
                   status: "unshipped",  
+
               }
             });
  
