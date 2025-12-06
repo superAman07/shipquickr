@@ -232,25 +232,69 @@ class ShippingAggregatorClient {
     }
   }
 
-  /**
-   * Step 3: Get Label
-   */
   public async getLabel(awbNumber: string): Promise<string | null> {
     const headers = await this.getHeaders();
     if (!headers) return null;
 
     try {
-        // Note: Docs say GET method
         const response = await axios.get(`${this.baseUrl}/get-order-label/${awbNumber}`, { headers });
         
         if (response.data?.result === "1" && Array.isArray(response.data.data) && response.data.data.length > 0) {
-            // Returns base64 string: "data:image/png;base64,..."
             return response.data.data[0].label;
         }
         return null;
     } catch (error: any) {
         console.error("ShippingAggregator Get Label Error:", error.response?.data || error.message);
         return null;
+    }
+  }
+
+  public async cancelOrder(orderId: string, awbNumber: string): Promise<{ success: boolean; message: string }> {
+    const headers = await this.getHeaders();
+    if (!headers) return { success: false, message: "Authentication failed" };
+
+    const payload = {
+      order_id: orderId,
+      awb_number: awbNumber
+    };
+
+    try {
+      console.log("ShippingAggregator: Cancelling Order...", payload);
+      const response = await axios.post(`${this.baseUrl}/cancel-order`, payload, { headers });
+      console.log("ShippingAggregator Cancel Response:", response.data);
+
+      if (response.data?.result === "1") {
+        return { success: true, message: response.data.message || "Cancelled successfully" };
+      }
+      return { success: false, message: response.data?.message || "Cancellation failed" };
+    } catch (error: any) {
+      console.error("ShippingAggregator Cancel Error:", error.response?.data || error.message);
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  }
+
+  public async trackOrder(awbNumber: string): Promise<{ status: string; description: string; history: any[] } | null> {
+    const headers = await this.getHeaders();
+    if (!headers) return null;
+
+    try {
+      const response = await axios.get(`${this.baseUrl}/track-order`, {
+        headers,
+        params: { awb_number: awbNumber }
+      });
+
+      if (response.data?.result === "1" && response.data.data) {
+        const data = response.data.data;
+        return {
+          status: data.current_status || "Unknown",
+          description: data.current_status || "", 
+          history: data.scan_detail || []
+        };
+      }
+      return null;
+    } catch (error: any) {
+      console.error("ShippingAggregator Track Error:", error.response?.data || error.message);
+      return null;
     }
   }
 }

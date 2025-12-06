@@ -33,14 +33,17 @@ export async function POST(req: NextRequest) {
         if (!order.awbNumber || !order.courierName) {
             return NextResponse.json({ error: "Cannot cancel order without an AWB number and courier name" }, { status: 400 });
         }
-        let cancellationResult: { success: boolean; message: string };
-        if (order.courierName.toLowerCase().includes("ecom express")) {
-            cancellationResult = await ecomExpressClient.cancelShipment(order.awbNumber);
-        } else if (order.courierName.toLowerCase().includes("xpressbees")) {
-            cancellationResult = await xpressbeesClient.cancelShipment(order.awbNumber);
-        } else {
-            return NextResponse.json({ error: `Cancellation for courier ${order.courierName} is not supported` }, { status: 400 });
-        }
+        // let cancellationResult: { success: boolean; message: string };
+        // if (order.courierName.toLowerCase().includes("ecom express")) {
+        //     cancellationResult = await ecomExpressClient.cancelShipment(order.awbNumber);
+        // } else if (order.courierName.toLowerCase().includes("xpressbees")) {
+        //     cancellationResult = await xpressbeesClient.cancelShipment(order.awbNumber);
+        // } else {
+        //     return NextResponse.json({ error: `Cancellation for courier ${order.courierName} is not supported` }, { status: 400 });
+        // }
+
+        const cancellationResult = await shippingAggregatorClient.cancelOrder(order.orderId, order.awbNumber);
+
         if (cancellationResult.success) {
             await prisma.$transaction(async (tx) => {
                  
