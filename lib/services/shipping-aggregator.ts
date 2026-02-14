@@ -138,9 +138,9 @@ class ShippingAggregatorClient {
   /**
    * Step 1: Push Order to Aggregator
    */
-  public async pushOrder(order: any, warehouseId: string): Promise<boolean> {
+  public async pushOrder(order: any, warehouseId: string): Promise<string | null | false> {
     const headers = await this.getHeaders();
-    if (!headers) return false;
+    if (!headers) return null;
 
     const weightGrams = Math.ceil((parseFloat(order.physicalWeight) || 0.5) * 1000);
     const apiPaymentType = order.paymentMode === "COD" ? "COD" : "PREPAID";

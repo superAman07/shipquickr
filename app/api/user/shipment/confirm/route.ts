@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ error: "Invalid Courier ID. Please refresh rates and try again." }, { status: 400 });
     }
 
-    const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId, courierPartnerId);
+    const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId as string, courierPartnerId);
     
     if (!assignResult.success) {
         // Note: The error "Pincode not serviceable" comes from here. 
