@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +24,9 @@ export async function POST(req: NextRequest) {
     const codAmount = body.paymentMode === "COD" ? (parseFloat(body.collectableValue) || 0) : 0;
 
     // Call the new Aggregator Service
-    const rates = await shippingAggregatorClient.fetchRatesStandard(
+    // Call both Aggregator and Delhivery
+    const [aggregatorRates, delhiverySurface, delhiveryExpress] = await Promise.all([
+      shippingAggregatorClient.fetchRatesStandard(
         body.pickupPincode,
         body.destinationPincode,
         cw,
@@ -31,9 +34,30 @@ export async function POST(req: NextRequest) {
         body.paymentMode,
         declaredValue,
         codAmount
-    );
+      ),
+      delhiveryClient.fetchRate(
+        String(body.pickupPincode),
+        String(body.destinationPincode),
+        cw,
+        "Surface",
+        body.paymentMode,
+        declaredValue
+      ),
+      delhiveryClient.fetchRate(
+        String(body.pickupPincode),
+        String(body.destinationPincode),
+        cw,
+        "Express",
+        body.paymentMode,
+        declaredValue
+      )
+    ]);
 
-    if (!rates || rates.length === 0) {
+    const rates = aggregatorRates || [];
+    if (delhiverySurface) rates.push(delhiverySurface);
+    if (delhiveryExpress) rates.push(delhiveryExpress);
+
+    if (rates.length === 0) {
       return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });
     }
 
