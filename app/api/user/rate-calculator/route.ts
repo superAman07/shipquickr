@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
 
         // 2. Fetch Raw Rates from Aggregator
         // 2. Fetch Rates from Aggregator AND Delhivery
-        const [rawRates, delhiveryRate] = await Promise.all([
+        // 2. Fetch Rates from Aggregator AND Delhivery (Surface & Express)
+        const [rawRates, delhiverySurface, delhiveryExpress] = await Promise.all([
             shippingAggregatorClient.fetchRatesStandard(
                 body.pickupPincode,
                 body.destinationPincode,
@@ -50,16 +51,23 @@ export async function POST(req: NextRequest) {
                 String(body.pickupPincode),
                 String(body.destinationPincode),
                 cw,
-                "Surface", // defaulting to Surface for now, can be dynamic based on user pref
+                "Surface",
+                body.paymentMode,
+                declaredValue
+            ),
+            delhiveryClient.fetchRate(
+                String(body.pickupPincode),
+                String(body.destinationPincode),
+                cw,
+                "Express",
                 body.paymentMode,
                 declaredValue
             )
         ]);
 
         let combinedRates = rawRates || [];
-        if (delhiveryRate) {
-            combinedRates.push(delhiveryRate);
-        }
+        if (delhiverySurface) combinedRates.push(delhiverySurface);
+        if (delhiveryExpress) combinedRates.push(delhiveryExpress);
 
         if (combinedRates.length === 0) {
             return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });

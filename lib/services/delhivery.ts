@@ -117,7 +117,7 @@ export class DelhiveryClient {
                 courierPartnerId: 999, // Internal ID
                 expectedDelivery: "3-5 Days",
                 tokenUsed: token,
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Delhivery_Logo.svg/2560px-Delhivery_Logo.svg.png" // Add logo for UI
+                image: "https://upload.wikimedia.org/wikipedia/commons/2/23/Delhivery_Logo_(2019).png" // Add logo for UI
             };
 
         } catch (error: any) {
