@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 export async function POST(req: NextRequest) {
     try {
@@ -34,22 +35,38 @@ export async function POST(req: NextRequest) {
         const adminCodType = adminRates?.codChargesType ?? "fixed";
 
         // 2. Fetch Raw Rates from Aggregator
-        const rawRates = await shippingAggregatorClient.fetchRatesStandard(
-            body.pickupPincode,
-            body.destinationPincode,
-            cw,
-            dimensions,
-            body.paymentMode,
-            declaredValue,
-            codAmount
-        );
+        // 2. Fetch Rates from Aggregator AND Delhivery
+        const [rawRates, delhiveryRate] = await Promise.all([
+            shippingAggregatorClient.fetchRatesStandard(
+                body.pickupPincode,
+                body.destinationPincode,
+                cw,
+                dimensions,
+                body.paymentMode,
+                declaredValue,
+                codAmount
+            ),
+            delhiveryClient.fetchRate(
+                String(body.pickupPincode),
+                String(body.destinationPincode),
+                cw,
+                "Surface", // defaulting to Surface for now, can be dynamic based on user pref
+                body.paymentMode,
+                declaredValue
+            )
+        ]);
 
-        if (!rawRates || rawRates.length === 0) {
+        let combinedRates = rawRates || [];
+        if (delhiveryRate) {
+            combinedRates.push(delhiveryRate);
+        }
+
+        if (combinedRates.length === 0) {
             return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });
         }
 
-        // 3. Apply Admin Markup (Logic preserved from your old file)
-        const finalRates = rawRates.map(rate => {
+        // 3. Apply Admin Markup (Logic preserved...)
+        const finalRates = combinedRates.map(rate => {
             let finalCourierCharge = rate.courierCharges;
             let finalCodCharge = 0;
             let courierMarkup = 0;

@@ -61,6 +61,12 @@ frontend:
         - echo "SHIPPING_AGGREGATOR_EMAIL=$SHIPPING_AGGREGATOR_EMAIL" >> .env.production
         - echo "SHIPPING_AGGREGATOR_PASSWORD=$SHIPPING_AGGREGATOR_PASSWORD" >> .env.production
         - echo "SHIPPING_AGGREGATOR_WAREHOUSE_ID=$SHIPPING_AGGREGATOR_WAREHOUSE_ID" >> .env.production
+
+        - echo "DELHIVERY_MODE=$DELHIVERY_MODE" >> .env.production
+        - echo "DELHIVERY_TOKEN_EXPRESS_500G=$DELHIVERY_TOKEN_EXPRESS_500G" >> .env.production
+        - echo "DELHIVERY_TOKEN_SURFACE_500G=$DELHIVERY_TOKEN_SURFACE_500G" >> .env.production
+        - echo "DELHIVERY_TOKEN_SURFACE_2KG=$DELHIVERY_TOKEN_SURFACE_2KG" >> .env.production
+        - echo "DELHIVERY_TOKEN_SURFACE_5KG=$DELHIVERY_TOKEN_SURFACE_5KG" >> .env.production
         # --- Continue with prisma generate ---
         - npx prisma generate
     build:
