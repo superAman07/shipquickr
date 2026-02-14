@@ -40,16 +40,6 @@ export class DelhiveryClient {
         return config.tokens.surface5kg;
     }
 
-    /**
-     * Checks serviceability. 
-     * NOTE: Delhivery API generally returns availability, NOT price. 
-     * You likely need a "Rate Card" logic here to calculate cost if the API doesn't return `total_amount`.
-     */
-    /**
-     * Checks serviceability.
-     * API: /c/api/pin-codes/json/
-     * Returns: Serviceability + Calculated Rate (Placeholder Logic)
-     */
     public async fetchRate(
         pickupPin: string,
         destPin: string,
@@ -60,53 +50,61 @@ export class DelhiveryClient {
     ) {
         const token = this.getToken(mode, weightKg);
         if (!token) return null;
-
         try {
             const response = await axios.get(`${BASE_URL}/c/api/pin-codes/json/`, {
                 headers: { Authorization: `Token ${token}` },
                 params: { filter_codes: destPin }
             });
-
-            console.log("Delhivery Rate Raw Response:", JSON.stringify(response.data, null, 2));
-
             const deliveryCodes = response.data.delivery_codes;
-
-            // Logic: Empty list = NSZ (Non-Serviceable Zone)
             if (!deliveryCodes || !Array.isArray(deliveryCodes) || deliveryCodes.length === 0) {
                 return null;
             }
             const firstEntry = deliveryCodes[0];
-
             const serviceData = firstEntry ? Object.values(firstEntry)[0] as any : null;
-
             if (!serviceData) return null;
-
-            // Check for Embargo (Temporary NSZ)
-            // "In the response, remark as 'Embargo' indicates temporary NSZ"
             if (serviceData.remark && serviceData.remark.toLowerCase().includes("embargo")) {
                 return null;
             }
-
-            // Check Payment Mode Availability
-            // Usually fields are "cod": "Y" / "N" and "pre_paid": "Y" / "N"
             const isCod = paymentMode === "COD";
             const canCod = serviceData.cod === "Y" || serviceData.cod === "y";
             const canPrepaid = serviceData.pre_paid === "Y" || serviceData.pre_paid === "y";
-
             if (isCod && !canCod) return null;
             if (!isCod && !canPrepaid) return null;
-
-            // --- PRICE CALCULATION (PLACEHOLDER) ---
-            // TODO: Replace this with actual Rate Card logic via Excel/DB lookup
             let baseRate = mode === "Express" ? 80 : 40;
             if (weightKg > 0.5) {
                 const extraWeight = weightKg - 0.5;
-                const slabs = Math.ceil(extraWeight * 2); // 500g slabs
+                const slabs = Math.ceil(extraWeight * 2);
                 baseRate += slabs * (mode === "Express" ? 50 : 30);
             }
-
-            const codCharge = isCod ? 50 : 0; // Standard industry COD charge
-
+            const codCharge = isCod ? 50 : 0;
+            let expectedDelivery = "3-5 Days";
+            try {
+                const tatResponse = await axios.get(`${BASE_URL}/api/dc/expected_tat`, {
+                    headers: { Authorization: `Token ${token}` },
+                    params: {
+                        origin_pin: pickupPin,
+                        destination_pin: destPin,
+                        mot: mode === "Express" ? "E" : "S",
+                        pdt: "B2C"
+                    }
+                });
+                const responseBody = tatResponse.data;
+                let days = null;
+                if (responseBody?.data?.tat) {
+                    days = responseBody.data.tat;
+                }
+                else if (responseBody?.tat) {
+                    days = responseBody.tat;
+                }
+                
+                if (days) {
+                   expectedDelivery = `${days} Days`;
+                }
+            } catch (tatError) {
+                if (pickupPin.substring(0, 3) === destPin.substring(0, 3)) expectedDelivery = "1-2 Days";
+                else if (pickupPin.substring(0, 2) === destPin.substring(0, 2)) expectedDelivery = "2-3 Days";
+                else expectedDelivery = mode === "Express" ? "3-4 Days" : "4-6 Days";
+            }
             return {
                 courierName: `Delhivery ${mode}`,
                 serviceType: mode,
@@ -115,11 +113,10 @@ export class DelhiveryClient {
                 codCharges: codCharge,
                 totalPrice: baseRate + codCharge,
                 courierPartnerId: 999, // Internal ID
-                expectedDelivery: "3-5 Days",
+                expectedDelivery: expectedDelivery,
                 tokenUsed: token,
-                image: "https://upload.wikimedia.org/wikipedia/commons/2/23/Delhivery_Logo_(2019).png" // Add logo for UI
+                image: "https://upload.wikimedia.org/wikipedia/commons/2/23/Delhivery_Logo_(2019).png"
             };
-
         } catch (error: any) {
             console.error("Delhivery Rate Error Details:", error.response?.data || error.message);
             return null;
