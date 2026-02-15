@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 // Your DB Statuses
 type OrderStatus =
@@ -33,7 +34,7 @@ function mapAggregatorStatusToStandard(status?: string): string | null {
   if (s.includes("rto")) return "rto_intransit";
   if (s.includes("undelivered") || s.includes("failed")) return "undelivered";
   if (s.includes("lost") || s.includes("damaged")) return "lost_shipment";
-  
+
   return null; // Keep current status if no match
 }
 
@@ -58,8 +59,23 @@ export async function GET(req: NextRequest) {
       orders.map(async (order) => {
         if (!order.awbNumber) return;
 
-        const trackingData = await shippingAggregatorClient.trackOrder(order.awbNumber);
-        
+        let trackingData;
+
+        if (order.courierName?.toLowerCase().includes("delhivery")) {
+          // Direct Delhivery Tracking
+          const delhiveryResult = await delhiveryClient.trackOrder(order.awbNumber);
+          if (delhiveryResult.success) {
+            trackingData = {
+              status: delhiveryResult.currentStatus,
+              description: delhiveryResult.scans?.[0]?.remark || `Status: ${delhiveryResult.currentStatus}`,
+              // Add other fields if needed for compatibility
+            };
+          }
+        } else {
+          // Default / Aggregator Tracking
+          trackingData = await shippingAggregatorClient.trackOrder(order.awbNumber);
+        }
+
         if (trackingData) {
           const normalizedStatus = mapAggregatorStatusToStandard(trackingData.status);
 
@@ -97,9 +113,9 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error: any) {
-console.error("Cron job error:", error);
-return NextResponse.json({ error: error.message }, { status: 500 });
-}
+    console.error("Cron job error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
 
