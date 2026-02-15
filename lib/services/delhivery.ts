@@ -96,9 +96,9 @@ export class DelhiveryClient {
                 else if (responseBody?.tat) {
                     days = responseBody.tat;
                 }
-                
+
                 if (days) {
-                   expectedDelivery = `${days} Days`;
+                    expectedDelivery = `${days} Days`;
                 }
             } catch (tatError) {
                 if (pickupPin.substring(0, 3) === destPin.substring(0, 3)) expectedDelivery = "1-2 Days";
@@ -123,10 +123,10 @@ export class DelhiveryClient {
         }
     }
 
-     public async createOrder(order: any, mode: "Express" | "Surface" = "Surface") {
+    public async createOrder(order: any, mode: "Express" | "Surface" = "Surface") {
         const weightKg = parseFloat(order.physicalWeight) || 0.5;
         const token = this.getToken(mode, weightKg);
-        
+
         if (!token) {
             console.error("Delhivery CreateOrder: No token found for mode:", mode, "weight:", weightKg);
             return null;
@@ -136,66 +136,62 @@ export class DelhiveryClient {
         const codAmount = paymentMode === "COD" ? order.codAmount : 0;
         // 2. Prepare Payload
         // Note: 'pickup_location.name' must match your Registered Warehouse Name in Delhivery.
-        // If you haven't registered one, this might fail. You can create one via API too.
-        const warehouseName = order.warehouse?.name || "Main Warehouse"; 
-        const payload = {
-            format: "json",
-            data: JSON.stringify({
-                pickup_location: {
-                    name: warehouseName, // CRITICAL: This exact name must exist in Delhivery Dashboard
-                    add: order.warehouse?.address,
-                    city: order.warehouse?.city,
-                    pin_code: order.warehouse?.pincode,
+        const warehouseName = order.warehouse?.name || "Main Warehouse";
+
+        const dataObject = {
+            pickup_location: {
+                name: warehouseName,
+                add: order.warehouse?.address,
+                city: order.warehouse?.city,
+                pin_code: order.warehouse?.pincode,
+                country: "India",
+                phone: order.warehouse?.phone
+            },
+            shipments: [
+                {
+                    name: order.customerName,
+                    add: order.address,
+                    pin: order.pincode,
+                    city: order.city,
+                    state: order.state,
                     country: "India",
-                    phone: order.warehouse?.phone
-                },
-                shipments: [
-                    {
-                        name: order.customerName,
-                        add: order.address,
-                        pin: order.pincode,
-                        city: order.city,
-                        state: order.state,
-                        country: "India",
-                        phone: order.mobile,
-                        order: order.orderId,
-                        payment_mode: paymentMode,
-                        return_pin: order.warehouse?.pincode,
-                        return_city: order.warehouse?.city,
-                        return_phone: order.warehouse?.phone,
-                        return_add: order.warehouse?.address,
-                        return_state: order.warehouse?.state,
-                        return_country: "India",
-                        products_desc: order.items?.map((i: any) => i.productName).join(", ") || "General",
-                        hsn_code: "", // Add if available
-                        cod_amount: codAmount,
-                        order_date: new Date().toISOString(),
-                        total_amount: order.totalAmount,
-                        seller_add: order.warehouse?.address,
-                        seller_name: order.warehouse?.name,
-                        seller_inv: "",
-                        quantity: order.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || "1",
-                        waybill: "", // Leave empty for auto-generation
-                        shipment_width: order.breadth || "10",
-                        shipment_height: order.height || "10",
-                        shipment_length: order.length || "10",
-                        weight: (weightKg * 1000).toString(), // Grams
-                        shipping_mode: mode
-                    }
-                ]
-            })
+                    phone: order.mobile,
+                    order: order.orderId,
+                    payment_mode: paymentMode,
+                    return_pin: order.warehouse?.pincode,
+                    return_city: order.warehouse?.city,
+                    return_phone: order.warehouse?.phone,
+                    return_add: order.warehouse?.address,
+                    return_state: order.warehouse?.state,
+                    return_country: "India",
+                    products_desc: order.items?.map((i: any) => i.productName).join(", ") || "General",
+                    hsn_code: "",
+                    cod_amount: codAmount,
+                    order_date: new Date().toISOString(),
+                    total_amount: order.totalAmount,
+                    seller_add: order.warehouse?.address,
+                    seller_name: order.warehouse?.name,
+                    seller_inv: "",
+                    quantity: order.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || "1",
+                    waybill: "",
+                    shipment_width: order.breadth || "10",
+                    shipment_height: order.height || "10",
+                    shipment_length: order.length || "10",
+                    weight: (weightKg * 1000).toString(),
+                    shipping_mode: mode
+                }
+            ]
         };
+
+        const payload = `format=json&data=${JSON.stringify(dataObject)}`;
+
         try {
-            console.log("Delhivery CreateOrder Payload:", JSON.stringify(payload, null, 2));
-            // Note: The API expects form-data or JSON with 'format=json&data={...}' string structure in some versions.
-            // But standard JSON body works for '/api/cmu/create.json' usually.
-            // The doc you shared uses `data: 'format=json&data=...'`. 
-            // Let's try the standard JSON object first as per modern standards.
-            
+            console.log("Delhivery CreateOrder Payload (String):", payload);
+
             const response = await axios.post(`${BASE_URL}/api/cmu/create.json`, payload, {
-                headers: { 
+                headers: {
                     Authorization: `Token ${token}`,
-                    "Content-Type": "application/json"
+                    // "Content-Type": "application/json" // Not needed for raw string/urlencoded
                 }
             });
             console.log("Delhivery CreateOrder Response:", JSON.stringify(response.data, null, 2));
@@ -204,8 +200,8 @@ export class DelhiveryClient {
             if (data && data.packages && data.packages.length > 0) {
                 const pkg = data.packages[0];
                 if (pkg.status === "Fail") {
-                     console.error("Delhivery Order Creation Failed:", pkg.remarks);
-                     return null;
+                    console.error("Delhivery Order Creation Failed:", pkg.remarks);
+                    return null;
                 }
                 return {
                     waybill: pkg.waybill,
