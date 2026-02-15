@@ -283,6 +283,48 @@ export class DelhiveryClient {
              return { success: false, message: "Failed to generate label" };
         }
     }
+    public async trackOrder(waybill: string) {
+        try {
+            const token = config.tokens.surface500g; 
+            
+            console.log("Tracking Delhivery Order:", waybill);
+
+            const response = await axios.get(`${BASE_URL}/api/v1/packages/json/`, {
+                 headers: { 
+                    Authorization: `Token ${token}`,
+                    "Content-Type": "application/json"
+                },
+                params: {
+                    waybill: waybill,
+                    verbose: "0", 
+                }
+            });
+
+            const data = response.data;
+            if (data && data.ShipmentData && data.ShipmentData.length > 0) {
+                 const shipment = data.ShipmentData[0];
+                 const scans = shipment.Scans?.map((scan: any) => ({
+                     status: scan.ScanDetail.Scan,
+                     location: scan.ScanDetail.ScannedLocation,
+                     timestamp: scan.ScanDetail.ScanDateTime,
+                     remark: scan.ScanDetail.Instructions || ""
+                 })) || [];
+
+                 return {
+                     success: true,
+                     currentStatus: shipment.Shipment.Status.Status,
+                     scans: scans,
+                     expectedDelivery: shipment.Shipment.ExpectedDeliveryDate
+                 };
+            }
+            
+            return { success: false, message: "No tracking data found" };
+
+        } catch (error: any) {
+             console.error("Delhivery Tracking Error:", error.response?.data || error.message);
+             return { success: false, message: "Failed to track order" };
+        }
+    }
 }
 
 export const delhiveryClient = new DelhiveryClient();
