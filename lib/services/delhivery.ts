@@ -245,6 +245,44 @@ export class DelhiveryClient {
              return { success: false, message: error.response?.data?.error || "Cancellation API failed" };
         }
     }
+    public async generateLabel(waybill: string) {
+        try {
+            const token = config.tokens.surface500g; 
+            
+            console.log("Generating Delhivery Label for:", waybill);
+
+            const response = await axios.get(`${BASE_URL}/api/p/packing_slip`, {
+                 headers: { 
+                    Authorization: `Token ${token}`,
+                    "Content-Type": "application/json"
+                },
+                params: {
+                    wbns: waybill,
+                    pdf: "true",
+                    pdf_size: "A4" 
+                }
+            });
+
+            console.log("Delhivery Label Response:", response.data);
+            
+            const data = response.data;
+            let pdfUrl = "";
+
+            if (data && data.packages && data.packages.length > 0) {
+                 pdfUrl = data.packages[0].pdf_download_link || "";
+            }
+            
+            if (pdfUrl) {
+                return { success: true, url: pdfUrl };
+            }
+
+            return { success: false, message: "Label URL not found in response" };
+
+        } catch (error: any) {
+             console.error("Delhivery Label Error:", error.response?.data || error.message);
+             return { success: false, message: "Failed to generate label" };
+        }
+    }
 }
 
 export const delhiveryClient = new DelhiveryClient();
