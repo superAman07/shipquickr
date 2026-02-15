@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 interface TokenDetailsType {
   userId: number;
@@ -59,34 +60,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Order status is already '${order.status}'. Cannot process again.` }, { status: 400 });
     }
 
-    const warehouseId = process.env.SHIPPING_AGGREGATOR_WAREHOUSE_ID;
-    if (!warehouseId) {
-        console.error("Env var SHIPPING_AGGREGATOR_WAREHOUSE_ID is missing.");
-        return NextResponse.json({ error: "Server configuration error: Warehouse ID missing." }, { status: 500 });
+    let actualAwbNumber = "";
+    let finalCourierName = selectedCourier.name;
+    // A. Check if user selected Delhivery Direct
+    if (selectedCourier.name.toLowerCase().includes("delhivery")) {
+        console.log(`Processing Order ${orderId} via Delhivery Direct integration...`);
+        
+        // Determine Mode (Express/Surface)
+        // Check if rate calculator marked it as express or user chose express
+        const mode = selectedCourier.name.toLowerCase().includes("express") ? "Express" : "Surface";
+        
+        const bookingResult = await delhiveryClient.createOrder(order, mode);
+        
+        if (!bookingResult || !bookingResult.waybill) {
+             return NextResponse.json({ error: "Failed to book order with Delhivery Direct. Please check address serviceability." }, { status: 502 });
+        }
+        
+        actualAwbNumber = bookingResult.waybill;
+        finalCourierName = "Delhivery " + mode;
+        console.log("Delhivery Direct Booking Success. AWB:", actualAwbNumber);
+    } 
+    else {
+        const warehouseId = process.env.SHIPPING_AGGREGATOR_WAREHOUSE_ID;
+        if (!warehouseId) {
+            console.error("Env var SHIPPING_AGGREGATOR_WAREHOUSE_ID is missing.");
+            return NextResponse.json({ error: "Server configuration error: Warehouse ID missing." }, { status: 500 });
+        }
+        const aggregatorOrderId = await shippingAggregatorClient.pushOrder(order, warehouseId);
+        
+        if (!aggregatorOrderId) {
+            return NextResponse.json({ error: "Failed to push order to shipping provider." }, { status: 502 });
+        }
+        const courierPartnerId = selectedCourier.courierPartnerId;
+        if (!courierPartnerId) {
+             return NextResponse.json({ error: "Invalid Courier ID. Refresh rates." }, { status: 400 });
+        }
+        const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId as string, courierPartnerId);
+        
+        if (!assignResult.success) {
+            return NextResponse.json({ error: "Failed to assign courier. Pincode might not be serviceable." }, { status: 502 });
+        }
+        actualAwbNumber = assignResult.awb || order.orderId; 
+        finalCourierName = assignResult.courierName || selectedCourier.name;
     }
-
-    // --- FIXED: Only ONE call to pushOrder ---
-    const aggregatorOrderId = await shippingAggregatorClient.pushOrder(order, warehouseId);
-    
-    if (!aggregatorOrderId) {
-        return NextResponse.json({ error: "Failed to push order to shipping provider." }, { status: 502 });
-    }
-
-    const courierPartnerId = selectedCourier.courierPartnerId;
-    if (!courierPartnerId) {
-         return NextResponse.json({ error: "Invalid Courier ID. Please refresh rates and try again." }, { status: 400 });
-    }
-
-    const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId as string, courierPartnerId);
-    
-    if (!assignResult.success) {
-        // Note: The error "Pincode not serviceable" comes from here. 
-        // It means the courier rejected the shipment for this specific route.
-        return NextResponse.json({ error: "Failed to assign courier. The courier may not service this pincode pair." }, { status: 502 });
-    }
-
-    const actualAwbNumber = assignResult.awb || order.orderId; 
-    const courierName = assignResult.courierName || selectedCourier.name;
+    const courierName = finalCourierName;
 
     const dbTransactionResult = await prisma.$transaction(async (tx) => {
       const finalShippingCost = selectedCourier.totalPrice; 

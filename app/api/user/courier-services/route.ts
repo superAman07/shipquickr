@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,18 +61,46 @@ export async function POST(req: NextRequest) {
     const adminCodRate = adminRates?.codChargesAmount ?? 0;
     const adminCodType = adminRates?.codChargesType ?? "fixed";
 
-    // 2. Fetch Rates from Aggregator
-    const rawRates = await shippingAggregatorClient.fetchRatesStandard(
-        body.pickupPincode,
-        body.destinationPincode,
-        cw,
-        dimensions,
-        body.paymentMode,
-        declaredValue,
-        codAmount
-    );
+    // 2. Fetch Rates from Aggregator AND Delhivery (Surface & Express)
+    // We use Promise.allSettled to ensure that if one fails (e.g. Aggregator), the others still work.
+    const [aggregatorResult, delhiverySurfaceResult, delhiveryExpressResult] = await Promise.allSettled([
+        shippingAggregatorClient.fetchRatesStandard(
+            body.pickupPincode,
+            body.destinationPincode,
+            cw,
+            dimensions,
+            body.paymentMode,
+            declaredValue,
+            codAmount
+        ),
+        delhiveryClient.fetchRate(
+            String(body.pickupPincode),
+            String(body.destinationPincode),
+            cw,
+            "Surface", 
+            body.paymentMode,
+            declaredValue
+        ),
+        delhiveryClient.fetchRate(
+            String(body.pickupPincode),
+            String(body.destinationPincode),
+            cw,
+            "Express", 
+            body.paymentMode,
+            declaredValue
+        )
+    ]);
 
-    if (!rawRates || rawRates.length === 0) {
+    // Extract successful results
+    const rawRates = aggregatorResult.status === "fulfilled" ? aggregatorResult.value || [] : [];
+    const delhiverySurface = delhiverySurfaceResult.status === "fulfilled" ? delhiverySurfaceResult.value : null;
+    const delhiveryExpress = delhiveryExpressResult.status === "fulfilled" ? delhiveryExpressResult.value : null;
+
+    // Combine all rates
+    if (delhiverySurface) rawRates.push(delhiverySurface);
+    if (delhiveryExpress) rawRates.push(delhiveryExpress);
+
+    if (rawRates.length === 0) {
       return NextResponse.json(
         { error: "No shipping rates found for the given details." },
         { status: 404 }
