@@ -215,6 +215,36 @@ export class DelhiveryClient {
             return null;
         }
     }
+    public async cancelOrder(waybill: string) {
+        try {
+            const token = config.tokens.surface500g; 
+            
+            const payload = {
+                waybill: waybill,
+                cancellation: "true"
+            };
+            
+            console.log("Attempting Delhivery Cancellation:", payload);
+
+            const response = await axios.post(`${BASE_URL}/api/p/edit`, payload, {
+                 headers: { 
+                    Authorization: `Token ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            console.log("Delhivery Cancel Response:", response.data);
+            
+            if (response.data && (response.data.success || response.data.status === "Success")) {
+                return { success: true, message: "Shipment cancelled successfully" };
+            }
+             return { success: false, message: response.data.rmk || "Cancellation failed" };
+
+        } catch (error: any) {
+             console.error("Delhivery Cancel Error:", error.response?.data || error.message);
+             return { success: false, message: error.response?.data?.error || "Cancellation API failed" };
+        }
+    }
 }
 
 export const delhiveryClient = new DelhiveryClient();

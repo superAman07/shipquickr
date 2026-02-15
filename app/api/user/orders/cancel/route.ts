@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 interface TokenDetailsType {
     userId: number;
@@ -43,7 +44,18 @@ export async function POST(req: NextRequest) {
         //     return NextResponse.json({ error: `Cancellation for courier ${order.courierName} is not supported` }, { status: 400 });
         // }
 
-        const cancellationResult = await shippingAggregatorClient.cancelOrder(order.orderId, order.awbNumber);
+        let cancellationResult;
+        if (order.courierName.toLowerCase().includes("delhivery")) {
+            console.log("Cancelling Delhivery Order:", order.awbNumber);
+            const result = await delhiveryClient.cancelOrder(order.awbNumber);
+
+            cancellationResult = {
+                success: result.success || false,
+                message: result.message || "Cancellation request processed"
+            };
+        } else {
+            cancellationResult = await shippingAggregatorClient.cancelOrder(order.orderId, order.awbNumber);
+        }
 
         if (cancellationResult.success) {
             await prisma.$transaction(async (tx) => {
