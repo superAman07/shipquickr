@@ -65,7 +65,7 @@ export async function POST(req:NextRequest) {
             const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
             
             const cookieName = isAdmin ? "adminToken" : "userToken";
-            response.cookies.set(cookieName, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 * 2 });
+            response.cookies.set(cookieName, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 });
             
             return response;
         } 
