@@ -387,7 +387,7 @@ export default function ShipOrderPage() {
                 type="button"
                 onClick={() => setShowConfirmDialog(true)}
                 disabled={!selectedCourier || isShipping}
-                className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors duration-200 flex items-center justify-center shadow-md ${!selectedCourier || isShipping
+                className={`px-6 py-3 rounded-lg font-semibold text-white cursor-pointer transition-colors duration-200 flex items-center justify-center shadow-md ${!selectedCourier || isShipping
                     ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
                     : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
                   }`}
