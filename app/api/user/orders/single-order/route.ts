@@ -41,6 +41,7 @@ export async function POST(req: NextRequest){
         const userId = decoded.userId;
 
         let numericWarehouseId: number | null = null;
+        let actualPickupLocation = data.pickupLocation;
         if (data.warehouseId !== undefined && data.warehouseId !== null) {
             numericWarehouseId = parseInt(String(data.warehouseId));
             if (isNaN(numericWarehouseId)) {
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest){
             if (!warehouseExists) {
                 return NextResponse.json({ error: "Selected pickup warehouse not found or does not belong to you." }, { status: 404 });
             } 
+            actualPickupLocation = warehouseExists.warehouseName;
         } else {
              return NextResponse.json({ error: "Warehouse ID is required to create an order." }, { status: 400 });
         }
@@ -72,7 +74,7 @@ export async function POST(req: NextRequest){
                   length: parseFloat(data.length) || 0,
                   breadth: parseFloat(data.breadth) || 0,
                   height: parseFloat(data.height) || 0,
-                  pickupLocation: data.pickupLocation,  
+                  pickupLocation: actualPickupLocation,  
                   warehouseId: numericWarehouseId,
                   codAmount: data.paymentMode === "COD" ? (parseFloat(data.codAmount) || 0) : null,
                   ewaybill: data.ewaybill || null,
