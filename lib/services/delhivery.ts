@@ -135,17 +135,16 @@ export class DelhiveryClient {
         const paymentMode = order.paymentMode === "COD" ? "COD" : "Prepaid";
         const codAmount = paymentMode === "COD" ? order.codAmount : 0;
         // 2. Prepare Payload
-        // Note: 'pickup_location.name' must match your Registered Warehouse Name in Delhivery.
-        const warehouseName = order.warehouse?.name || "Main Warehouse";
+        const warehouseName = order.warehouse?.warehouseName || order.pickupLocation;
 
         const dataObject = {
             pickup_location: {
                 name: warehouseName,
-                add: order.warehouse?.address,
+                add: order.warehouse?.address1,
                 city: order.warehouse?.city,
                 pin_code: order.warehouse?.pincode,
                 country: "India",
-                phone: order.warehouse?.phone
+                phone: order.warehouse?.mobile
             },
             shipments: [
                 {
@@ -160,8 +159,8 @@ export class DelhiveryClient {
                     payment_mode: paymentMode,
                     return_pin: order.warehouse?.pincode,
                     return_city: order.warehouse?.city,
-                    return_phone: order.warehouse?.phone,
-                    return_add: order.warehouse?.address,
+                    return_phone: order.warehouse?.mobile,
+                    return_add: order.warehouse?.address1,
                     return_state: order.warehouse?.state,
                     return_country: "India",
                     products_desc: order.items?.map((i: any) => i.productName).join(", ") || "General",
@@ -169,8 +168,8 @@ export class DelhiveryClient {
                     cod_amount: codAmount,
                     order_date: new Date().toISOString(),
                     total_amount: order.totalAmount,
-                    seller_add: order.warehouse?.address,
-                    seller_name: order.warehouse?.name,
+                    seller_add: order.warehouse?.address1,
+                    seller_name: warehouseName,
                     seller_inv: "",
                     quantity: order.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || "1",
                     waybill: "",
