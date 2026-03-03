@@ -216,25 +216,22 @@ export class DelhiveryClient {
     }
     public async cancelOrder(waybill: string) {
         try {
-            const token = config.tokens.surface500g; 
+            const token = config.tokens.surface2kg;
             
-            const payload = {
-                waybill: waybill,
-                cancellation: "true"
-            };
+            const payload = `waybill=${waybill}&cancellation=true`;
             
             console.log("Attempting Delhivery Cancellation:", payload);
 
             const response = await axios.post(`${BASE_URL}/api/p/edit`, payload, {
                  headers: { 
                     Authorization: `Token ${token}`,
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/x-www-form-urlencoded"
                 }
             });
 
             console.log("Delhivery Cancel Response:", response.data);
             
-            if (response.data && (response.data.success || response.data.status === "Success")) {
+            if (response.data && (response.data.success || response.data.status === true || response.data.status === "Success")) {
                 return { success: true, message: "Shipment cancelled successfully" };
             }
              return { success: false, message: response.data.rmk || "Cancellation failed" };
@@ -246,7 +243,7 @@ export class DelhiveryClient {
     }
     public async generateLabel(waybill: string) {
         try {
-            const token = config.tokens.surface500g; 
+            const token = config.tokens.surface2kg;
             
             console.log("Generating Delhivery Label for:", waybill);
 
@@ -284,7 +281,7 @@ export class DelhiveryClient {
     }
     public async trackOrder(waybill: string) {
         try {
-            const token = config.tokens.surface500g; 
+            const token = config.tokens.surface2kg;
             
             console.log("Tracking Delhivery Order:", waybill);
 
