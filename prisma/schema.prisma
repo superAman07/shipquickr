@@ -129,6 +129,9 @@ model Order {
   shippingCost    Float?
   updatedAt       DateTime         @updatedAt
   courierName     String?
+  refundStatus    String?          @default("none")
+  refundAmount    Float?
+  refundDueDate   DateTime?
   remittanceId    Int?
   remittance      Remittance?      @relation(fields: [remittanceId], references: [id])
   user            User             @relation(fields: [userId], references: [id])

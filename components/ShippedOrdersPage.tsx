@@ -66,7 +66,7 @@ const ShippedOrdersPage: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/user/orders/single-order?status=shipped");
+      const response = await axios.get("/api/user/orders/single-order?status=manifested,in_transit,out_for_delivery,undelivered");
       const ordersWithItems = response.data.orders.map((order: any) => ({
         ...order,
         items: order.items || [],
@@ -256,10 +256,6 @@ const ShippedOrdersPage: React.FC = () => {
                           <div className="font-semibold text-gray-800 dark:text-gray-100 break-words">{order.awbNumber || '-'}</div>
                         </div>
                         <div className="col-span-1">
-                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Shipping ID</div>
-                          <div className="font-semibold text-gray-800 dark:text-gray-100">{order.shippingId || '-'}</div>
-                        </div>
-                        <div className="col-span-1">
                           <div className="text-xs font-medium text-gray-500 dark:text-gray-400">Customer</div>
                           <div className="font-semibold text-gray-800 dark:text-gray-100">{order.customerName}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{order.mobile}</div>
@@ -374,7 +370,6 @@ const ShippedOrdersPage: React.FC = () => {
                     <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Address</th>
                     <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Pickup Location</th>
                     <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Status</th>
-                    <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Shipping Id</th>
                     <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">AWB Number</th>
                     <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Label</th>
                     <th className="px-3 py-2 text-center text-xs font-bold uppercase tracking-wider">Actions</th>
@@ -433,9 +428,6 @@ const ShippedOrdersPage: React.FC = () => {
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                           {order.status === "unshipped" ? "unshipped" : order.status}
                         </span>
-                      </td>
-                      <td className="px-3 py-2  text-sm">
-                        {order.shippingId || "-"}
                       </td>
                       <td className="px-3 py-2  text-sm">
                         {order.awbNumber || "-"}

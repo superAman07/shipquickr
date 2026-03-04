@@ -167,7 +167,7 @@ export class DelhiveryClient {
                     hsn_code: "",
                     cod_amount: codAmount,
                     order_date: new Date().toISOString(),
-                    total_amount: order.totalAmount,
+                    total_amount: order.items?.reduce((acc: number, item: any) => acc + (item.orderValue * item.quantity), 0) || 0,
                     seller_add: order.warehouse?.address1,
                     seller_name: warehouseName,
                     seller_inv: "",

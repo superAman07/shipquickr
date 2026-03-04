@@ -459,6 +459,17 @@ const ReportsPage: React.FC = () => {
                             >
                               <Copy className="h-5 w-5" />
                             </button>
+                            {order.labelUrl && (
+                              <a
+                                href={order.labelUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-full border border-transparent text-green-700 hover:bg-green-100 hover:border-green-400 transition dark:text-green-300 dark:hover:bg-green-900 dark:hover:border-green-700"
+                                title="Download Label"
+                              >
+                                <DownloadCloud className="h-5 w-5" />
+                              </a>
+                            )}
                           </div>
                         </td>
                       </tr>

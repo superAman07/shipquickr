@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
 
     let actualAwbNumber = "";
     let finalCourierName = selectedCourier.name;
+    let labelUrl = "";
     // A. Check if user selected Delhivery Direct
     if (selectedCourier.name.toLowerCase().includes("delhivery")) {
         console.log(`Processing Order ${orderId} via Delhivery Direct integration...`);
@@ -79,6 +80,11 @@ export async function POST(req: NextRequest) {
         actualAwbNumber = bookingResult.waybill;
         finalCourierName = "Delhivery " + mode;
         console.log("Delhivery Direct Booking Success. AWB:", actualAwbNumber);
+        const labelResult = await delhiveryClient.generateLabel(actualAwbNumber);
+        if (labelResult.success && labelResult.url) {
+            labelUrl = labelResult.url;
+            console.log("Delhivery Label URL:", labelUrl);
+        }
     } 
     else {
         const warehouseId = process.env.SHIPPING_AGGREGATOR_WAREHOUSE_ID;
@@ -140,6 +146,7 @@ export async function POST(req: NextRequest) {
         data: {
           status: "manifested",
           awbNumber: actualAwbNumber,
+          labelUrl: labelUrl || null,
           courierName: courierName,
           shippingCost: finalShippingCost,
           billableWeight: selectedCourier.weight,

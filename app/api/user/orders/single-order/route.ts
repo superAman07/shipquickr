@@ -131,12 +131,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
     }
 
-    const status = req.nextUrl.searchParams.get("status") as any; 
+    const statusParam = req.nextUrl.searchParams.get("status");
+    const statuses = statusParam ? statusParam.split(",") : null;
 
     const orders = await prisma.order.findMany({
       where: {
         userId: decoded.userId,
-        ...(status ? { status: { equals: status } } : {}),
+        ...(statuses && statuses.length > 0 ? { status: { in: statuses as any[] } } : {}),
       },
       orderBy: { createdAt: "desc" },
       include: {

@@ -69,19 +69,22 @@ export async function POST(req: NextRequest) {
                 });
 
                 if (order.shippingCost && order.shippingCost > 0) {
-                    await tx.wallet.update({
-                        where: { userId: userId },
-                        data: { balance: { increment: order.shippingCost } },
+                    await tx.order.update({
+                        where: { id: order.id },
+                        data: {
+                            refundStatus: "pending",
+                            refundAmount: order.shippingCost,
+                            refundDueDate: new Date(Date.now() + (parseInt(process.env.REFUND_DELAY_MS || "604800000"))),
+                        }
                     });
-
                     await tx.transaction.create({
                         data: {
                             userId: userId,
                             amount: order.shippingCost,
                             type: "credit",
-                            status: "Success",
+                            status: "Pending",
                             orderId: order.id,
-                            remarks: "Refund for cancelled shipment"
+                            remarks: `Refund of ₹${order.shippingCost} pending — will be credited in 5-7 business days`
                         }
                     });
                 }
