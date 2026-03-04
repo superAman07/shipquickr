@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { prisma } from "@/lib/prisma";
 import { ecomExpressClient } from "@/lib/services/ecom-express";
 import { xpressbeesClient } from "@/lib/services/xpressbees";
+import { delhiveryClient } from "@/lib/services/delhivery";
 
 interface TokenDetailsType {
   userId: number;
@@ -44,13 +45,21 @@ export async function POST(req: NextRequest) {
     let trackingData: TrackingResponse | null = null;
     let normalizedStatus = null;
 
-    // Get tracking data from courier
     if (courierName.toLowerCase().includes("ecom express")) {
       trackingData = await ecomExpressClient.trackShipment(awbNumber) as TrackingResponse;
       normalizedStatus = mapEcomStatusToStandard(trackingData?.status);
     } else if (courierName.toLowerCase().includes("xpressbees")) {
       trackingData = await xpressbeesClient.trackShipment(awbNumber);
       normalizedStatus = mapXpressbeesStatusToStandard(trackingData?.status);
+    } else if (courierName.toLowerCase().includes("delhivery")) {
+      const result = await delhiveryClient.trackOrder(awbNumber);
+      if (result.success) {
+        trackingData = {
+          status: result.currentStatus,
+          description: result.scans?.[0]?.remark || `Status: ${result.currentStatus}`,
+        };
+        normalizedStatus = mapDelhiveryStatusToStandard(result.currentStatus);
+      }
     } else {
       return NextResponse.json({ error: "Unsupported courier for tracking" }, { status: 400 });
     }
@@ -59,14 +68,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch tracking data" }, { status: 503 });
     }
 
-    // Update order status in database if we got a valid normalized status
     const order = await prisma.order.findFirst({
       where: { awbNumber: awbNumber }
     });
      
     if (normalizedStatus && order && normalizedStatus !== order.status) {
       await prisma.$transaction([
-        // Update the main order status
         prisma.order.update({
           where: { id: order.id },
           data: {
@@ -75,7 +82,6 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Create a tracking history entry
         prisma.orderTracking.create({
           data: {
             orderId: order.id,
@@ -99,7 +105,7 @@ export async function POST(req: NextRequest) {
       message: normalizedStatus ? "Order status updated successfully" : "Tracking information retrieved",
       tracking: trackingData,
       normalizedStatus: normalizedStatus,
-      previousStatus: order?.status, // Add this to show what status changed from
+      previousStatus: order?.status,
       orderFound: !!order
     });
 
@@ -112,7 +118,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Map courier-specific statuses to your standard statuses
 function mapEcomStatusToStandard(courierStatus?: string): string | null {
   if (!courierStatus) return null;
 
@@ -125,7 +130,7 @@ function mapEcomStatusToStandard(courierStatus?: string): string | null {
   if (statusLower.includes("undelivered")) return "undelivered";
   if (statusLower.includes("lost") || statusLower.includes("damaged")) return "lost_shipment";
 
-  return null; // No mapping found, keep existing status
+  return null;
 }
 
 function mapXpressbeesStatusToStandard(courierStatus?: string): string | null {
@@ -133,14 +138,12 @@ function mapXpressbeesStatusToStandard(courierStatus?: string): string | null {
 
   const statusLower = courierStatus.toLowerCase();
 
-  // Direct matches
   if (statusLower === "delivered" || statusLower === "dlvd")
     return "delivered";
 
   if (statusLower === "out for delivery" || statusLower === "ofd")
     return "out_for_delivery";
 
-  // In-transit related statuses  
   if (statusLower.includes("in transit") ||
     statusLower === "intransit" ||
     statusLower === "it" ||
@@ -150,7 +153,6 @@ function mapXpressbeesStatusToStandard(courierStatus?: string): string | null {
     statusLower === "pud")
     return "in_transit";
 
-  // RTO statuses
   if (statusLower.includes("rto delivered") || statusLower === "rtod")
     return "rto_delivered";
 
@@ -158,24 +160,34 @@ function mapXpressbeesStatusToStandard(courierStatus?: string): string | null {
     (statusLower.includes("initiated") || statusLower.includes("transit") || statusLower.includes("pending")))
     return "rto_intransit";
 
-  // Failed delivery attempts
   if (statusLower.includes("undelivered") ||
     statusLower.includes("failed delivery") ||
     statusLower === "df" ||
     statusLower === "delivery failed")
     return "undelivered";
 
-  // Lost or damaged
   if (statusLower.includes("lost") ||
     statusLower.includes("damaged") ||
     statusLower.includes("destroyed"))
     return "lost_shipment";
 
-  // Pending pickup
   if (statusLower.includes("pending pickup") ||
     statusLower === "pending" ||
     statusLower === "drc")
     return "pending_manifest";
 
-  return null; // No mapping found
+  return null;
+}
+
+function mapDelhiveryStatusToStandard(status?: string): string | null {
+  if (!status) return null;
+  const s = status.toLowerCase();
+  if (s.includes("delivered") && !s.includes("rto") && !s.includes("undelivered")) return "delivered";
+  if (s.includes("out for delivery") || s === "ofd") return "out_for_delivery";
+  if (s.includes("in transit") || s.includes("transit") || s.includes("picked up")) return "in_transit";
+  if (s.includes("rto") && s.includes("delivered")) return "rto_delivered";
+  if (s.includes("rto")) return "rto_intransit";
+  if (s.includes("undelivered") || s.includes("failed")) return "undelivered";
+  if (s.includes("lost") || s.includes("damaged")) return "lost_shipment";
+  return null;
 }

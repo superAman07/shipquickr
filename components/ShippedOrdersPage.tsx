@@ -33,6 +33,7 @@ interface Order {
   physicalWeight?: number | string;
   shippingId?: string;
   awbNumber?: string;
+  courierName?: string;
   labelUrl?: string;
   warehouseId?: number | string;
   warehouse?: {
@@ -53,6 +54,7 @@ const ShippedOrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const itemsPerPage = 10;
 
   const pathname = usePathname();
@@ -106,6 +108,28 @@ const ShippedOrdersPage: React.FC = () => {
         isLoading: false,
         autoClose: 7000,
       });
+    }
+  };
+
+  const handleRefreshStatus = async (order: Order) => {
+    if (!order.awbNumber || !order.courierName) {
+      toast.error("No AWB or courier info available.");
+      return;
+    }
+    setRefreshingId(order.id);
+    try {
+      const res = await axios.post("/api/user/orders/tracking", {
+        awbNumber: order.awbNumber,
+        courierName: order.courierName,
+      });
+      if (res.data.success) {
+        toast.success(res.data.message || "Status refreshed!");
+        fetchOrders();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to refresh status.");
+    } finally {
+      setRefreshingId(null);
     }
   };
 
@@ -458,6 +482,15 @@ const ShippedOrdersPage: React.FC = () => {
                               <DropdownMenuItem onClick={() => handleCancelOrder(order.id)} className="text-orange-600 focus:text-orange-600 dark:text-orange-500 dark:focus:text-orange-500 cursor-pointer">
                                 <XCircle className="mr-2 h-4 w-4" />
                                 <span>Cancel Order</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleRefreshStatus(order)}
+                                className="cursor-pointer"
+                                disabled={refreshingId === order.id}
+                              >
+                                <span className="mr-2">🔄</span>
+                                <span>{refreshingId === order.id ? "Refreshing..." : "Refresh Status"}</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
