@@ -31,6 +31,11 @@ interface Order {
   height?: number | string;
   physicalWeight?: number | string;
   warehouseId?: number | string;
+  awbNumber?: string;
+  shippingCost?: number;
+  refundStatus?: string;
+  refundAmount?: number;
+  refundDueDate?: string;
   warehouse?: {
     warehouseName: string;
     warehouseCode: string;
@@ -123,6 +128,16 @@ const CancelledOrdersPage: React.FC = () => {
     };
     const statusKey = status.toLowerCase() as keyof typeof baseColors;
     return baseColors[statusKey] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+  };
+
+  const getRefundBadge = (order: Order) => {
+    if (order.refundStatus === "processed") {
+      return <div className="mt-1 text-xs font-medium text-green-600 dark:text-green-400">✅ Refund Credited ₹{order.refundAmount}</div>;
+    }
+    if (order.refundStatus === "pending" && order.refundDueDate) {
+      return <div className="mt-1 text-xs font-medium text-yellow-600 dark:text-yellow-400">🕐 Refund by {new Date(order.refundDueDate).toLocaleDateString()}</div>;
+    }
+    return null;
   };
 
   if (loading) {
@@ -356,10 +371,11 @@ const CancelledOrdersPage: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
+                    <td className="px-3 py-2">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                         Cancelled
                       </span>
+                      {getRefundBadge(order)}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-center">
                       <div className="flex justify-center gap-3 md:hidden">
