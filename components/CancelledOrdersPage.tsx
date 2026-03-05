@@ -160,7 +160,7 @@ const CancelledOrdersPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">      <main className="p-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100 overflow-x-hidden">      <main className="p-6">
       <div className="max-w-full mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div className="flex-1 min-w-0">
@@ -217,6 +217,9 @@ const CancelledOrdersPage: React.FC = () => {
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)} ml-2`}>
                         Cancelled
                       </span>
+                      {getRefundBadge(order) && (
+                        <div className="mb-3">{getRefundBadge(order)}</div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3 text-sm">
@@ -371,7 +374,7 @@ const CancelledOrdersPage: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 max-w-[150px] align-top">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(order.status)}`}>
                         Cancelled
                       </span>
