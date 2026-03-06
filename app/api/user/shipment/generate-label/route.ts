@@ -71,26 +71,18 @@ export async function POST(req: NextRequest) {
       console.warn("Xpressbees label generation is not yet implemented.");
       return NextResponse.json({ error: "Xpressbees label generation not implemented." }, { status: 501 });
     } else if (courierName.toLowerCase().includes("delhivery")) {
-      console.log(`Generating Delhivery label for AWB: ${awbNumber}`);
-      const result = await delhiveryClient.generateLabel(awbNumber);
-
-      if (result.success && result.url) {
-        // Need to fetch the PDF content from the URL to upload to S3
-        // Since `labelDataUri` expects base64 or similar to trigger the upload logic,
-        // let's fetch it here and convert to base64.
-        try {
-          const response = await fetch(result.url);
-          if (!response.ok) throw new Error(`Failed to fetch PDF from Delhivery: ${response.statusText}`);
-          const arrayBuffer = await response.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-          labelDataUri = `data:application/pdf;base64,${buffer.toString('base64')}`;
-        } catch (err) {
-          console.error("Error fetching Delhivery Label PDF:", err);
-          return NextResponse.json({ error: "Failed to download label from Delhivery." }, { status: 502 });
+        console.log(`Generating Delhivery label for AWB: ${awbNumber}`);
+        const result = await delhiveryClient.generateLabel(awbNumber);
+        if (result.success && result.url) {
+            // Save Delhivery's direct URL — no S3 needed
+            await prisma.order.update({
+                where: { id: orderId },
+                data: { labelUrl: result.url }
+            });
+            return NextResponse.json({ success: true, labelUrl: result.url, message: "Label URL saved." });
+        } else {
+            return NextResponse.json({ error: result.message || "Failed to generate label." }, { status: 502 });
         }
-      } else {
-        return NextResponse.json({ error: result.message || "Failed to generate label." }, { status: 502 });
-      }
     } else {
       return NextResponse.json({ error: "Unsupported courier for label generation." }, { status: 400 });
     }

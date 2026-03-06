@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import axios from 'axios';
 
 interface TokenDetailsType {
     userId: number;
@@ -28,6 +29,40 @@ export async function POST(req: NextRequest){
                 id: undefined
             }
         })
+        // Register under ALL Delhivery tokens (surface 500g, 2kg, 5kg, express)
+        const allTokens = [
+            process.env.DELHIVERY_TOKEN_SURFACE_500G,
+            process.env.DELHIVERY_TOKEN_SURFACE_2KG,
+            process.env.DELHIVERY_TOKEN_SURFACE_5KG,
+            process.env.DELHIVERY_TOKEN_EXPRESS_500G,
+        ].filter(Boolean);
+
+        for (const token of allTokens) {
+            try {
+                const res = await axios.post(
+                    'https://track.delhivery.com/api/backend/clientwarehouse/create/',
+                    {
+                        name: data.warehouseName,
+                        phone: data.mobile,
+                        address: `${data.address1}${data.address2 ? ', ' + data.address2 : ''}`,
+                        city: data.city,
+                        pin: data.pincode,
+                        state: data.state,
+                        country: 'India',
+                        registered_name: data.warehouseName,
+                        return_address: `${data.address1}${data.address2 ? ', ' + data.address2 : ''}`,
+                        return_pin: data.pincode,
+                        return_city: data.city,
+                        return_state: data.state,
+                        return_country: 'India'
+                    },
+                    { headers: { 'Authorization': `Token ${token}`, 'Accept': 'application/json', 'Content-Type': 'application/json' } }
+                );
+                console.log(`Delhivery warehouse registered (${token!.slice(0,8)}...):`, res.data?.success);
+            } catch (e: any) {
+                console.error(`Delhivery register failed (${token!.slice(0,8)}...):`, e.response?.data || e.message);
+            }
+        }
         return NextResponse.json({ message: "Warehouse added successfully", warehouse }, { status: 201 });
     }catch (error){
         return NextResponse.json({ error: "Failed to create warehouse" }, { status: 500 });  

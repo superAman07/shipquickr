@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -34,6 +35,25 @@ export async function PATCH(req: NextRequest): Promise<Response> {
       where: { id, userId: decoded.userId },
       data,
     });
+
+    const allTokens = [
+        process.env.DELHIVERY_TOKEN_SURFACE_500G,
+        process.env.DELHIVERY_TOKEN_SURFACE_2KG,
+        process.env.DELHIVERY_TOKEN_SURFACE_5KG,
+        process.env.DELHIVERY_TOKEN_EXPRESS_500G,
+    ].filter(Boolean);
+
+    for (const token of allTokens) {
+        try {
+            await axios.post(
+                'https://track.delhivery.com/api/backend/clientwarehouse/edit/',
+                { name: updated.warehouseName, address: `${updated.address1}${updated.address2 ? ', ' + updated.address2 : ''}`, pin: updated.pincode, phone: updated.mobile },
+                { headers: { 'Authorization': `Token ${token}`, 'Accept': 'application/json', 'Content-Type': 'application/json' } }
+            );
+        } catch (e: any) {
+            console.error(`Delhivery update failed (${token!.slice(0,8)}...):`, e.response?.data || e.message);
+        }
+    }
 
     return NextResponse.json({ warehouse: updated });
   } catch (error) {
