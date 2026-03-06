@@ -215,31 +215,33 @@ export class DelhiveryClient {
         }
     }
     public async cancelOrder(waybill: string) {
-        try {
-            const token = config.tokens.surface2kg;
-            
-            const payload = `waybill=${waybill}&cancellation=true`;
-            
-            console.log("Attempting Delhivery Cancellation:", payload);
+        const tokensToTry = [
+            config.tokens.surface500g,
+            config.tokens.surface2kg,
+            config.tokens.surface5kg,
+            config.tokens.express500g,
+        ].filter(Boolean);
 
-            const response = await axios.post(`${BASE_URL}/api/p/edit`, payload, {
-                 headers: { 
-                    Authorization: `Token ${token}`,
-                    "Content-Type": "application/x-www-form-urlencoded"
+        const payload = `waybill=${waybill}&cancellation=true`;
+        console.log("Attempting Delhivery Cancellation:", payload);
+
+        for (const token of tokensToTry) {
+            try {
+                const response = await axios.post(`${BASE_URL}/api/p/edit`, payload, {
+                    headers: { 
+                        Authorization: `Token ${token}`,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                });
+                console.log(`Delhivery Cancel Response (${token.slice(0,8)}...):`, response.data);
+                if (response.data && (response.data.success || response.data.status === true || response.data.status === "Success")) {
+                    return { success: true, message: "Shipment cancelled successfully" };
                 }
-            });
-
-            console.log("Delhivery Cancel Response:", response.data);
-            
-            if (response.data && (response.data.success || response.data.status === true || response.data.status === "Success")) {
-                return { success: true, message: "Shipment cancelled successfully" };
+            } catch (e: any) {
+                console.error(`Cancel failed (${token.slice(0,8)}...):`, e.response?.data || e.message);
             }
-             return { success: false, message: response.data.rmk || "Cancellation failed" };
-
-        } catch (error: any) {
-             console.error("Delhivery Cancel Error:", error.response?.data || error.message);
-             return { success: false, message: error.response?.data?.error || "Cancellation API failed" };
         }
+        return { success: false, message: "Cancellation failed" };
     }
     public async generateLabel(waybill: string) {
         try {
@@ -275,41 +277,40 @@ export class DelhiveryClient {
     }
     public async trackOrder(waybill: string) {
         try {
-            const token = config.tokens.surface2kg;
-            
-            console.log("Tracking Delhivery Order:", waybill);
+            const tokensToTry = [
+            config.tokens.surface500g,
+            config.tokens.surface2kg,
+            config.tokens.surface5kg,
+            config.tokens.express500g,
+        ].filter(Boolean);
 
-            const response = await axios.get(`${BASE_URL}/api/v1/packages/json/`, {
-                 headers: { 
-                    Authorization: `Token ${token}`,
-                    "Content-Type": "application/json"
-                },
-                params: {
-                    waybill: waybill,
-                    verbose: "0", 
+        for (const token of tokensToTry) {
+            try {
+                const response = await axios.get(`${BASE_URL}/api/v1/packages/json/`, {
+                    headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+                    params: { waybill: waybill, verbose: "0" }
+                });
+                const data = response.data;
+                if (data?.ShipmentData?.length > 0) {
+                    const shipment = data.ShipmentData[0];
+                    const scans = shipment.Scans?.map((scan: any) => ({
+                        status: scan.ScanDetail.Scan,
+                        location: scan.ScanDetail.ScannedLocation,
+                        timestamp: scan.ScanDetail.ScanDateTime,
+                        remark: scan.ScanDetail.Instructions || ""
+                    })) || [];
+                    return {
+                        success: true,
+                        currentStatus: shipment.Shipment.Status.Status,
+                        scans,
+                        expectedDelivery: shipment.Shipment.ExpectedDeliveryDate
+                    };
                 }
-            });
-
-            const data = response.data;
-            if (data && data.ShipmentData && data.ShipmentData.length > 0) {
-                 const shipment = data.ShipmentData[0];
-                 const scans = shipment.Scans?.map((scan: any) => ({
-                     status: scan.ScanDetail.Scan,
-                     location: scan.ScanDetail.ScannedLocation,
-                     timestamp: scan.ScanDetail.ScanDateTime,
-                     remark: scan.ScanDetail.Instructions || ""
-                 })) || [];
-
-                 return {
-                     success: true,
-                     currentStatus: shipment.Shipment.Status.Status,
-                     scans: scans,
-                     expectedDelivery: shipment.Shipment.ExpectedDeliveryDate
-                 };
+            } catch (e: any) {
+                console.error(`Track failed (${token.slice(0,8)}...):`, e.response?.data || e.message);
             }
-            
-            return { success: false, message: "No tracking data found" };
-
+        }
+        return { success: false, message: "No tracking data found" };
         } catch (error: any) {
              console.error("Delhivery Tracking Error:", error.response?.data || error.message);
              return { success: false, message: "Failed to track order" };

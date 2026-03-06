@@ -182,6 +182,7 @@ function mapXpressbeesStatusToStandard(courierStatus?: string): string | null {
 function mapDelhiveryStatusToStandard(status?: string): string | null {
   if (!status) return null;
   const s = status.toLowerCase();
+  if (s === "manifested") return "manifested";
   if (s.includes("delivered") && !s.includes("rto") && !s.includes("undelivered")) return "delivered";
   if (s.includes("out for delivery") || s === "ofd") return "out_for_delivery";
   if (s.includes("in transit") || s.includes("transit") || s.includes("picked up")) return "in_transit";

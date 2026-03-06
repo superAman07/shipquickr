@@ -68,7 +68,10 @@ const BulkOrdersPage: React.FC = () => {
     if (!order.awbNumber || !order.courierName) return toast.error("No AWB/courier found.");
     setRefreshingId(order.id);
     try {
-      const res = await axios.get(`/api/user/orders/tracking?awbNumber=${order.awbNumber}&courierName=${order.courierName}`);
+      const res = await axios.post(`/api/user/orders/tracking`, {
+        awbNumber: order.awbNumber,
+        courierName: order.courierName
+      });
       if (res.data.normalizedStatus) {
         setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: res.data.normalizedStatus } : o));
         toast.success(`Status updated: ${res.data.normalizedStatus}`);
