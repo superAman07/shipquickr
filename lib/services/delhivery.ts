@@ -222,26 +222,30 @@ export class DelhiveryClient {
             config.tokens.express500g,
         ].filter(Boolean);
 
-        const payload = `waybill=${waybill}&cancellation=true`;
-        console.log("Attempting Delhivery Cancellation:", payload);
+        console.log("Attempting Delhivery Cancellation for AWB:", waybill);
 
         for (const token of tokensToTry) {
             try {
-                const response = await axios.post(`${BASE_URL}/api/p/edit`, payload, {
-                    headers: { 
-                        Authorization: `Token ${token}`,
-                        "Content-Type": "application/x-www-form-urlencoded"
+                const response = await axios.post(
+                    `${BASE_URL}/api/p/edit`,
+                    { waybill: waybill, cancellation: 'true' },
+                    {
+                        headers: {
+                            Authorization: `Token ${token}`,
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json'
+                        }
                     }
-                });
+                );
                 console.log(`Delhivery Cancel Response (${token.slice(0,8)}...):`, response.data);
-                if (response.data && (response.data.success || response.data.status === true || response.data.status === "Success")) {
+                if (response.data?.success === true) {
                     return { success: true, message: "Shipment cancelled successfully" };
                 }
             } catch (e: any) {
                 console.error(`Cancel failed (${token.slice(0,8)}...):`, e.response?.data || e.message);
             }
         }
-        return { success: false, message: "Cancellation failed" };
+        return { success: false, message: "Cancellation failed on Delhivery" };
     }
     public async generateLabel(waybill: string) {
         try {
