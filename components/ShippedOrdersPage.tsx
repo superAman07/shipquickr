@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, MoreHorizontal, XCircle, Download } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, MoreHorizontal, XCircle, Download, RefreshCw } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -131,6 +131,26 @@ const ShippedOrdersPage: React.FC = () => {
     } finally {
       setRefreshingId(null);
     }
+  };
+
+  const [downloadingLabelId, setDownloadingLabelId] = useState<string | null>(null);
+
+  const handleDownloadLabel = async (order: Order) => {
+    if (!order.awbNumber || !order.courierName) return toast.error("No AWB/courier found.");
+    setDownloadingLabelId(order.id);
+    try {
+      const res = await axios.post('/api/user/shipment/generate-label', {
+        orderId: Number(order.id),
+        awbNumber: order.awbNumber,
+        courierName: order.courierName,
+      });
+      if (res.data.success && res.data.labelUrl) {
+        window.open(res.data.labelUrl, '_blank');
+      } else {
+        toast.error(res.data.error || "Failed to get label.");
+      }
+    } catch { toast.error("Failed to download label."); }
+    finally { setDownloadingLabelId(null); }
   };
 
   const filteredOrders = orders.filter(order =>
@@ -306,14 +326,22 @@ const ShippedOrdersPage: React.FC = () => {
                         </div>
                       ) : null}
 
-                      {order.labelUrl && (
+                      {order.awbNumber ? (
                         <div className="mb-3">
-                          <a href={order.labelUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition dark:text-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800">
-                            <Download className="h-4 w-4" />
-                            Download Label
-                          </a>
+                          <button
+                            onClick={() => handleDownloadLabel(order)}
+                            disabled={downloadingLabelId === order.id}
+                            className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition dark:text-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 disabled:opacity-50"
+                          >
+                            {downloadingLabelId === order.id ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
+                            {downloadingLabelId === order.id ? "Fetching Label..." : "Download Label"}
+                          </button>
                         </div>
-                      )}
+                      ) : null}
 
                       <div className="flex justify-center pt-3 border-t border-gray-200 dark:border-gray-600">
                         <div className="flex gap-2">
@@ -432,9 +460,20 @@ const ShippedOrdersPage: React.FC = () => {
                       <td className="px-3 py-2  text-sm">
                         {order.awbNumber || "-"}
                       </td>
-                      <td>
-                        {order.labelUrl ? (
-                          <a href={order.labelUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Download</a>
+                      <td className="px-3 py-2 text-center">
+                        {order.awbNumber ? (
+                          <button
+                            onClick={() => handleDownloadLabel(order)}
+                            disabled={downloadingLabelId === order.id}
+                            className="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900 transition disabled:opacity-50"
+                            title="Download Label"
+                          >
+                            {downloadingLabelId === order.id ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
+                          </button>
                         ) : "-"}
                       </td>
 
