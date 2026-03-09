@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck, MoreHorizontal, XCircle, Menu, RefreshCw } from "lucide-react";
+import { Copy, Trash2, Search, Plus, Package, Home, ChevronRight, Truck, MoreHorizontal, XCircle, Menu, RefreshCw, Download } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -63,6 +63,7 @@ const BulkOrdersPage: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const [downloadingLabelId, setDownloadingLabelId] = useState<string | null>(null);
 
   const handleRefreshStatus = async (order: Order) => {
     if (!order.awbNumber || !order.courierName) return toast.error("No AWB/courier found.");
@@ -114,6 +115,23 @@ const BulkOrdersPage: React.FC = () => {
     } catch (error) {
       toast.error("Failed to delete order. Please try again.");
     }
+  };
+  const handleDownloadLabel = async (order: Order) => {
+    if (!order.awbNumber || !order.courierName) return toast.error("No AWB/courier found.");
+    setDownloadingLabelId(order.id);
+    try {
+      const res = await axios.post('/api/user/shipment/generate-label', {
+        orderId: Number(order.id),
+        awbNumber: order.awbNumber,
+        courierName: order.courierName,
+      });
+      if (res.data.success && res.data.labelUrl) {
+        window.open(res.data.labelUrl, '_blank');
+      } else {
+        toast.error(res.data.error || "Failed to get label.");
+      }
+    } catch { toast.error("Failed to download label."); }
+    finally { setDownloadingLabelId(null); }
   };
 
   const handleCancelOrder = async (orderId: string) => {
@@ -519,6 +537,16 @@ const BulkOrdersPage: React.FC = () => {
                               <DropdownMenuItem onClick={() => handleRefreshStatus(order)} className="cursor-pointer">
                                 <RefreshCw className={`mr-2 h-4 w-4 ${refreshingId === order.id ? 'animate-spin' : ''}`} />
                                 <span>{refreshingId === order.id ? 'Refreshing...' : 'Refresh Status'}</span>
+                              </DropdownMenuItem>
+                            )}
+                            {['manifested', 'shipped', 'in_transit', 'out_for_delivery'].includes(order.status) && order.awbNumber && (
+                              <DropdownMenuItem
+                                onClick={() => handleDownloadLabel(order)}
+                                className="cursor-pointer"
+                                disabled={downloadingLabelId === order.id}
+                              >
+                                <Download className={`mr-2 h-4 w-4 ${downloadingLabelId === order.id ? 'animate-spin' : ''}`} />
+                                <span>{downloadingLabelId === order.id ? 'Downloading...' : 'Download Label'}</span>
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuSeparator />
