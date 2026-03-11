@@ -70,13 +70,44 @@ export class DelhiveryClient {
             const canPrepaid = serviceData.pre_paid === "Y" || serviceData.pre_paid === "y";
             if (isCod && !canCod) return null;
             if (!isCod && !canPrepaid) return null;
-            let baseRate = mode === "Express" ? 80 : 40;
-            if (weightKg > 0.5) {
-                const extraWeight = weightKg - 0.5;
-                const slabs = Math.ceil(extraWeight * 2);
-                baseRate += slabs * (mode === "Express" ? 50 : 30);
+            // --- RATE CALCULATION START ---
+            const weightInGrams = Math.ceil(weightKg * 1000); // API needs grams
+            const modeApi = mode === "Express" ? "E" : "S";
+            const paymentTypeApi = paymentMode === "COD" ? "COD" : "Pre-paid";
+
+            let courierCharges = 0;
+            let codCharge = 0;
+            let baseRate = 0;
+
+            try {
+                const rateResponse = await axios.get(`${BASE_URL}/api/kinko/v1/invoice/charges/.json`, {
+                    headers: { 
+                        Authorization: `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    params: {
+                        md: modeApi,
+                        ss: "Delivered", // Delivered standard status for forward flow
+                        d_pin: destPin,
+                        o_pin: pickupPin,
+                        cgm: weightInGrams,
+                        pt: paymentTypeApi,
+                    }
+                });
+
+                const data = rateResponse.data[0]; 
+                const totalApiAmount = data?.total_amount || 0; 
+                codCharge = data?.cod_charges || (isCod ? 50 : 0);
+                if (totalApiAmount > 0) {
+                    courierCharges = totalApiAmount - codCharge;
+                } else {
+                    courierCharges = data?.fwd || 0;
+                }
+                baseRate = courierCharges;
+            } catch (rateErr) {
+                console.error("Delhivery Rates API Error:", rateErr);
+                return null; 
             }
-            const codCharge = isCod ? 50 : 0;
             let expectedDelivery = "3-5 Days";
             try {
                 const tatResponse = await axios.get(`${BASE_URL}/api/dc/expected_tat`, {
@@ -88,12 +119,13 @@ export class DelhiveryClient {
                         pdt: "B2C"
                     }
                 });
+                
                 const responseBody = tatResponse.data;
                 let days = null;
+                
                 if (responseBody?.data?.tat) {
                     days = responseBody.data.tat;
-                }
-                else if (responseBody?.tat) {
+                } else if (responseBody?.tat) {
                     days = responseBody.tat;
                 }
 
@@ -101,10 +133,13 @@ export class DelhiveryClient {
                     expectedDelivery = `${days} Days`;
                 }
             } catch (tatError) {
+                // Fallback logic if TAT API fails
                 if (pickupPin.substring(0, 3) === destPin.substring(0, 3)) expectedDelivery = "1-2 Days";
                 else if (pickupPin.substring(0, 2) === destPin.substring(0, 2)) expectedDelivery = "2-3 Days";
                 else expectedDelivery = mode === "Express" ? "3-4 Days" : "4-6 Days";
             }
+
+            // --- RETURN THE FINAL RATE ---
             return {
                 courierName: `Delhivery ${mode}`,
                 serviceType: mode,
