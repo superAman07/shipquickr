@@ -17,6 +17,7 @@ model User {
   otpExpires            DateTime?
   status                Boolean            @default(true)
   role                  Role               @default(user)
+  merchantApiKey        String?            @unique
   createdAt             DateTime           @default(now())
   kycStatus             KycStatus          @default(pending)
   kycDetail             KycDetail?
@@ -27,6 +28,7 @@ model User {
   warehouses            Warehouse[]
   complaints            Complaint[]
   couponRedemption      CouponRedemption[]
+  courierAssignments    UserCourierAssignment[]
   avgShippmentsFromUser String?
   mobile                String?
 }
@@ -319,6 +321,19 @@ model News {
 
   @@index([status])
   @@index([createdAt])
+}
+
+model UserCourierAssignment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courier   String   @db.VarChar(50)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courier])
+  @@index([userId])
 }
 
 enum CouponAmountType {

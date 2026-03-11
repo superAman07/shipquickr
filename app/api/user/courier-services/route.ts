@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
+import { cookies } from "next/headers";
+import { jwtDecode } from "jwt-decode";
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Extract successful results
-    const rawRates = aggregatorResult.status === "fulfilled" ? aggregatorResult.value || [] : [];
+    let rawRates = aggregatorResult.status === "fulfilled" ? aggregatorResult.value || [] : [];
     const delhiverySurface = delhiverySurfaceResult.status === "fulfilled" ? delhiverySurfaceResult.value : null;
     const delhiveryExpress = delhiveryExpressResult.status === "fulfilled" ? delhiveryExpressResult.value : null;
 
@@ -100,9 +102,34 @@ export async function POST(req: NextRequest) {
     if (delhiverySurface) rawRates.push(delhiverySurface);
     if (delhiveryExpress) rawRates.push(delhiveryExpress);
 
+        // --- FILTER BASED ON ADMIN ASSIGNMENTS ---
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("userToken")?.value;
+        
+        if (token) {
+            const decoded: any = jwtDecode(token);
+            if (decoded && decoded.userId) {
+                const assignments = await prisma.userCourierAssignment.findMany({
+                    where: { userId: decoded.userId, isActive: true },
+                    select: { courier: true }
+                });
+                
+                if (assignments.length > 0) {
+                    const assignedCourierNames = assignments.map(a => a.courier);
+                    rawRates = rawRates.filter(rate => 
+                        assignedCourierNames.includes(rate.courierName)
+                    );
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Error checking courier assignments in ship now page:", e);
+    }
+
     if (rawRates.length === 0) {
       return NextResponse.json(
-        { error: "No shipping rates found for the given details." },
+        { error: "No available shipping rates found for this route based on your assignments." },
         { status: 404 }
       );
     }

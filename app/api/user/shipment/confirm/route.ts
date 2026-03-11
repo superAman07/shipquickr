@@ -56,8 +56,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order is missing pickup location (warehouse) information." }, { status: 400 });
     }
 
-    if (order.status !== "unshipped") {
+        if (order.status !== "unshipped") {
       return NextResponse.json({ error: `Order status is already '${order.status}'. Cannot process again.` }, { status: 400 });
+    }
+
+    // --- COURIER ASSIGNMENT SECURITY CHECK ---
+    const assignments = await prisma.userCourierAssignment.findMany({
+      where: { userId: userId, isActive: true },
+      select: { courier: true }
+    });
+    
+    if (assignments.length > 0) {
+      const assignedCourierNames = assignments.map(a => a.courier);
+      // Check if the requested courier is in their assigned list
+      if (!assignedCourierNames.includes(selectedCourier.name)) {
+        return NextResponse.json({ 
+            error: `Unauthorized: You do not have permission to use ${selectedCourier.name}. Please contact support.` 
+        }, { status: 403 });
+      }
     }
 
     let actualAwbNumber = "";

@@ -24,6 +24,7 @@ import axios from "axios"
 import { StatusToggle } from "./StatusToggleAdminsUserAction"
 import { prisma } from "@/lib/prisma"
 import { toast } from "react-toastify"
+import { CourierAssignmentModal } from "./CourierAssignmentModal"
 
 type User = {
   id: string
@@ -40,7 +41,10 @@ export function UsersInAdminDashboard() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [pageSize, setPageSize] = useState(10) 
+  const [pageSize, setPageSize] = useState(10)
+  // ADD THESE TWO LINES:
+  const [selectedCourierUser, setSelectedCourierUser] = useState<User | null>(null)
+  const [isCourierModalOpen, setIsCourierModalOpen] = useState(false)
 
   const [data,setData] = useState<User[]>([]);
 
@@ -131,6 +135,12 @@ export function UsersInAdminDashboard() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>Copy email</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                setSelectedCourierUser(user)
+                setIsCourierModalOpen(true)
+              }}>
+                Manage Couriers
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={async ()=>{
                 if (!confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
                   return
@@ -272,6 +282,14 @@ export function UsersInAdminDashboard() {
           </Button>
         </div>
       </div>
+      {selectedCourierUser && (
+        <CourierAssignmentModal 
+          userId={parseInt(selectedCourierUser.id)}
+          userName={selectedCourierUser.firstName + " " + selectedCourierUser.lastName}
+          isOpen={isCourierModalOpen}
+          onClose={() => setIsCourierModalOpen(false)}
+        />
+      )}
     </div>
   )
 }
