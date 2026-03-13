@@ -1,7 +1,7 @@
 "use client"
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
-import { Wallet, ChevronDown, User, Lock, LogOut, BadgePlusIcon as BatteryPlus, MoreVertical } from "lucide-react"
+import { Wallet, ChevronDown, User, Lock, LogOut, BadgePlusIcon as BatteryPlus, MoreVertical, Settings } from "lucide-react"
 import LogoutButton from "./logout"
 import Link from "next/link"
 import { useWallet as useActualWallet, type WalletContextType } from "@/contexts/WalletContext"
@@ -119,6 +119,14 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700"
                   >
                     <Link
+                      href={`/${userRole}/dashboard/settings`}
+                      className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <Settings className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      Developer Settings
+                    </Link>
+                    <Link
                       href={`/${userRole}/dashboard/profile`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() => setIsProfileOpen(false)}
@@ -201,6 +209,14 @@ export default function Navbar({ userRole, userName, mobileMenuOpen, setMobileMe
                     ref={mobileDropdownRef}
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700"
                   >
+                    <Link
+                      href={`/${userRole}/dashboard/settings`}
+                      className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <Settings className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      Developer Settings
+                    </Link>
                     <Link
                       href={`/${userRole}/dashboard/profile`}
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"

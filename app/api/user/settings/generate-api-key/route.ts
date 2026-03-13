@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
+import crypto from "crypto";
 
 interface TokenDetailsType {
   userId: number;
   exp: number;
 }
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
@@ -19,31 +20,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Token expired" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    // Generate a secure 64-character hex string
+    const newApiKey = "sk_live_" + crypto.randomBytes(32).toString('hex');
+
+    // Save to the user's database record
+    const updatedUser = await prisma.user.update({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        status: true,
-        kycStatus: true,
-        role: true,
-        createdAt: true,
-        avgShippmentsFromUser: true,
-        mobile: true,
-        kycDetail: true,
-        merchantApiKey: true,
-        webhookUrl: true,
-      },
+      data: { merchantApiKey: newApiKey },
+      select: { merchantApiKey: true }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    return NextResponse.json({ 
+      success: true, 
+      apiKey: updatedUser.merchantApiKey 
+    }, { status: 200 });
 
-    return NextResponse.json({ profile: user }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+    console.error("Error generating API key:", error);
+    return NextResponse.json({ error: "Failed to generate API Key" }, { status: 500 });
   }
 }

@@ -18,6 +18,7 @@ model User {
   status                Boolean            @default(true)
   role                  Role               @default(user)
   merchantApiKey        String?            @unique
+  webhookUrl            String?
   createdAt             DateTime           @default(now())
   kycStatus             KycStatus          @default(pending)
   kycDetail             KycDetail?
