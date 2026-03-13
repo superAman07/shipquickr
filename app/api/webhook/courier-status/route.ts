@@ -45,10 +45,12 @@ export async function POST(req: NextRequest) {
         const updates = Array.isArray(payload) ? payload : [payload];
 
         for (const update of updates) {
-            const waybill = update.Waybill || update.waybill;
-            const newDelhiveryStatus = update.Status?.Status || update.status || update.StatusType || "Unknown";
-            const location = update.Status?.Location || update.ScannedLocation || "";
-            const scanDateStr = update.Status?.StatusDateTime || update.ScanDateTime;
+            // Delhivery wraps data inside "Shipment" object per their default payload
+            const shipment = update.Shipment || update;
+            const waybill = shipment.AWB || shipment.Waybill || shipment.waybill;
+            const newDelhiveryStatus = shipment.Status?.Status || shipment.status || shipment.StatusType || "Unknown";
+            const location = shipment.Status?.StatusLocation || shipment.ScannedLocation || "";
+            const scanDateStr = shipment.Status?.StatusDateTime || shipment.ScanDateTime;
             
             if (!waybill) continue;
 

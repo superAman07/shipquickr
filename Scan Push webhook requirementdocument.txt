@@ -1,0 +1,125 @@
+﻿
+Scan push/Webhook Requirement document
+VERSION NO. : 2.0VERSION DATE : 27/02/2024
+
+CREATION DATEAUTHOR(s)APPROVER(s)29/08/2022Vikalp SinghAnil Kumar, Sahil Anand      Introduction
+This document is to capture the Webhook/Scan push requirements of the client. 
+Client need to fill this document with the below details and shared is back to the Delhivery team and  based on these details only Delhivery tech team will enable the webhook.
+Based on the development effort and sprint planning, Delhivery will share the go live date of the webhook.
+Here client need to fill only the yellow highlighted fields along with their tech escalation matrix.
+Account Name:
+Dev account name:<Share delhivery test account name where webhook need to enabled>
+Prod account name:<Share delhivery production account name where webhook need to enabled>
+
+Webhook API details:
+Dev API endpoint:  <<  share the dev endpoint here >>
+Header:  << share the header (key value pair) here  >>
+
+
+Prod API endpoint:  <<  share the Prod endpoint here >>
+Header:  << share the header (key value pair) here  >>
+
+Allowed Method:
+Only POST method is allowed
+
+
+Webhook API Response time:
+<client need to share P99 of their API>
+Expected response time <=500 ms. 
+In case webhook api response time>500 ms, there will be a timeout at Delhivery end and client might missed the shipment scans.
+Payload:
+Share the expected payload.
+* Default payload : <Yes/No>
+
+{
+    "Shipment": {
+        "Status": {
+            "Status": "Manifested",
+            "StatusDateTime": "2019-01-09T17:10:42.767",
+            "StatusType": "UD",
+            "StatusLocation": "Chandigarh_Raiprkln_C (Chandigarh)",
+            "Instructions": "Manifest uploaded"
+        },
+        "PickUpDate": "2019-01-09 17:10:42.543",
+        "NSLCode": "X-UCI",
+        "Sortcode": "IXC/MDP",
+        "ReferenceNo": "28",
+        "AWB": "XXXXXXXXXXXX"
+    }
+}
+
+* Custom payload: <Yes/No>- share the updated payload in case of "Yes"
+
+Webhook API response:
+200 Okay is the expected API response
+
+IP's to be whitelisted:
+If client needs Delhivery IPs to be whitelisted to accept scan update from Delhivery. Use below IPs
+
+* DEV IP's:
+
+18.136.12.154
+13.250.167.49
+52.220.126.238
+3.108.106.65
+3.109.19.228 
+3.7.116.186
+3.6.106.39
+
+
+* PROD IP's:
+
+
+13.229.195.68
+18.139.238.62
+52.76.70.1
+3.108.106.65
+13.127.20.101
+13.126.12.240
+35.154.161.83
+3.6.106.39
+18.61.175.16
+
+
+
+
+Note: Delhivery not need to whitelist any IP to push to scans to client system
+
+Required shipment scans:
+* All scans/Status needed - <Yes/No>- share the required status where scan push is needed in case of "No", Need NSL where all scans are required
+
+
+
+
+
+
+
+
+
+
+
+
+Escalation matrix:
+Client need to share the tech escalation matrix here.
+
+LevelContact NameEmail idPhone NumberL1L2L3
+
+
+
+
+Internal for Delhivery Reference-
+This will be filled by the Delhivery tech team internally
+
+
+1. ADO details: <<add ADO here>>
+
+2. Load Testing results: 
+            <<add load testing results here>>
+
+3. Volume of client on daily/monthly basis -  
+
+4. Need confirmation on release from client within 1-2 hour of the release if getting scans fine our not
+       
+
+Disclaimer- Delhivery don't share any customer PII details in the scan push. This includes customer phone, address,name and address
+
