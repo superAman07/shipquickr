@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         amount: Number(amount),
         type: "recharge",
         status: "Pending",
-        merchantTransactionId, 
+        merchantTransactionId,
       },
     });
     console.log("prisma record:", temp);
@@ -56,10 +56,10 @@ export async function POST(req: NextRequest) {
       merchantTransactionId: merchantTransactionId,
       merchantUserId: String(decoded.userId),
       name: decoded.firstName + " " + decoded.lastName,
-      amount:(amount * 100),
+      amount: (amount * 100),
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet`,
       redirectMode: "REDIRECT",
-      callbackUrl: process.env.PHONEPE_CALLBACK_URL!, 
+      callbackUrl: process.env.PHONEPE_CALLBACK_URL!,
       mobileNumber: decoded.mobile || "",
       paymentInstrument: { type: "PAY_PAGE" },
     };
@@ -73,13 +73,14 @@ export async function POST(req: NextRequest) {
     const sha256 = crypto.createHash("sha256").update(string).digest("hex");
     const checksum = sha256 + "###" + keyIndex;
 
-    // const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+    const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
     const uat_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
 
-    // const final_URL = process.env.NODE_ENV === 'production' ? prod_URL : uat_URL;
+    const isTestEnv = process.env.PHONEPE_MERCHANT_ID?.startsWith('PGTEST');
+    const final_URL = isTestEnv ? uat_URL : prod_URL;
     const options = {
       method: "POST",
-      url: uat_URL,
+      url: final_URL,
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",

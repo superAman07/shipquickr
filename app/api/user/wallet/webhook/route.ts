@@ -3,22 +3,13 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
     try { 
-        // const webhookUser = req.headers.get("x-username");
-        // const webhookPass = req.headers.get("x-password");
-
-        // console.log("--- Webhook Credentials Debug ---");
-        // console.log("Received Username:", `"${webhookUser}"`);
-        // console.log("Expected Username:", `"${process.env.PHONEPE_WEBHOOK_USER}"`);
-        // console.log("Received Password:", `"${webhookPass}"`);
-        // console.log("Expected Password:", `"${process.env.PHONEPE_WEBHOOK_PASS}"`);
-        // console.log("Username Match:", webhookUser === process.env.PHONEPE_WEBHOOK_USER);
-        // console.log("Password Match:", webhookPass === process.env.PHONEPE_WEBHOOK_PASS);
-        // console.log("--- End Debugging Logs ---");
-
-        // if (webhookUser !== process.env.PHONEPE_WEBHOOK_USER || webhookPass !== process.env.PHONEPE_WEBHOOK_PASS) {
-        //     console.error("PhonePe Webhook: Invalid credentials received.");
-        //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        // }
+        const webhookUser = req.headers.get("x-username");
+        const webhookPass = req.headers.get("x-password");
+        
+        if (webhookUser !== process.env.PHONEPE_WEBHOOK_USER || webhookPass !== process.env.PHONEPE_WEBHOOK_PASS) {
+            console.error("PhonePe Webhook: Invalid credentials received.");
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
  
         const body = await req.json();
         
