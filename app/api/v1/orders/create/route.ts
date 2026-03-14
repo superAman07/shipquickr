@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
 
                         // Fire the webhook for auto-shipment
                         if (user.webhookUrl) {
-                            fireWebhook(user.webhookUrl, {
+                            await fireWebhook(user.webhookUrl, {
                                 event: "order_shipped",
                                 orderId: responseOrder.orderId,
                                 shipquickrId: responseOrder.id,
