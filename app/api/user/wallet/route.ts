@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
         accept: "application/json",
         "Content-Type": "application/json",
         "X-VERIFY": checksum,
+        "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID!,
       },
       data: {
         request: payloadMain,

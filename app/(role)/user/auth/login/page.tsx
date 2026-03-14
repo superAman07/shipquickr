@@ -13,7 +13,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("");
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('otp');
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
   const [otpRequired, setOtpRequired] = useState(false)
   const [otpCooldown, setOtpCooldown] = useState(0);
 
@@ -51,23 +51,23 @@ export default function SignIn() {
         if (response.data.otpRequired) {
           toast.success(response.data.message);
           setOtpRequired(true);
+          setLoading(false);
+          return;
         }
+        toast.success(response.data.message);
       } else {
         payload.otp = otpRequired ? otp : (document.getElementById('otp') as HTMLInputElement)?.value;
         response = await axios.post('/api/auth/login', payload);
         toast.success(response.data.message);
 
-        const userRes = await axios.get("/api/user/profile");
-        const user = userRes.data.profile;
+      }
+      const userRes = await axios.get("/api/user/profile");
+      const user = userRes.data.profile;
 
-        console.log("user Details to check onboarding redirection:", user);
-
-        console.log("user user mobile:", user?.mobile);
-        if (!user?.mobile) {
-          window.location.href = '/user/onboarding';
-        } else {
-          window.location.href = '/user/dashboard';
-        }
+      if (!user?.mobile) {
+        window.location.href = '/user/onboarding';
+      } else {
+        window.location.href = '/user/dashboard';
       }
     } catch (error: any) {
       const message = error.response?.data?.message || "Something went wrong";

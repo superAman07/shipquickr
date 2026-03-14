@@ -59,7 +59,7 @@ export async function POST(req:NextRequest) {
             if (!isOtpValid) {
                 return NextResponse.json({ message: "Invalid OTP provided." }, { status: 401 });
             } 
-            await prisma.user.update({ where: { email }, data: { hashedOtp: null, otpExpires: null } });
+            await prisma.user.update({ where: { email }, data: { hashedOtp: null, otpExpires: null, lastLogin: new Date() } });
             
             const token = signToken({userId: user.id, firstName: user.firstName,lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret")
             const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
@@ -79,30 +79,48 @@ export async function POST(req:NextRequest) {
                 return NextResponse.json({ message: "Invalid credentials." }, { status: 401 });
             }
 
-            if (isAdmin) {
-                const token = signToken({userId: user.id, firstName: user.firstName,lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret");
-                const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
-                response.cookies.set("adminToken", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge: 60 * 60 * 2 });
-                return response;
+            // --- 14-DAY INACTIVITY CHECK LOGIC ---
+            if (!isAdmin) {
+                const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+                
+                // If user is new (never logged in) or lastLogin was more than 14 days ago, REQUIRE OTP
+                if (!user.lastLogin || user.lastLogin < fourteenDaysAgo) {
+                    const newOtp = randomInt(100000, 999999).toString();
+                    const hashedOtp = await bcrypt.hash(newOtp, 10);
+                    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        
+                    await prisma.user.update({
+                        where: { email },
+                        data: { hashedOtp, otpExpires },
+                    });
+        
+                    await sendEmail({
+                        to: email,
+                        subject: "Your ShipQuickr Login Verification Code",
+                        html: `<p>Welcome back! Let's verify it's you.</p><p>Your login verification code is: <strong>${newOtp}</strong></p><p>It is valid for 10 minutes.</p>`,
+                    });
+        
+                    // We return otpRequired: true, which tells the frontend to show the OTP input
+                    return NextResponse.json({ message: "Welcome back! Please verify with the OTP sent to your email.", otpRequired: true }, { status: 200 });
+                }
             }
-            
-            // Password is valid, generate and send OTP
-            const newOtp = randomInt(100000, 999999).toString();
-            const hashedOtp = await bcrypt.hash(newOtp, 10);
-            const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+            // --- DIRECT LOGIN SUCCESS (Active user or Admin) ---
+            // Update lastLogin time
             await prisma.user.update({
                 where: { email },
-                data: { hashedOtp, otpExpires },
+                data: { lastLogin: new Date() }
             });
 
-            await sendEmail({
-                to: email,
-                subject: "Your ShipQuickr Login Verification Code",
-                html: `<p>Your login verification code is: <strong>${newOtp}</strong></p><p>It is valid for 10 minutes.</p>`,
-            });
-
-            return NextResponse.json({ message: "Verification code sent to your email.", otpRequired: true }, { status: 200 });
+            const token = signToken({userId: user.id, firstName: user.firstName, lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret");
+            const response = NextResponse.json({ message: "Login successful" }, { status: 200 });
+            
+            const cookieName = isAdmin ? "adminToken" : "userToken";
+            const maxAge = isAdmin ? 60 * 60 * 2 : 60 * 60 * 24;
+            
+            response.cookies.set(cookieName, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', sameSite: 'lax', maxAge });
+            
+            return response;
         } 
     }catch(e){
         console.error("Signin Error:", e);

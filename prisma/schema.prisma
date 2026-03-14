@@ -32,6 +32,7 @@ model User {
   courierAssignments    UserCourierAssignment[]
   avgShippmentsFromUser String?
   mobile                String?
+  lastLogin             DateTime?
 }
 
 model KycDetail {
