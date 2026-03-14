@@ -273,7 +273,7 @@ export class DelhiveryClient {
                     }
                 );
                 console.log(`Delhivery Cancel Response (${token.slice(0,8)}...):`, response.data);
-                if (response.data?.success === true) {
+                if (response.data?.status === true) {
                     return { success: true, message: "Shipment cancelled successfully" };
                 }
             } catch (e: any) {
