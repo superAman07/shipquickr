@@ -295,7 +295,7 @@ export class DelhiveryClient {
             try {
                 const response = await axios.get(`${BASE_URL}/api/p/packing_slip`, {
                     headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
-                    params: { wbns: waybill, pdf: "true", pdf_size: "A4" }
+                    params: { wbns: waybill, pdf: "true"}
                 });
                 console.log("Delhivery Label Response:", response.data);
                 const data = response.data;
