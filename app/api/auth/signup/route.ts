@@ -106,7 +106,11 @@ export async function POST(req: NextRequest) {
         await sendEmail({
             to: email,
             subject: "Verify your ShipQuickr Account",
-            html: `<p>Welcome to ShipQuickr! Your email verification code is: <strong>${newOtp}</strong></p><p>It is valid for 10 minutes.</p>`,
+            html: `<p>Welcome to ShipQuickr! Your email verification code is:</p>
+                        <div style="text-align: center;">
+                            <span class="otp-code">${newOtp}</span>
+                        </div>
+                    <p>This code is secure and valid for exactly 10 minutes.</p>`,
         });
         
         return NextResponse.json({ message: "Verification code sent to your email.", otpRequired: true }, { status: 200 });

@@ -97,7 +97,14 @@ export async function POST(req:NextRequest) {
                     await sendEmail({
                         to: email,
                         subject: "Your ShipQuickr Login Verification Code",
-                        html: `<p>Welcome back! Let's verify it's you.</p><p>Your login verification code is: <strong>${newOtp}</strong></p><p>It is valid for 10 minutes.</p>`,
+                        html: `
+                          <p>Welcome back! For your security, let's verify it's really you trying to log in.</p>
+                          <p>Your secure login verification code is:</p>
+                          <div style="text-align: center;">
+                            <span class="otp-code">${newOtp}</span>
+                          </div>
+                          <p>This code will expire in 10 minutes. Please do not share this code with anyone.</p>
+                        `,
                     });
         
                     // We return otpRequired: true, which tells the frontend to show the OTP input
