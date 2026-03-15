@@ -7,6 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 import NewsSection from '@/components/NewsSectionUser';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import ShipmentChart from '@/components/ShipmentChart';
 
 interface ShipmentCardProps {
   title: string;
@@ -22,8 +23,8 @@ function ShipmentCard({ title, value, info, color, icon, link }: ShipmentCardPro
     <div className={`${color} rounded-lg p-3 md:p-6 text-white transition-transform hover:scale-105 duration-200`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm opacity-90">{title}</p>
-          <h3 className="text-3xl font-bold mt-2">{value}</h3>
+          <p className="text-xs sm:text-sm opacity-90">{title}</p>
+          <h3 className="text-xl sm:text-3xl font-bold mt-1 sm:mt-2">{value}</h3>
         </div>
         <div className="p-2 bg-white/20 rounded-lg">
         <Link href={link}>
@@ -31,7 +32,7 @@ function ShipmentCard({ title, value, info, color, icon, link }: ShipmentCardPro
         </Link>
         </div>
       </div>
-      <p className="text-sm mt-4 opacity-90">{info}</p>
+      <p className="text-xs sm:text-sm mt-2 sm:mt-4 opacity-90">{info}</p>
     </div>
   );
 }
@@ -188,31 +189,70 @@ export default async function Dashboard() {
       color: card.color,
     };
   });
+
+    // ADD THIS RIGHT BEFORE "return ("
+  const chartData = statusCards
+    .filter(card => Number(card.count) > 0) // Only show statuses that have shipments
+    .map(card => {
+      let hexColor = '#818cf8'; 
+      if (card.color.includes('gray')) hexColor = '#9ca3af';
+      if (card.color.includes('red')) hexColor = '#f43f5e';
+      if (card.color.includes('yellow')) hexColor = '#f59e0b';
+      if (card.color.includes('green')) hexColor = '#10b981';
+      if (card.color.includes('blue')) hexColor = '#0ea5e9';
+      if (card.color.includes('purple')) hexColor = '#a855f7';
+      
+      return {
+        name: card.status,
+        value: Number(card.count),
+        color: hexColor
+      };
+    });
+
   return (
     <main className=" px-4 md:px-8 pb-8">
       <DashboardWelcome name={firstName} />
       <DashboardHorizontalNavUser />
       <div className="max-w-full mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 pt-4 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 pt-4 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-6 mb-8">
           {shipmentCards.map((card, index) => (
             <ShipmentCard key={index} {...card} />
           ))}
         </div>
         <div className="flex flex-col lg:flex-row gap-6 mb-8">
-          <div className="lg:w-2/3 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
-                Shipment Details
+          <div className="lg:w-2/3 flex flex-col gap-6">
+            
+            {/* 1. Status Cards Grid Container (UPDATED for Mobile) */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
+                  Shipment Details
+                </h2>
+                <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                  Last 30 days
+                </span>
+              </div>
+              
+              {/* Changed grid-cols-1 to grid-cols-2 for mobile! */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                {statusCards.map((card, index) => (
+                  <StatusCard key={index} {...card} />
+                ))}
+              </div>
+            </div>
+
+            {/* 2. New Beautiful Pie Chart Section */}
+            {totalShipments > 0 && (
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100 mb-6">
+                Shipment Analytics
               </h2>
-              <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                Last 30 days
-              </span>
+              <div className="w-full h-[300px] sm:h-[400px]">
+                <ShipmentChart chartData={chartData} />
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {statusCards.map((card, index) => (
-                <StatusCard key={index} {...card} />
-              ))}
-            </div>
+            )}
+            
           </div>
 
           <div className="lg:w-1/3 bg-white h-[65dvh] overflow-hidden dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col">
