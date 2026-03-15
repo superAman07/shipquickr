@@ -23,6 +23,8 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [touched, setTouched] = useState(false);
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,8 +39,15 @@ export default function SignUp() {
     setLoading(true)
 
     try { 
-      const response = await axios.post("/api/auth/signup",formData) 
-      if (response.status===201) { 
+      let payload: any = { ...formData };
+      if (otpRequired) {
+        payload.otp = otp;
+      }
+      const response = await axios.post("/api/auth/signup",payload) 
+      if (response.data.otpRequired) {
+        toast.success(response.data.message);
+        setOtpRequired(true);
+      } else if (response.status === 201) { 
         toast.success("Signup successful! Please sign in.");
         router.push("/user/auth/login")
       }
@@ -137,118 +146,108 @@ export default function SignUp() {
             <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">Sign Up</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 text-[#252525]">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="w-full sm:w-1/2">
-                  <label htmlFor="firstName" className="block text-gray-700 text-sm font-medium mb-1">
-                    First Name <span className="text-red-500">*</span>
+                            {!otpRequired ? (
+                <>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="w-full sm:w-1/2">
+                      <label htmlFor="firstName" className="block text-gray-700 text-sm font-medium mb-1">
+                        First Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text" id="firstName" name="firstName"
+                        value={formData.firstName} onChange={handleChange} required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="Enter First Name"
+                      />
+                    </div>
+                    <div className="w-full sm:w-1/2">
+                      <label htmlFor="lastName" className="block text-gray-700 text-sm font-medium mb-1">
+                        Last Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text" id="lastName" name="lastName"
+                        value={formData.lastName} onChange={handleChange} required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="Enter Last Name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-1">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email" id="email" name="email"
+                      value={formData.email} onChange={handleChange} required
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      placeholder="Enter Email Id"
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="w-full sm:w-1/2">
+                      <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
+                        Create Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"} id="password" name="password"
+                          value={formData.password} onChange={handleChange} required
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                          placeholder="Enter password"
+                        />
+                        <button type="button" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onClick={togglePasswordVisibility}>
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="w-full sm:w-1/2">
+                      <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-1">
+                        Confirm Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"} id="confirmPassword" name="confirmPassword"
+                          value={formData.confirmPassword} onChange={handleChange} required
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                          placeholder="Enter password"
+                        />
+                        <button type="button" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" onClick={toggleConfirmPasswordVisibility}>
+                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {touched && !isPasswordMatch && (
+                    <p className="text-sm text-red-500">Passwords do not match or length is smaller than 8</p>
+                  )}
+                </>
+              ) : (
+                <div>
+                  <label htmlFor="otp" className="block text-gray-700 text-sm font-medium mb-1">
+                    Enter Verification Code <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
+                    type="text" id="otp" name="otp"
+                    value={otp} onChange={(e) => setOtp(e.target.value)} required
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    placeholder="Enter First Name"
+                    placeholder="Enter 6-digit OTP sent to your email"
                   />
+                  <p className="text-xs text-blue-600 mt-2 cursor-pointer" onClick={() => setOtpRequired(false)}>
+                    Incorrect email? Go back
+                  </p>
                 </div>
-                <div className="w-full sm:w-1/2">
-                  <label htmlFor="lastName" className="block text-gray-700 text-sm font-medium mb-1">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    placeholder="Enter Last Name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-1">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  placeholder="Enter Email Id"
-                />
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="w-full sm:w-1/2">
-                  <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
-                    Create Password <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      placeholder="Enter password"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                      onClick={togglePasswordVisibility}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-                <div className="w-full sm:w-1/2">
-                  <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-medium mb-1">
-                    Confirm Password <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      placeholder="Enter password"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                      onClick={toggleConfirmPasswordVisibility}
-                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                    >
-                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              {touched && !isPasswordMatch && (
-                <p className="text-sm text-red-500">Passwords do not match or lenght is smaller than 8</p>
               )}
+
               <button 
                 type="submit"
-                disabled={!isPasswordMatch || loading}
-                className={`w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-colors font-semibold text-base sm:text-lg mt-2 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 ${
-                  !isPasswordMatch || loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                disabled={(!otpRequired && !isPasswordMatch) || loading}
+                className={`w-full text-white py-2.5 sm:py-3 rounded-full cursor-pointer transition-colors font-semibold text-base sm:text-lg mt-2 ${
+                  (!otpRequired && !isPasswordMatch) || loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
                 }`}
               >
-                {loading ? (<ButtonLoading name={"Processing..."}/>):("SIGN UP")}
+                {loading ? <ButtonLoading name={"Processing..."}/> : otpRequired ? "VERIFY & SIGN UP" : "SEND OTP"}
               </button>
             </form>
 
