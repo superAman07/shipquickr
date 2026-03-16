@@ -25,26 +25,26 @@ export async function POST(req: NextRequest) {
 
         console.log("Decoded PhonePe Webhook Event:", JSON.stringify(event, null, 2));
   
-        if (event.code === "PAYMENT_SUCCESS") {
-            const { merchantTransactionId, providerReferenceId, amount } = event.data;
+        if (event.code === "CHECKOUT_ORDER_COMPLETED") {
+            const { merchantOrderId, providerReferenceId, amount } = event.data;
             const paymentAmount = amount / 100;
 
-            if (!merchantTransactionId) {
-                console.error("PhonePe Webhook: merchantTransactionId is missing from COMPLETED payload.");
+            if (!merchantOrderId) {
+                console.error("PhonePe Webhook: merchantOrderId is missing from COMPLETED payload.");
                 return NextResponse.json({ error: "Missing merchantTransactionId" }, { status: 400 });
             }
     
             await prisma.$transaction(async (tx) => { 
                 const pendingTransaction = await tx.transaction.findUnique({
-                    where: { merchantTransactionId: merchantTransactionId },
+                    where: { merchantTransactionId: merchantOrderId },
                 });
 
                 if (!pendingTransaction) {
-                    throw new Error(`Transaction not found for merchantTransactionId: ${merchantTransactionId}`);
+                    throw new Error(`Transaction not found for merchantTransactionId: ${merchantOrderId}`);
                 }
     
                 if (pendingTransaction.status === "Success") {
-                    console.log(`PhonePe Webhook: Transaction ${merchantTransactionId} already marked as Success. Ignoring duplicate event.`);
+                    console.log(`PhonePe Webhook: Transaction ${merchantOrderId} already marked as Success. Ignoring duplicate event.`);    
                     return;
                 }
                 
@@ -67,25 +67,25 @@ export async function POST(req: NextRequest) {
                 });
             });
 
-            console.log(`Successfully processed wallet recharge for merchantTransactionId: ${merchantTransactionId}`);
+            console.log(`Successfully processed wallet recharge for merchantOrderId: ${merchantOrderId}`);
 
         // Handle failed payment
-        } else if (event.code === "PAYMENT_ERROR" || event.code === "PAYMENT_CANCELLED" || event.code === "TIMED_OUT") {
-            const { merchantTransactionId, providerReferenceId } = event.data;
-            if (!merchantTransactionId) {
-                console.error("PhonePe Webhook: merchantTransactionId is missing from FAILED payload.");
+        } else if (event.code === "CHECKOUT_ORDER_FAILED" || event.code === "CHECKOUT_ORDER_CANCELLED" || event.code === "TIMED_OUT") {
+            const { merchantOrderId, providerReferenceId } = event.data;
+            if (!merchantOrderId) {
+                console.error("PhonePe Webhook: merchantOrderId is missing from FAILED payload.");
                 return NextResponse.json({ error: "Missing merchantTransactionId" }, { status: 400 });
             }
 
             await prisma.transaction.updateMany({
-                where: { merchantTransactionId: merchantTransactionId, status: "Pending" },
+                where: { merchantTransactionId: merchantOrderId, status: "Pending" },
                 data: {
                     status: "Failed",
                     providerReferenceId: providerReferenceId,
                     remarks: `Payment failed or was cancelled. Code: ${event.code}`
                 }
             });
-            console.log(`Marked transaction as Failed for merchantTransactionId: ${merchantTransactionId}`);
+            console.log(`Marked transaction as Failed for merchantOrderId: ${merchantOrderId}`);
         
         // Ignore refund and other events for now
         } else {
