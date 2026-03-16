@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
     console.log("PhonePe accessToken obtained");
 
     const phonepePayload = {
+      merchantId: process.env.PHONEPE_MERCHANT_ID,
       merchantOrderId: merchantTransactionId,
       amount: amount * 100, // in paise
       expireAfter: 1200,    // 20 minutes
@@ -63,6 +64,11 @@ export async function POST(req: NextRequest) {
           redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet`,
         },
       },
+      userDetails: {
+        merchantUserId: decoded.userId.toString(),
+        // email: decoded.email,   // if you want to send email
+        // mobileNumber: decoded.mobile // if you have mobile number
+      }
     };
 
     console.log("PhonePe payload:", phonepePayload);
