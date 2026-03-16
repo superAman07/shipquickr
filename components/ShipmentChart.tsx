@@ -158,8 +158,6 @@ export default function ShipmentChart({ chartData }: { chartData: any[] }) {
               strokeWidth={2}
               animationDuration={1200}
               animationEasing="ease-out"
-              activeIndex={activeIndex !== null ? activeIndex : undefined}
-              activeShape={renderActiveShape}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
             >
