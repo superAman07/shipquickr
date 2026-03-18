@@ -25,6 +25,7 @@ import { StatusToggle } from "./StatusToggleAdminsUserAction"
 import { prisma } from "@/lib/prisma"
 import { toast } from "react-toastify"
 import { CourierAssignmentModal } from "./CourierAssignmentModal"
+import { AdminWalletRechargeModal } from "./admin-wallet-recharge-modal"
 
 type User = {
   id: string
@@ -44,7 +45,9 @@ export function UsersInAdminDashboard() {
   const [pageSize, setPageSize] = useState(10)
   // ADD THESE TWO LINES:
   const [selectedCourierUser, setSelectedCourierUser] = useState<User | null>(null)
-  const [isCourierModalOpen, setIsCourierModalOpen] = useState(false)
+  const [isCourierModalOpen, setIsCourierModalOpen] = useState(false);
+  const [selectedRechargeUser, setSelectedRechargeUser] = useState<User | null>(null)
+  const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
 
   const [data,setData] = useState<User[]>([]);
 
@@ -140,6 +143,12 @@ export function UsersInAdminDashboard() {
                 setIsCourierModalOpen(true)
               }}>
                 Manage Couriers
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                setSelectedRechargeUser(user)
+                setIsRechargeModalOpen(true)
+              }}>
+                Manual Recharge
               </DropdownMenuItem>
               <DropdownMenuItem onClick={async ()=>{
                 if (!confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
@@ -288,6 +297,17 @@ export function UsersInAdminDashboard() {
           userName={selectedCourierUser.firstName + " " + selectedCourierUser.lastName}
           isOpen={isCourierModalOpen}
           onClose={() => setIsCourierModalOpen(false)}
+        />
+      )}
+      {selectedRechargeUser && (
+        <AdminWalletRechargeModal 
+          userId={parseInt(selectedRechargeUser.id)}
+          userName={selectedRechargeUser.firstName + " " + selectedRechargeUser.lastName}
+          isOpen={isRechargeModalOpen}
+          onClose={() => setIsRechargeModalOpen(false)}
+          onSuccess={() => {
+            // Optional: you could refresh data here if you displayed balances in the table
+          }}
         />
       )}
     </div>

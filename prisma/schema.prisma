@@ -92,6 +92,7 @@ model Transaction {
   order                 Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   status                String?
   remarks               String?
+  receiptUrl            String?
 
   @@index([userId])
   @@index([orderId])

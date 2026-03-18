@@ -20,6 +20,7 @@ interface Transaction {
   description: string;
   status: string;
   referenceId?: string | null;
+  receiptUrl?: string | null;
 }
 
 export default function WalletPage() {
@@ -201,6 +202,16 @@ export default function WalletPage() {
                       </div>
                       <div className="mb-2">
                         <div className="font-medium text-gray-700 dark:text-gray-200">{txn.description}</div>
+                        {txn.receiptUrl && (
+                          <a 
+                            href={txn.receiptUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-500 hover:text-blue-700 hover:underline mt-1 inline-block"
+                          >
+                            View Receipt
+                          </a>
+                        )}
                       </div>
                       <div className="flex justify-between items-center">
                         <span className={`font-semibold text-xs px-2 py-1 rounded-full ${txn.status.toLowerCase() === "completed" || txn.status.toLowerCase() === "success"
@@ -252,6 +263,16 @@ export default function WalletPage() {
                           <TableCell>
                             <p className="font-medium text-gray-800 dark:text-gray-200">{txn.description}</p>
                             {txn.referenceId && <p className="text-xs text-gray-500">Ref: {txn.referenceId}</p>}
+                            {txn.receiptUrl && (
+                              <a 
+                                href={txn.receiptUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-500 hover:text-blue-700 hover:underline mt-1 inline-block"
+                              >
+                                View Receipt
+                              </a>
+                            )}
                           </TableCell>
                           <TableCell>
                             <span className={`font-semibold text-xs px-2 py-1 rounded-full ${txn.type === "recharge" || txn.type === "credit"

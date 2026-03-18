@@ -153,9 +153,10 @@ export async function GET() {
         createdAt: tx.createdAt,
         type: tx.type,
         amount: tx.amount,
-        description: description,
+        description: tx.remarks ? tx.remarks : description,
         status: tx.status || 'Completed',
         referenceId: tx.order?.orderId || tx.merchantTransactionId,
+        receiptUrl: tx.receiptUrl
       };
     });
 
