@@ -1,21 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Helper to fire generic webhooks to Merchants
-async function forwardWebhookToMerchant(url: string, payload: any) {
-    if (!url || url === "null" || url.trim() === "") return;
-    try {
-        new URL(url); // Validate URL format
-        await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        console.log(`Forwarded status webhook to merchant ${url}`);
-    } catch (err) {
-        console.error(`Failed to forward status webhook to merchant ${url}:`, err);
-    }
-}
+import { forwardWebhookToMerchant } from "@/lib/webhook";
 
 // Map Delhivery's chaotic statuses to Shipquickr's clean statuses
 function mapDelhiveryStatusToStandard(delhiveryStatus: string) {

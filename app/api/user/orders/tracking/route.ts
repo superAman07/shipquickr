@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ecomExpressClient } from "@/lib/services/ecom-express";
 import { xpressbeesClient } from "@/lib/services/xpressbees";
 import { delhiveryClient } from "@/lib/services/delhivery";
+import { forwardWebhookToMerchant } from "@/lib/webhook";
 
 interface TokenDetailsType {
   userId: number;
@@ -69,7 +70,8 @@ export async function POST(req: NextRequest) {
     }
 
     const order = await prisma.order.findFirst({
-      where: { awbNumber: awbNumber }
+      where: { awbNumber: awbNumber },
+      include: { user: true }
     });
      
     if (normalizedStatus && order && normalizedStatus !== order.status) {
@@ -94,6 +96,18 @@ export async function POST(req: NextRequest) {
         })
       ]);
       console.log(`Status updated for AWB ${awbNumber}: ${order.status} → ${normalizedStatus}`);
+
+      if (order.user?.webhookUrl) {
+          forwardWebhookToMerchant(order.user.webhookUrl, {
+              event: "order_status_update",
+              orderId: order.orderId,
+              awb: awbNumber,
+              status: normalizedStatus,
+              rawStatus: trackingData?.status || "Unknown",
+              location: trackingData?.description || "",
+              timestamp: new Date().toISOString()
+          });
+      }
     } else if (order) {
       console.log(`No status change needed for AWB ${awbNumber}: ${order.status}`);
     } else {

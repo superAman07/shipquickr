@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
+import { forwardWebhookToMerchant } from "@/lib/webhook";
 
 interface TokenDetailsType {
   userId: number;
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     const order = await prisma.order.findUnique({
       where: { id: orderId, userId: userId },
-      include: { items: true, warehouse: true },
+      include: { items: true, warehouse: true, user: true },
     });
 
     if (!order) {
@@ -179,6 +180,19 @@ export async function POST(req: NextRequest) {
         finalStatus: "manifested"
       };
     });
+
+    if (order.user?.webhookUrl && dbTransactionResult.awbAssigned) {
+      // Fire and forget webhook to merchant immediately upon successful manual manifestation
+      forwardWebhookToMerchant(order.user.webhookUrl, {
+          event: "order_status_update",
+          orderId: order.orderId,
+          awb: dbTransactionResult.awbAssigned,
+          status: dbTransactionResult.finalStatus,
+          rawStatus: "Manifested",
+          location: "ShipQuickr System",
+          timestamp: new Date().toISOString()
+      });
+    }
 
     return NextResponse.json({
       success: true,
