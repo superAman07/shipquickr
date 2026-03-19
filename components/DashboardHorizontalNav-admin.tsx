@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, Users, Car, UserRound } from "lucide-react";
+import { Truck, Calculator, Users, UserRound, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [ 
   { href: "/admin/dashboard/rate-calculator", icon: <Calculator className="h-8 w-8" />, label: "Rate Calculator" },
   { href: "/admin/dashboard/users", icon: <Users className="h-8 w-8" />, label: "Users" },
   { href: "/admin/dashboard/shipping-rates", icon: <Truck className="h-8 w-8" />, label: "Shipping Rates" },
+  { href: "/admin/dashboard/transactions", icon: <Wallet className="h-8 w-8" />, label: "Pending Txns" },
   { href: "/admin/dashboard/profile", icon: <UserRound className="h-8 w-8" />, label: "My Profile" },
 ];
 
