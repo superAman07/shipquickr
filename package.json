@@ -64,11 +64,7 @@
     "typescript": "^5.9.3",
     "@types/node": "^20.19.37",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
-  },
-  "devDependencies": {
-    "@aws-amplify/backend": "^1.16.0",
-    "@aws-amplify/backend-cli": "^1.7.0",
+    "@types/react-dom": "^19.2.3",
     "@types/bcrypt": "^5.0.2",
     "@types/formidable": "^3.5.0",
     "@types/js-cookie": "^3.0.6",
@@ -76,10 +72,14 @@
     "@types/nodemailer": "^6.4.23",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.15.10",
+    "prisma": "^6.11.1"
+  },
+  "devDependencies": {
+    "@aws-amplify/backend": "^1.16.0",
+    "@aws-amplify/backend-cli": "^1.7.0",
     "aws-cdk-lib": "^2.189.1",
     "constructs": "^10.4.2",
     "esbuild": "^0.25.3",
-    "prisma": "^6.11.1",
     "tsx": "^4.19.3"
   },
   "prisma": {
