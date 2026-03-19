@@ -34,17 +34,35 @@ export default function WalletPage() {
   const { balance: contextBalance, isLoadingBalance: isContextLoading, refreshBalance } = useWallet();
 
   const searchParams = useSearchParams();
-  const paymentStatus = searchParams.get("status");
-  const paymentStatusCode = searchParams.get("code");
+  const merchantOrderId = searchParams.get("merchantOrderId");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
-    if (paymentStatus === "SUCCESS") {
-      toast.success("Wallet recharge successful!");
-      refreshBalance();
-    } else if (paymentStatus === "FAILED") {
-      toast.error("Payment failed or cancelled.");
-    }
-  }, [paymentStatus]);
+    // Get merchantOrderId from URL (set when PhonePe redirects back, as we embedded it in redirectUrl)
+    // Fallback: sessionStorage in case PhonePe strips query params
+    const orderId = merchantOrderId || sessionStorage.getItem("pendingMerchantOrderId");
+    if (!orderId) return;
+    // Clear sessionStorage flag immediately to avoid re-running on refresh
+    sessionStorage.removeItem("pendingMerchantOrderId");
+    // Called when PhonePe redirects user back — verify payment directly with PhonePe
+    setVerifying(true);
+    axios.post("/api/user/wallet/verify", { merchantOrderId: orderId })
+      .then((res) => {
+        if (res.data.success) {
+          toast.success("Payment successful! Wallet has been credited. ✅");
+          refreshBalance();
+          // Refresh transactions list too
+          axios.get("/api/user/wallet").then(r => setTransactions(r.data.transactions || []));
+        } else if (res.data.state === "PENDING") {
+          toast.info("Payment is still pending. Balance will update shortly.");
+        } else {
+          toast.error("Payment failed or was cancelled.");
+        }
+      })
+      .catch(() => toast.error("Could not verify payment status."))
+      .finally(() => setVerifying(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [merchantOrderId]);
   useEffect(() => {
     setLoading(true);
     axios.get("/api/user/wallet")
@@ -65,7 +83,16 @@ export default function WalletPage() {
       const response = await axios.post("/api/user/wallet", { amount: Number(amount) });
 
       if (response.data.success && response.data.redirectUrl) {
-        window.location.href = response.data.redirectUrl;
+        // PhonePe will redirect back to wallet page — we pass merchantOrderId so we can verify
+        const { redirectUrl, merchantOrderId } = response.data;
+        // Append merchantOrderId to our redirectUrl so we can pick it up on return
+        const walletReturnUrl = new URL(window.location.href);
+        walletReturnUrl.searchParams.set("merchantOrderId", merchantOrderId);
+        // Update our redirect URL in the payment payload — store it so we can pick merchantOrderId from URL
+        // (PhonePe redirects to the redirectUrl we sent in the API, which already points to /wallet)
+        // We store merchantOrderId in sessionStorage as fallback
+        sessionStorage.setItem("pendingMerchantOrderId", merchantOrderId || "");
+        window.location.href = redirectUrl;
         return;
       } else {
         toast.error(response.data.error || "Failed to initiate payment.");
@@ -105,6 +132,12 @@ export default function WalletPage() {
         </div>
       </header>
       <div className="max-w-4xl mx-auto py-4 px-2 sm:px-4">
+        {verifying && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-700 px-4 py-3 text-blue-800 dark:text-blue-200 text-sm font-medium">
+            <Loader2 className="animate-spin h-4 w-4" />
+            Verifying your payment with PhonePe… please wait.
+          </div>
+        )}
         <Card className="mb-6 shadow-lg bg-white dark:bg-gray-900 border-0">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center gap-3 w-full">

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         type: "PG_CHECKOUT",
         message: "Wallet Recharge",
         merchantUrls: {
-          redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet`,
+          redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/user/dashboard/wallet?merchantOrderId=${merchantTransactionId}`,
         },
       },
       userDetails: {
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to get PhonePe redirect URL" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, redirectUrl });
+    return NextResponse.json({ success: true, redirectUrl, merchantOrderId: merchantTransactionId });
   } catch (err: any) {
     console.error("error:", err.response?.data || err.message || err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
