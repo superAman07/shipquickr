@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
+import { forwardWebhookToMerchant } from "@/lib/webhook";
 
 interface TokenDetailsType {
     userId: number;
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
         }
         const order = await prisma.order.findUnique({
-            where: { id: Number(orderId), userId: userId }
+            where: { id: Number(orderId), userId: userId },
+            include: { user: true }
         })
         if (!order) {
             return NextResponse.json({ error: "Order not found or you dont have permission to cancel it" }, { status: 404 });
@@ -89,6 +91,19 @@ export async function POST(req: NextRequest) {
                     });
                 }
             });
+
+            if (order.user?.webhookUrl) {
+                forwardWebhookToMerchant(order.user.webhookUrl, {
+                    event: "order_status_update",
+                    orderId: order.orderId,
+                    awb: order.awbNumber,
+                    status: "cancelled",
+                    rawStatus: "Cancelled",
+                    location: "ShipQuickr Dashboard",
+                    timestamp: new Date().toISOString()
+                });
+            }
+
             return NextResponse.json({ success: true, message: "Order cancelled successfully" });
         } else {
             return NextResponse.json({ error: `Failed to cancel shipment with courier: ${cancellationResult.message}` }, { status: 502 });
