@@ -73,7 +73,6 @@ export default function WalletPage() {
     setLoading(true);
     axios.get("/api/user/wallet")
       .then(res => {
-        // Map any PENDING status to REJECTED based on new logic
         const formattedTxns = (res.data.transactions || []).map((t: Transaction) => {
           if (t.status.toUpperCase() === "PENDING") {
             return { ...t, status: "REJECTED" };
@@ -86,13 +85,12 @@ export default function WalletPage() {
       .finally(() => setLoading(false));
   };
 
-  // Filter and paginate logic
   const filteredTransactions = useMemo(() => {
     return transactions.filter(txn => {
       const isSuccess = txn.status.toLowerCase() === "completed" || txn.status.toLowerCase() === "success";
       if (filter === "success") return isSuccess;
       if (filter === "rejected") return !isSuccess;
-      return true; // "all"
+      return true;
     });
   }, [transactions, filter]);
 
@@ -103,7 +101,7 @@ export default function WalletPage() {
   );
 
   useEffect(() => {
-    setCurrentPage(1); // Reset page to 1 when filter changes
+    setCurrentPage(1);
   }, [filter]);
 
   const handleAddMoney = async () => {
@@ -134,49 +132,49 @@ export default function WalletPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 pb-10">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 mt-10 sm:mt-0 shadow-sm border-b border-gray-100 dark:border-gray-800 mb-6">
-        <div className="container mx-auto py-4 px-4 sm:px-6 lg:px-8 max-w-5xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <FileCheck className="h-6 w-6 text-blue-600 dark:text-blue-500" />
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h1>
+    <div className="min-h-screen bg-transparent pb-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10 space-y-8">
+        
+        {/* Sleek Integrated Header without full width background */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl shadow-sm">
+                <FileCheck className="h-6 w-6 text-indigo-700 dark:text-indigo-400" />
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{title}</h1>
             </div>
-            
-            <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-              <Link href="/user/dashboard" className="flex items-center hover:text-blue-600 transition-colors">
-                <Home className="h-4 w-4 mr-1" />
-                <span>Dashboard</span>
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="font-medium text-gray-900 dark:text-gray-200">My Wallet</span>
-            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">{subtitle}</p>
+          </div>
+          
+          {/* Breadcrumb Pill */}
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+            <Link href="/user/dashboard" className="flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              <Home className="h-4 w-4 mr-1.5" />
+              <span>Dashboard</span>
+            </Link>
+            <ChevronRight className="h-4 w-4 text-gray-400" strokeWidth={3} />
+            <span className="text-gray-900 dark:text-gray-200">My Wallet</span>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {verifying && (
-          <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 p-4 text-blue-800 dark:text-blue-300 text-sm font-medium shadow-sm animate-pulse">
+          <div className="flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800 p-4 text-indigo-800 dark:text-indigo-300 text-sm font-medium shadow-sm animate-pulse">
             <Loader2 className="animate-spin h-5 w-5" />
             Verifying your payment with PhonePe, please hold on...
           </div>
         )}
 
         {/* Wallet Balance Card */}
-        <Card className="border-0 shadow-lg bg-linear-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl overflow-hidden ring-1 ring-gray-900/5 dark:ring-white/10">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-900 rounded-2xl overflow-hidden ring-1 ring-gray-900/5 dark:ring-white/10">
           <CardContent className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-5 w-full sm:w-auto">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                  <Wallet className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl border border-indigo-100 dark:border-indigo-800/50">
+                  <Wallet className="h-9 w-9 text-indigo-700 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total Balance</h2>
+                  <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Total Balance</h2>
                   <div className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
                     {isContextLoading ? <Loader2 className="animate-spin h-8 w-8" /> : <>₹{contextBalance !== null ? contextBalance.toFixed(2) : "--"}</>}
                   </div>
@@ -185,7 +183,7 @@ export default function WalletPage() {
               
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-md hover:shadow-lg transition-all rounded-xl py-6 font-semibold"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer shadow-md hover:shadow-xl transition-all rounded-xl py-6 px-8 font-semibold"
                 onClick={() => setShowModal(true)}
               >
                 <PlusCircle className="h-5 w-5 mr-2" />
@@ -198,51 +196,51 @@ export default function WalletPage() {
         {/* Add Money Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 h-screen">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-sm relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm relative animate-in fade-in zoom-in-95 duration-200 ring-1 ring-gray-900/10">
               <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 p-1.5 rounded-full"
                 onClick={() => setShowModal(false)}
               >
                 <span className="sr-only">Close</span>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
               
-              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-full mb-4">
-                <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center justify-center w-14 h-14 bg-indigo-50 dark:bg-indigo-900/40 rounded-2xl mb-5 shadow-inner">
+                <CreditCard className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Fund Wallet</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Instantly load money via PhonePe gateway.</p>
+              <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-1">Fund Wallet</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">Instantly load money via secure gateway.</p>
               
-              <div className="space-y-4">
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-lg">₹</span>
+              <div className="space-y-5">
+                <div className="relative group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors font-medium text-xl">₹</span>
                   <Input
                     type="number"
                     min={1}
                     placeholder="0.00"
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
-                    className="pl-8 text-lg py-6 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-9 text-xl py-7 bg-gray-50/50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-semibold transition-all"
                     autoFocus
                   />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2.5">
                   {[500, 1000, 2000].map(val => (
                     <button 
                       key={val} 
                       onClick={() => setAmount(val.toString())}
-                      className="flex-1 py-2 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition cursor-pointer"
+                      className="flex-1 py-2.5 text-sm font-bold bg-indigo-50/50 dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-gray-700 rounded-xl hover:bg-indigo-100 dark:hover:bg-gray-700 transition cursor-pointer"
                     >
                       +₹{val}
                     </button>
                   ))}
                 </div>
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-xl font-semibold mt-4 cursor-pointer shadow-md"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-xl font-bold mt-2 shadow-lg cursor-pointer hover:shadow-indigo-500/25 transition-all outline-none"
                   onClick={handleAddMoney}
                   disabled={adding}
                 >
-                  {adding ? <><Loader2 className="animate-spin h-5 w-5 mr-2" /> Processing...</> : "Proceed to Pay securely"}
+                  {adding ? <><Loader2 className="animate-spin h-5 w-5 mr-2" /> Processing...</> : "Proceed to Pay Securely"}
                 </Button>
               </div>
             </div>
@@ -250,30 +248,30 @@ export default function WalletPage() {
         )}
 
         {/* Transactions Section */}
-        <Card className="border-0 shadow-md bg-white dark:bg-gray-900 rounded-2xl ring-1 ring-gray-900/5 dark:ring-white/10 overflow-hidden mt-8">
-          <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 px-6 py-5">
+        <Card className="border-0 shadow-md bg-white dark:bg-gray-900 rounded-2xl ring-1 ring-gray-900/5 dark:ring-white/10 overflow-hidden">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/50 px-6 py-5">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">
+              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 Transaction History
               </CardTitle>
               
               {/* Filter Tabs */}
-              <div className="flex bg-gray-200/60 dark:bg-gray-800/60 p-1 rounded-xl w-full sm:w-auto">
+              <div className="flex bg-gray-100/80 dark:bg-gray-800 p-1 rounded-xl w-full sm:w-auto shadow-inner border border-gray-200/50 dark:border-gray-700/50">
                 <button
                   onClick={() => setFilter("all")}
-                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm cursor-pointer font-medium rounded-lg transition-all ${filter === "all" ? "bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"}`}
+                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm cursor-pointer font-semibold rounded-lg transition-all ${filter === "all" ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"}`}
                 >
                   All
                 </button>
                 <button
                   onClick={() => setFilter("success")}
-                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm cursor-pointer font-medium rounded-lg transition-all ${filter === "success" ? "bg-white dark:bg-gray-700 shadow text-green-600 dark:text-green-400" : "text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400"}`}
+                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm cursor-pointer font-semibold rounded-lg transition-all ${filter === "success" ? "bg-white dark:bg-gray-700 shadow-sm text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"}`}
                 >
                   Success
                 </button>
                 <button
                   onClick={() => setFilter("rejected")}
-                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm cursor-pointer font-medium rounded-lg transition-all ${filter === "rejected" ? "bg-white dark:bg-gray-700 shadow text-red-600 dark:text-red-400" : "text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"}`}
+                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm cursor-pointer font-semibold rounded-lg transition-all ${filter === "rejected" ? "bg-white dark:bg-gray-700 shadow-sm text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"}`}
                 >
                   Rejected
                 </button>
@@ -284,16 +282,16 @@ export default function WalletPage() {
           <CardContent className="p-0">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
-                <Loader2 className="animate-spin h-8 w-8 text-blue-500 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Loading transactions...</p>
+                <Loader2 className="animate-spin h-8 w-8 text-indigo-500 mb-4" />
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Fetching history...</p>
               </div>
             ) : paginatedTransactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-                <div className="h-16 w-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                  <Wallet className="h-8 w-8 text-gray-400" />
+                <div className="h-16 w-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 ring-1 ring-gray-100 dark:ring-gray-700">
+                  <Wallet className="h-8 w-8 text-gray-300 dark:text-gray-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">No transactions found</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-sm">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No transactions found</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-sm font-medium">
                   {filter === "success" ? "You don't have any successful transactions yet." : filter === "rejected" ? "No rejected transactions." : "Your wallet history is empty."}
                 </p>
               </div>
@@ -302,12 +300,12 @@ export default function WalletPage() {
                 {/* Desktop Table View */}
                 <div className="hidden lg:block overflow-x-auto">
                   <Table>
-                    <TableHeader className="bg-gray-50/80 dark:bg-gray-800/50">
+                    <TableHeader className="bg-transparent">
                       <TableRow className="border-b border-gray-100 dark:border-gray-800">
-                        <TableHead className="py-4 pl-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Date</TableHead>
-                        <TableHead className="py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Description</TableHead>
-                        <TableHead className="py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Status</TableHead>
-                        <TableHead className="py-4 pr-6 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Amount</TableHead>
+                        <TableHead className="py-4 pl-6 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Date</TableHead>
+                        <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Description</TableHead>
+                        <TableHead className="py-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Status</TableHead>
+                        <TableHead className="py-4 pr-6 text-right text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Amount</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -316,35 +314,35 @@ export default function WalletPage() {
                         const isCredit = txn.type === "recharge" || txn.type === "credit";
                         
                         return (
-                          <TableRow key={txn.id} className="border-b border-gray-50 dark:border-gray-800/80 hover:bg-gray-50/50 dark:hover:bg-gray-800/40 transition-colors">
-                            <TableCell className="pl-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                          <TableRow key={txn.id} className="border-b border-gray-50 dark:border-gray-800/60 hover:bg-gray-50/50 dark:hover:bg-gray-800/40 transition-colors">
+                            <TableCell className="pl-6 py-5 whitespace-nowrap">
+                              <div className="text-sm font-bold text-gray-900 dark:text-gray-200">
                                 {new Date(txn.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                               </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
+                              <div className="text-xs font-medium text-gray-400 mt-0.5">
                                 {new Date(txn.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                               </div>
                             </TableCell>
-                            <TableCell className="py-4">
-                              <p className="font-semibold text-gray-900 dark:text-white text-sm">{txn.description}</p>
-                              {txn.referenceId && <p className="text-xs text-gray-500 font-mono mt-1">Ref: {txn.referenceId}</p>}
+                            <TableCell className="py-5">
+                              <p className="font-bold text-gray-900 dark:text-white text-sm">{txn.description}</p>
+                              {txn.referenceId && <p className="text-[11px] text-gray-400 font-mono mt-1">Ref: {txn.referenceId}</p>}
                               {txn.receiptUrl && (
-                                <a href={txn.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline mt-1 inline-flex items-center">
+                                <a href={txn.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1.5 inline-flex items-center">
                                   View Receipt
                                 </a>
                               )}
                             </TableCell>
-                            <TableCell className="py-4">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                            <TableCell className="py-5">
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${
                                 isSuccess
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                                  : "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
+                                  : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
                               }`}>
                                 {isSuccess ? "Success" : txn.status}
                               </span>
                             </TableCell>
-                            <TableCell className="pr-6 py-4 text-right">
-                              <span className={`text-base font-bold tabular-nums ${
+                            <TableCell className="pr-6 py-5 text-right">
+                              <span className={`text-base font-extrabold tabular-nums ${
                                 isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-white"
                               }`}>
                                 {isCredit ? "+" : "-"} ₹{txn.amount.toFixed(2)}
@@ -367,12 +365,12 @@ export default function WalletPage() {
                       <div key={txn.id} className="p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex flex-col">
-                           <span className="font-bold text-gray-900 dark:text-white text-sm line-clamp-2 pr-2">{txn.description}</span>
-                           <span className="text-xs text-gray-500 mt-1">
+                           <span className="font-bold text-gray-900 dark:text-white text-sm line-clamp-2 pr-2 leading-snug">{txn.description}</span>
+                           <span className="text-xs font-medium text-gray-400 mt-1">
                              {new Date(txn.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}, {new Date(txn.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                            </span>
                           </div>
-                          <span className={`text-base font-bold tabular-nums shrink-0 mt-0.5 ${
+                          <span className={`text-base font-extrabold tabular-nums shrink-0 mt-0.5 ${
                                 isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-white"
                               }`}>
                             {isCredit ? "+" : "-"}₹{txn.amount.toFixed(2)}
@@ -380,17 +378,17 @@ export default function WalletPage() {
                         </div>
                         <div className="flex justify-between items-end mt-3">
                           <div className="flex flex-col gap-1.5">
-                            {txn.referenceId && <span className="text-[11px] text-gray-500 font-mono">Ref: {txn.referenceId}</span>}
+                            {txn.referenceId && <span className="text-[10px] text-gray-400 font-mono">Ref: {txn.referenceId}</span>}
                             {txn.receiptUrl && (
-                                <a href={txn.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-blue-600 hover:text-blue-800">
+                                <a href={txn.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800">
                                   View Receipt
                                 </a>
                             )}
                           </div>
-                          <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
                                 isSuccess
-                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                                  : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20"
                               }`}>
                             {isSuccess ? "Success" : txn.status}
                           </span>
@@ -403,8 +401,8 @@ export default function WalletPage() {
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Page <span className="font-semibold text-gray-900 dark:text-white">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Page <span className="font-bold text-gray-900 dark:text-white">{currentPage}</span> of <span className="font-bold text-gray-900 dark:text-white">{totalPages}</span>
                     </span>
                     <div className="flex gap-2">
                       <Button
@@ -412,7 +410,7 @@ export default function WalletPage() {
                         size="sm"
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                         disabled={currentPage === 1}
-                        className="h-8 w-8 p-0 rounded-lg cursor-pointer"
+                        className="h-8 w-8 p-0 rounded-lg cursor-pointer border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
@@ -421,7 +419,7 @@ export default function WalletPage() {
                         size="sm"
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                         disabled={currentPage === totalPages}
-                        className="h-8 w-8 p-0 rounded-lg cursor-pointer"
+                        className="h-8 w-8 p-0 rounded-lg cursor-pointer border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
