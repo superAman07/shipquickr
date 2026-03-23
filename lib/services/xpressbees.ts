@@ -2,7 +2,7 @@ import axios from "axios";
 
 interface RateResult {
     courierName: string;
-    serviceType?: string;
+    serviceType: string;
     weight: number;
     courierCharges: number;
     codCharges: number;

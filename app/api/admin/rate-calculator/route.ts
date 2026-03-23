@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
+import { xpressbeesClient } from "@/lib/services/xpressbees";
+import { shadowfaxClient } from "@/lib/services/shadowfax";
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,8 +26,8 @@ export async function POST(req: NextRequest) {
     const codAmount = body.paymentMode === "COD" ? (parseFloat(body.collectableValue) || 0) : 0;
 
     // Call the new Aggregator Service
-    // Call both Aggregator and Delhivery
-    const [aggregatorRates, delhiverySurface, delhiveryExpress] = await Promise.all([
+    // Call both Aggregator and Delhivery, Xpressbees, Shadowfax
+    const [rawRatesResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult] = await Promise.allSettled([
       shippingAggregatorClient.fetchRatesStandard(
         body.pickupPincode,
         body.destinationPincode,
@@ -50,18 +52,32 @@ export async function POST(req: NextRequest) {
         "Express",
         body.paymentMode,
         declaredValue
+      ),
+      xpressbeesClient.getXpressbeesOptions(
+        { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
+        cw,
+        { l: dimensions.length, w: dimensions.width, h: dimensions.height }
+      ),
+      shadowfaxClient.getShadowfaxOptions(
+        body.pickupPincode,
+        body.destinationPincode,
+        cw,
+        body.paymentMode,
+        codAmount
       )
     ]);
 
-    const rates = aggregatorRates || [];
-    if (delhiverySurface) rates.push(delhiverySurface);
-    if (delhiveryExpress) rates.push(delhiveryExpress);
+    let combinedRates = rawRatesResult.status === "fulfilled" ? (rawRatesResult.value || []) : [];
+    if (delhiverySurfaceResult.status === "fulfilled" && delhiverySurfaceResult.value) combinedRates.push(delhiverySurfaceResult.value);
+    if (delhiveryExpressResult.status === "fulfilled" && delhiveryExpressResult.value) combinedRates.push(delhiveryExpressResult.value);
+    if (xpressbeesResult.status === "fulfilled" && xpressbeesResult.value) combinedRates.push(...xpressbeesResult.value);
+    if (shadowfaxResult.status === "fulfilled" && shadowfaxResult.value) combinedRates.push(...shadowfaxResult.value);
 
-    if (rates.length === 0) {
+    if (combinedRates.length === 0) {
       return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });
     }
 
-    return NextResponse.json({ rates });
+    return NextResponse.json({ rates: combinedRates });
 
   } catch (error: any) {
     console.error("Admin Rate Calculator Main Error:", error);
