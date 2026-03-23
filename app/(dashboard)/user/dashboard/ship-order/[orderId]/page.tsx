@@ -4,10 +4,25 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { ArrowLeft, ChevronRight, Home, Loader2, Package, Truck } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronRight,
+  Loader2,
+  Package,
+  Truck,
+} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface OrderItem {
   productName: string;
@@ -53,6 +68,7 @@ interface CourierRate {
   courierPartnerId?: number;
   expectedDelivery?: string;
 }
+
 interface RateResult {
   courierName: string;
   serviceType?: string;
@@ -75,28 +91,34 @@ export default function ShipOrderPage() {
   const [loading, setLoading] = useState(true);
   const [ratesLoading, setRatesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availableCouriers, setAvailableCouriers] = useState<CourierRate[]>([]);
-  const [selectedCourier, setSelectedCourier] = useState<CourierRate | null>(null);
+  const [availableCouriers, setAvailableCouriers] = useState<CourierRate[]>(
+    []
+  );
+  const [selectedCourier, setSelectedCourier] =
+    useState<CourierRate | null>(null);
   const [isShipping, setIsShipping] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const getCourierLogo = (courierName: string): string | undefined => {
-    const nameLower = courierName?.toLowerCase() || "";
-    if (nameLower.includes("ecom express")) {
-      return "/ecom-express.png";
+    const nameLower = courierName?.toLowerCase() || '';
+
+    if (nameLower.includes('ecom express')) {
+      return '/ecom-express.png';
     }
-    if (nameLower.includes("xpressbees")) {
-      return "/xpressbees.png";
+    if (nameLower.includes('xpressbees')) {
+      return '/xpressbees.png';
     }
-    if (nameLower.includes("shadowfax")) {
-      return "/shadowfax.png";
+    if (nameLower.includes('shadowfax')) {
+      return '/shadowfax.png';
     }
+
     return undefined;
   };
 
   useEffect(() => {
     const fetchOrderAndRates = async () => {
       if (!orderId) return;
+
       setLoading(true);
       setRatesLoading(true);
       setError(null);
@@ -106,42 +128,67 @@ export default function ShipOrderPage() {
 
       let fetchedOrder: Order | null = null;
       let fetchedPickupPincode: string | null = null;
+
       try {
-        console.log("Fetching order details for:", orderId);
-        const orderRes = await axios.get(`/api/user/orders/single-order/${orderId}`);
+        console.log('Fetching order details for:', orderId);
+
+        const orderRes = await axios.get(
+          `/api/user/orders/single-order/${orderId}`
+        );
+
         if (orderRes.data.order) {
           fetchedOrder = orderRes.data.order;
           setOrder(fetchedOrder);
-          console.log("Order details fetched:", fetchedOrder);
+          console.log('Order details fetched:', fetchedOrder);
         } else {
-          console.error("Order not found in API response.");
-          setError("Order not found.");
+          console.error('Order not found in API response.');
+          setError('Order not found.');
           setLoading(false);
           setRatesLoading(false);
           return;
         }
+
         if (fetchedOrder?.pickupLocation) {
-          console.log("Fetching warehouse pincode for:", fetchedOrder.pickupLocation);
+          console.log(
+            'Fetching warehouse pincode for:',
+            fetchedOrder.pickupLocation
+          );
+
           try {
-            const warehouseRes = await axios.get(`/api/user/warehouses?search=${encodeURIComponent(fetchedOrder.pickupLocation)}`);
-            if (warehouseRes.data.warehouses && warehouseRes.data.warehouses.length > 0) {
+            const warehouseRes = await axios.get(
+              `/api/user/warehouses?search=${encodeURIComponent(
+                fetchedOrder.pickupLocation
+              )}`
+            );
+
+            if (
+              warehouseRes.data.warehouses &&
+              warehouseRes.data.warehouses.length > 0
+            ) {
               fetchedPickupPincode = warehouseRes.data.warehouses[0].pincode;
               setPickupPincode(fetchedPickupPincode);
-              console.log("Pickup pincode fetched:", fetchedPickupPincode);
+              console.log('Pickup pincode fetched:', fetchedPickupPincode);
             } else {
-              console.warn("Could not find warehouse details for pickup location:", fetchedOrder.pickupLocation);
-              setError("Could not determine pickup pincode. Please check the order's pickup location.");
+              console.warn(
+                'Could not find warehouse details for pickup location:',
+                fetchedOrder.pickupLocation
+              );
+              setError(
+                "Could not determine pickup pincode. Please check the order's pickup location."
+              );
             }
           } catch (whError) {
-            console.error("Error fetching warehouse details:", whError);
-            setError("Failed to fetch pickup location details.");
+            console.error('Error fetching warehouse details:', whError);
+            setError('Failed to fetch pickup location details.');
           }
         } else {
-          console.warn("Pickup location not set for this order.");
-          setError("Pickup location not set for this order.");
+          console.warn('Pickup location not set for this order.');
+          setError('Pickup location not set for this order.');
         }
+
         if (fetchedOrder && fetchedPickupPincode) {
-          console.log("Attempting to fetch courier rates...");
+          console.log('Attempting to fetch courier rates...');
+
           try {
             const ratePayload = {
               pickupPincode: fetchedPickupPincode,
@@ -151,56 +198,72 @@ export default function ShipOrderPage() {
               width: fetchedOrder.breadth || 10,
               height: fetchedOrder.height || 10,
               paymentMode: fetchedOrder.paymentMode,
-              collectableValue: fetchedOrder.paymentMode === "COD" ? (calculateTotalOrderValue(fetchedOrder.items)) : 0,
-              declaredValue: calculateTotalOrderValue(fetchedOrder.items) || 50,
+              collectableValue:
+                fetchedOrder.paymentMode === 'COD'
+                  ? calculateTotalOrderValue(fetchedOrder.items)
+                  : 0,
+              declaredValue:
+                calculateTotalOrderValue(fetchedOrder.items) || 50,
             };
-            console.log("Rate Payload:", ratePayload);
 
-            const ratesRes = await axios.post<{ rates: RateResult[] }>('/api/user/courier-services', ratePayload);
-            console.log("Rate API Response:", ratesRes.data);
+            console.log('Rate Payload:', ratePayload);
+
+            const ratesRes = await axios.post<{ rates: RateResult[] }>(
+              '/api/user/courier-services',
+              ratePayload
+            );
+
+            console.log('Rate API Response:', ratesRes.data);
 
             if (ratesRes.data && Array.isArray(ratesRes.data.rates)) {
               if (ratesRes.data.rates.length > 0) {
-                const mappedCouriers: CourierRate[] = ratesRes.data.rates.map(rate => ({
-                  name: rate.courierName,
-                  logoUrl: rate.image || getCourierLogo(rate.courierName), // Use API image if available
-                  serviceType: rate.serviceType || 'Standard',
-                  minWeight: 0.5, // dummy
-                  rate: rate.courierCharges,
-                  codCharges: rate.codCharges,
-                  totalPrice: rate.totalPrice,
-                  weight: rate.weight,
-                  courierPartnerId: rate.courierPartnerId,
-                  expectedDelivery: rate.expectedDelivery
-                }));
+                const mappedCouriers: CourierRate[] = ratesRes.data.rates.map(
+                  (rate) => ({
+                    name: rate.courierName,
+                    logoUrl: rate.image || getCourierLogo(rate.courierName),
+                    serviceType: rate.serviceType || 'Standard',
+                    minWeight: 0.5,
+                    rate: rate.courierCharges,
+                    codCharges: rate.codCharges,
+                    totalPrice: rate.totalPrice,
+                    weight: rate.weight,
+                    courierPartnerId: rate.courierPartnerId,
+                    expectedDelivery: rate.expectedDelivery,
+                  })
+                );
+
                 setAvailableCouriers(mappedCouriers);
-                console.log("Mapped Couriers:", mappedCouriers);
+                console.log('Mapped Couriers:', mappedCouriers);
               } else {
-                console.warn("Rate API returned an empty array of rates.");
+                console.warn('Rate API returned an empty array of rates.');
                 setAvailableCouriers([]);
               }
             } else {
-              console.warn("No rates array received from API or invalid format.");
+              console.warn('No rates array received from API or invalid format.');
               setAvailableCouriers([]);
             }
           } catch (rateError: any) {
-            console.error("Error fetching courier rates:", rateError);
-            toast.error(rateError.response?.data?.error || "Failed to fetch courier rates.");
+            console.error('Error fetching courier rates:', rateError);
+            toast.error(
+              rateError.response?.data?.error ||
+                'Failed to fetch courier rates.'
+            );
             setAvailableCouriers([]);
           } finally {
-            console.log("Skipping rate fetch because order or pickup pincode is missing.");
+            console.log(
+              'Skipping rate fetch because order or pickup pincode is missing.'
+            );
             setRatesLoading(false);
           }
         }
-
       } catch (err) {
-        console.error("Error fetching order:", err);
-        setError("Failed to load order details.");
-        toast.error("Failed to load order details.");
+        console.error('Error fetching order:', err);
+        setError('Failed to load order details.');
+        toast.error('Failed to load order details.');
         setRatesLoading(false);
       } finally {
         setLoading(false);
-        console.log("Finished fetchOrderAndRates effect.");
+        console.log('Finished fetchOrderAndRates effect.');
       }
     };
 
@@ -209,7 +272,12 @@ export default function ShipOrderPage() {
 
   const calculateTotalOrderValue = (items: OrderItem[]): number => {
     if (!items || items.length === 0) return 0;
-    return items.reduce((sum, item) => sum + (Number(item.orderValue || 0) * Number(item.quantity || 0)), 0);
+
+    return items.reduce(
+      (sum, item) =>
+        sum + Number(item.orderValue || 0) * Number(item.quantity || 0),
+      0
+    );
   };
 
   const appliedWeight = order?.physicalWeight ? Number(order.physicalWeight) : 0;
@@ -220,40 +288,57 @@ export default function ShipOrderPage() {
 
   const executeShipment = async () => {
     if (!selectedCourier || !order) {
-      toast.warn("Please select a courier partner first.");
+      toast.warn('Please select a courier partner first.');
       return;
     }
+
     setIsShipping(true);
-    const toastId = toast.loading("Creating shipment...");
+    const toastId = toast.loading('Creating shipment...');
+
     try {
       const response = await axios.post('/api/user/shipment/confirm', {
         orderId: order.id,
-        selectedCourier: selectedCourier
+        selectedCourier,
       });
 
       if (response.status === 200 || response.status === 201) {
-        toast.update(toastId, { render: `Shipment created successfully! AWB: ${response.data.awbNumber}`, type: "success", isLoading: false, autoClose: 5000 });
+        toast.update(toastId, {
+          render: `Shipment created successfully! AWB: ${response.data.awbNumber}`,
+          type: 'success',
+          isLoading: false,
+          autoClose: 5000,
+        });
+
         setTimeout(() => router.push('/user/dashboard/bulk'), 3000);
       } else {
-        throw new Error(response.data.error || "Failed to create shipment");
+        throw new Error(response.data.error || 'Failed to create shipment');
       }
-
     } catch (error: any) {
-      console.error("Error creating shipment:", error);
-      const errorMessage = error.response?.data?.error || error.message || "An unknown error occurred";
-      toast.update(toastId, { render: `Failed to create shipment: ${errorMessage}`, type: "error", isLoading: false, autoClose: 7000 });
+      console.error('Error creating shipment:', error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        'An unknown error occurred';
+
+      toast.update(toastId, {
+        render: `Failed to create shipment: ${errorMessage}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 7000,
+      });
     } finally {
       setIsShipping(false);
       setShowConfirmDialog(false);
     }
   };
 
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600 dark:text-gray-300">Loading Order Details...</span>
+        <span className="ml-2 text-gray-600 dark:text-gray-300">
+          Loading Order Details...
+        </span>
       </div>
     );
   }
@@ -263,7 +348,11 @@ export default function ShipOrderPage() {
       <div className="p-6 text-center text-red-600 dark:text-red-400">
         <Package className="h-12 w-12 mx-auto mb-4 text-red-400" />
         <p>{error}</p>
-        <button type='button' onClick={() => router.back()} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
           Go Back
         </button>
       </div>
@@ -271,7 +360,11 @@ export default function ShipOrderPage() {
   }
 
   if (!order) {
-    return <div className="p-6 text-center text-gray-500">Order data not available.</div>;
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Order data not available.
+      </div>
+    );
   }
 
   const totalOrderValue = calculateTotalOrderValue(order.items);
@@ -282,99 +375,235 @@ export default function ShipOrderPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
-              <button type='button' onClick={() => router.back()} title="Go Back" className="mr-3 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                title="Go Back"
+                className="mr-3 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
                 <ArrowLeft size={20} />
               </button>
               Select Courier Partner
             </h1>
+
             <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              <Link href="/user/dashboard" className="hover:text-blue-600 dark:hover:text-blue-400">Dashboard</Link>
+              <Link
+                href="/user/dashboard"
+                className="hover:text-blue-600 dark:hover:text-blue-400"
+              >
+                Dashboard
+              </Link>
               <ChevronRight className="h-3 w-3 mx-1" />
-              <Link href="/user/dashboard/bulk" className="hover:text-blue-600 dark:hover:text-blue-400">Orders</Link>
+              <Link
+                href="/user/dashboard/bulk"
+                className="hover:text-blue-600 dark:hover:text-blue-400"
+              >
+                Orders
+              </Link>
               <ChevronRight className="h-3 w-3 mx-1" />
-              <span className="font-medium text-gray-700 dark:text-gray-300">Ship</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Ship
+              </span>
             </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Choose the best courier option for Order ID: <span className='font-semibold text-blue-600 dark:text-blue-400'>{order.orderId}</span></p>
+
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Choose the best courier option for Order ID:{' '}
+            <span className="font-semibold text-blue-600 dark:text-blue-400">
+              {order.orderId}
+            </span>
+          </p>
         </div>
 
         {/* Order Details Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
           <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Pickup From</label>
-            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{pickupPincode || 'N/A'}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Deliver To</label>
-            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{order.pincode}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Order Value (₹)</label>
-            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">{totalOrderValue.toFixed(2)}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Applied Weight (Kg)</label>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
+              Pickup From
+            </label>
             <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              {availableCouriers.length > 0 ? availableCouriers[0].weight.toFixed(2) : appliedWeight.toFixed(2)}
+              {pickupPincode || 'N/A'}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
+              Deliver To
+            </label>
+            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              {order.pincode}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
+              Order Value(₹)
+            </label>
+            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              {totalOrderValue.toFixed(2)}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
+              Applied Weight(Kg)
+            </label>
+            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              {availableCouriers.length > 0
+                ? availableCouriers[0].weight.toFixed(2)
+                : appliedWeight.toFixed(2)}
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
           {ratesLoading ? (
-            <div className="flex justify-center items-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-              <span className="ml-3 text-gray-600 dark:text-gray-300">Fetching Available Couriers...</span>
+            <div className="h-full min-h-[300px] flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500">
+              <div className="relative">
+                <div className="absolute inset-0 bg-indigo-500 rounded-full blur-xl opacity-20 animate-pulse" />
+                <Loader2 className="h-12 w-12 animate-spin text-indigo-600 relative z-10" />
+              </div>
+              <p className="text-sm font-bold tracking-wide text-slate-600 dark:text-slate-400 animate-pulse">
+                Querying Partner Networks...
+              </p>
             </div>
           ) : availableCouriers.length > 0 ? (
-            availableCouriers.map((courier, index) => (
-              <div
-                key={`${courier.name}-${courier.serviceType}-${index}`}
-                className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-4 ${selectedCourier?.name === courier.name && selectedCourier?.serviceType === courier.serviceType
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-400'
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
-                  }`}
-                onClick={() => handleSelectCourier(courier)}
-              >
-                <input
-                  type="radio"
-                  name="courierSelection"
-                  title={`Select ${courier.name} - ${courier.serviceType}`}
-                  checked={selectedCourier?.name === courier.name && selectedCourier?.serviceType === courier.serviceType}
-                  onChange={() => handleSelectCourier(courier)}
-                  className="form-radio h-5 w-5 text-blue-600 focus:ring-blue-500 flex-shrink-0" // Added flex-shrink-0
-                />
-                {courier.logoUrl && (
-                  <div className="relative h-10 w-20 flex-shrink-0"> {/* Added flex-shrink-0 */}
-                    <Image src={courier.logoUrl} alt={`${courier.name} logo`} layout="fill" objectFit="contain" />
+            availableCouriers
+              .sort((a, b) => a.totalPrice - b.totalPrice)
+              .map((courier, index) => {
+                const isExpress =
+                  courier.serviceType?.toLowerCase().includes('express') ||
+                  courier.serviceType?.toLowerCase().includes('air');
+
+                const isSelected =
+                  selectedCourier?.name === courier.name &&
+                  selectedCourier?.serviceType === courier.serviceType;
+
+                const isCheapest = index === 0;
+
+                return (
+                  <div
+                    key={`${courier.name}-${courier.serviceType}-${index}`}
+                    onClick={() => handleSelectCourier(courier)}
+                    className={`group relative rounded-2xl p-4 sm:p-5 border transition-all duration-300 cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-50/80 dark:bg-blue-900/40 border-blue-500 shadow-md shadow-blue-500/20 ring-1 ring-blue-500'
+                        : 'bg-white dark:bg-gray-800 border-slate-200 dark:border-gray-700 hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-600 hover:-translate-y-1'
+                    }`}
+                  >
+                    {isCheapest && (
+                      <div className="absolute -top-3 -right-2 bg-gradient-to-r from-emerald-400 to-green-500 text-white text-[10px] font-black uppercase tracking-wider py-1 px-3 rounded-full shadow-md shadow-green-500/20 z-10 border border-white dark:border-gray-800">
+                        Cheapest
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                      {/* Radio Button & Courier Identity */}
+                      <div className="col-span-1 border-b pb-3 sm:pb-0 sm:border-b-0 sm:border-r border-slate-200/60 dark:border-gray-700 sm:col-span-4 flex flex-row items-center justify-between sm:justify-start h-full pr-0 sm:pr-4">
+                        <div className="flex items-center">
+                          <div
+                            className={`mr-4 sm:mr-6 shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? 'border-blue-600 bg-blue-600'
+                                : 'border-slate-300 dark:border-slate-600'
+                            }`}
+                          >
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 bg-white rounded-full" />
+                            )}
+                          </div>
+
+                          <div className="flex flex-col items-start justify-center">
+                            {courier.logoUrl ? (
+                              <div className="relative h-10 w-24 sm:w-28 mb-1.5 transition-transform group-hover:scale-105">
+                                <Image
+                                  src={courier.logoUrl}
+                                  alt={`${courier.name} logo`}
+                                  layout="fill"
+                                  objectFit="contain"
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-sm font-extrabold text-gray-700 dark:text-gray-200 mb-1.5 block">
+                                {courier.name}
+                              </span>
+                            )}
+
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest font-bold shadow-sm ${
+                                isExpress
+                                  ? 'bg-orange-100 text-orange-700 border-orange-200'
+                                  : 'bg-blue-100 text-blue-700 border-blue-200'
+                              } border`}
+                            >
+                              {courier.serviceType || 'Standard'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Meta Data */}
+                      <div className="col-span-1 sm:col-span-5 grid grid-cols-3 gap-2 sm:gap-4 pl-0 sm:pl-2">
+                        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                            Weight
+                          </p>
+                          <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">
+                            {courier.weight.toFixed(2)}{' '}
+                            <span className="text-xs text-slate-500">kg</span>
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                            Transit
+                          </p>
+                          <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                            {courier.expectedDelivery || '3-5 Days'}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                            Freight
+                          </p>
+                          <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mt-1">
+                            ₹{courier.rate.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Total Price Highlight */}
+                      <div className="col-span-1 sm:col-span-3 flex sm:flex-col items-center justify-between sm:justify-center bg-indigo-50/50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-100/50 dark:border-indigo-800/30 transition-colors group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/40">
+                        <div className="flex flex-col">
+                          <p className="text-[10px] font-bold text-indigo-400 sm:text-center uppercase tracking-widest">
+                            Total
+                          </p>
+                          <p className="text-xl sm:text-2xl font-black text-indigo-700 dark:text-indigo-400 mt-0.5 tracking-tight text-center">
+                            ₹{courier.totalPrice.toFixed(0)}
+                          </p>
+                        </div>
+
+                        <div className="sm:hidden flex flex-col text-right">
+                          <p className="text-[10px] text-slate-500 font-medium">
+                            Includes COD
+                          </p>
+                          <p className="text-[11px] font-bold text-slate-700">
+                            ₹{courier.codCharges.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
-                {!courier.logoUrl && (
-                  <div className="h-10 w-20 flex-shrink-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded"> {/* Placeholder */}
-                    <Package size={24} className="text-gray-400" />
-                  </div>
-                )}
-                <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1 items-center">
-                  <div className="md:col-span-1">
-                    <span className="font-semibold text-base md:text-lg block leading-tight">{courier.name}</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 block leading-tight">{courier.serviceType}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-500 block">Min. Weight: {courier.minWeight} Kg</span>
-                  </div>
-                  <div className="text-left md:text-center md:col-span-1">
-                  </div>
-                  <div className="text-left md:text-right md:col-span-1">
-                    <span className="font-bold text-lg md:text-xl text-blue-700 dark:text-blue-400 block">₹{courier.totalPrice.toFixed(2)}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block">Freight: ₹{courier.rate.toFixed(2)}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block">+ COD Charges: ₹{courier.codCharges.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-            ))
+                );
+              })
           ) : (
             !ratesLoading && (
-              <div className="p-6 text-center bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                <Truck className="h-10 w-10 mx-auto mb-3 text-gray-400" />
-                <p className="text-gray-500 dark:text-gray-400">No courier services available for this route/weight.</p>
+              <div className="h-full min-h-[300px] flex flex-col items-center justify-center opacity-60 transition-opacity hover:opacity-100 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-slate-200 dark:border-gray-700">
+                <Truck className="h-20 w-20 text-slate-300 dark:text-slate-600 mb-5" />
+                <p className="text-sm font-bold text-slate-500 dark:text-slate-400 text-center max-w-[250px] leading-relaxed">
+                  No courier services available for this route or weight capacity.
+                </p>
               </div>
             )
           )}
@@ -387,10 +616,11 @@ export default function ShipOrderPage() {
                 type="button"
                 onClick={() => setShowConfirmDialog(true)}
                 disabled={!selectedCourier || isShipping}
-                className={`px-6 py-3 rounded-lg font-semibold text-white cursor-pointer transition-colors duration-200 flex items-center justify-center shadow-md ${!selectedCourier || isShipping
+                className={`px-6 py-3 rounded-lg font-semibold text-white cursor-pointer transition-colors duration-200 flex items-center justify-center shadow-md ${
+                  !selectedCourier || isShipping
                     ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
                     : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
-                  }`}
+                }`}
               >
                 {isShipping && !showConfirmDialog ? (
                   <>
@@ -405,29 +635,43 @@ export default function ShipOrderPage() {
                 )}
               </button>
             </div>
-            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+
+            <AlertDialog
+              open={showConfirmDialog}
+              onOpenChange={setShowConfirmDialog}
+            >
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirm Shipment</AlertDialogTitle>
                   <AlertDialogDescription>
-                    You are about to ship this order with <strong>{selectedCourier?.name}</strong> for a base fee of <strong>₹{selectedCourier?.totalPrice.toFixed(2)}</strong>.
+                    You are about to ship this order with{' '}
+                    <strong>{selectedCourier?.name}</strong> for a base fee of{' '}
+                    <strong>₹{selectedCourier?.totalPrice.toFixed(2)}</strong>.
                     <br />
-                    The final amount, including applicable taxes, will be deducted from your wallet.
-                    <br /><br />
+                    The final amount, including applicable taxes, will be deducted
+                    from your wallet.
+                    <br />
+                    <br />
                     This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isShipping}>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel disabled={isShipping}>
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction onClick={executeShipment} disabled={isShipping}>
-                    {isShipping ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm & Ship"}
+                    {isShipping ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Confirm & Ship'
+                    )}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </>
         )}
-
       </div>
     </div>
   );

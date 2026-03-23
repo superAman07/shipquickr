@@ -67,16 +67,16 @@ export async function POST(req: NextRequest) {
 
     // 2. Fetch Rates from Aggregator AND Direct Integrations
     const [aggregatorResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult] = await Promise.allSettled([
-        shippingAggregatorClient.fetchRatesStandard(body.pickupPincode, body.destinationPincode, cw, dimensions, body.paymentMode, declaredValue, codAmount),
-        delhiveryClient.fetchRate(String(body.pickupPincode), String(body.destinationPincode), cw, "Surface", body.paymentMode, declaredValue),
-        delhiveryClient.fetchRate(String(body.pickupPincode), String(body.destinationPincode), cw, "Express", body.paymentMode, declaredValue),
-        // Fix 1: Properly map length, width, height to l, w, h
-        xpressbeesClient.getXpressbeesOptions(
-            { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
-            cw,
-            { l: dimensions.length, w: dimensions.width, h: dimensions.height }
-        ),
-        shadowfaxClient.getShadowfaxOptions(body.pickupPincode, body.destinationPincode, cw, body.paymentMode, codAmount)
+      shippingAggregatorClient.fetchRatesStandard(body.pickupPincode, body.destinationPincode, cw, dimensions, body.paymentMode, declaredValue, codAmount),
+      delhiveryClient.fetchRate(String(body.pickupPincode), String(body.destinationPincode), cw, "Surface", body.paymentMode, declaredValue),
+      delhiveryClient.fetchRate(String(body.pickupPincode), String(body.destinationPincode), cw, "Express", body.paymentMode, declaredValue),
+      // Fix 1: Properly map length, width, height to l, w, h
+      xpressbeesClient.getXpressbeesOptions(
+        { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
+        cw,
+        { l: dimensions.length, w: dimensions.width, h: dimensions.height }
+      ),
+      shadowfaxClient.getShadowfaxOptions(body.pickupPincode, body.destinationPincode, cw, body.paymentMode, codAmount)
     ]);
 
     // Extract successful results
@@ -85,22 +85,22 @@ export async function POST(req: NextRequest) {
     // Combine all rates
     if (delhiverySurfaceResult.status === "fulfilled" && delhiverySurfaceResult.value) rawRates.push(delhiverySurfaceResult.value);
     if (delhiveryExpressResult.status === "fulfilled" && delhiveryExpressResult.value) rawRates.push(delhiveryExpressResult.value);
-     if (xpressbeesResult.status === "fulfilled" && xpressbeesResult.value) {
-        const xbRates = xpressbeesResult.value.map(r => ({
-            ...r,
-            expectedDelivery: r.expectedDelivery || "4-5 Days",
-            courierPartnerId: 998
-        }));
-        rawRates.push(...xbRates);
+    if (xpressbeesResult.status === "fulfilled" && xpressbeesResult.value) {
+      const xbRates = xpressbeesResult.value.map(r => ({
+        ...r,
+        expectedDelivery: r.expectedDelivery || "4-5 Days",
+        courierPartnerId: 998
+      }));
+      rawRates.push(...xbRates);
     }
-    
+
     if (shadowfaxResult.status === "fulfilled" && shadowfaxResult.value) {
-        const sfRates = shadowfaxResult.value.map(r => ({
-            ...r,
-            expectedDelivery: r.expectedDelivery || "4-6 Days",
-            courierPartnerId: 997
-        }));
-        rawRates.push(...sfRates);
+      const sfRates = shadowfaxResult.value.map(r => ({
+        ...r,
+        expectedDelivery: r.expectedDelivery || "4-6 Days",
+        courierPartnerId: 997
+      }));
+      rawRates.push(...sfRates);
     }
 
     // --- FILTER BASED ON ADMIN ASSIGNMENTS ---
@@ -117,10 +117,16 @@ export async function POST(req: NextRequest) {
           });
 
           if (assignments.length > 0) {
-            const assignedCourierNames = assignments.map(a => a.courier);
-            rawRates = rawRates.filter(rate =>
-              assignedCourierNames.includes(rate.courierName)
-            );
+            const assignedCourierNames = assignments.map(a => a.courier.toLowerCase());
+            rawRates = rawRates.filter(rate => {
+              const rateName = rate.courierName.toLowerCase();
+              if (rateName.includes("xpressbees") && assignedCourierNames.some(c => c.includes("xpress") || c.includes("express"))) return true;
+              if (rateName.includes("delhivery") && assignedCourierNames.some(c => c.includes("delhivery"))) return true;
+              if (rateName.includes("shadowfax") && assignedCourierNames.some(c => c.includes("shadowfax") || c.includes("shadow fax"))) return true;
+              if (rateName.includes("ecom") && assignedCourierNames.some(c => c.includes("ecom"))) return true;
+
+              return assignedCourierNames.includes(rateName) || assignedCourierNames.some(c => rateName.includes(c));
+            });
           }
         }
       }
