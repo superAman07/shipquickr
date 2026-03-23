@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight, Ticket, Users, UserCheck, Plus, ListFilter, User, Newspaper, LogOut } from "lucide-react";
+import { Package, Truck, Info, Calculator, ChevronRight, Ticket, Users, UserCheck, Plus, ListFilter, User, Newspaper, LogOut, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import React, { useEffect, useState } from "react";
@@ -24,7 +24,7 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
       )}
     >
       <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
-        <div className={cn("flex-shrink-0", active ? "text-[#252525]" : "text-[#f9fafb]")}>
+        <div className={cn("shrink-0", active ? "text-[#252525]" : "text-[#f9fafb]")}>
           {React.isValidElement(icon)
             ? React.cloneElement(
               icon as React.ReactElement<{ className?: string }>,
@@ -155,6 +155,13 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/news"}
           collapsed={sidebarCollapsed}
         />
+        <NavItem
+          icon={<AlertCircle className="h-5 w-5" />}
+          label="Global Banner"
+          href="/admin/dashboard/banner"
+          active={pathname === "/admin/dashboard/banner"}
+          collapsed={sidebarCollapsed}
+        />
         <div
           className={cn(
             "flex items-center px-4 py-1 mt-2 cursor-pointer rounded-l-full transition-colors hover:bg-indigo-900",
@@ -162,7 +169,7 @@ export default function DashboardSidebarAdmin() {
           )}
         >
           <div className={cn("flex font-bold items-center w-full", sidebarCollapsed ? "justify-center" : "")}>
-            <LogOut className="h-5 w-5 flex-shrink-0 cursor-pointer" />
+            <LogOut className="h-5 w-5 shrink-0 cursor-pointer" />
             <div
               className={cn(
                 "ml-3 whitespace-nowrap transition-all duration-300 w-full",

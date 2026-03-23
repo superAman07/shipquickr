@@ -339,6 +339,15 @@ model UserCourierAssignment {
   @@index([userId])
 }
 
+model GlobalBanner {
+  id              Int      @id @default(autoincrement())
+  content         String   @db.Text
+  backgroundColor String?  @default("bg-[linear-gradient(to_right,#f59e0b,#ea580c)]")
+  isActive        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 enum CouponAmountType {
   fixed
   percent

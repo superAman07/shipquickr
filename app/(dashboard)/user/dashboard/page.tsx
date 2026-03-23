@@ -83,6 +83,11 @@ interface TokenDetailsType {
   email: string;
   role: string;
 }
+const activeBanner = await prisma.globalBanner.findFirst({
+  where: { isActive: true },
+  orderBy: { updatedAt: 'desc' }
+});
+
 export default async function Dashboard() {
   const cookieStore = await cookies();
   const token = cookieStore.get('userToken')?.value;
@@ -211,6 +216,12 @@ export default async function Dashboard() {
 
   return (
     <main className=" px-4 md:px-8 pb-8">
+      {activeBanner && (
+        <div className={`${activeBanner.backgroundColor} w-full rounded-xl mt-4 mb-2 text-white text-[13px] sm:text-sm shadow-md py-3 px-4 flex items-center justify-start gap-3 transition-all cursor-pointer hover:shadow-lg`}>
+          <AlertCircle className="w-5 h-5 animate-pulse shrink-0" />
+          <div className="tracking-wide w-full" dangerouslySetInnerHTML={{ __html: activeBanner.content }} />
+        </div>
+      )}
       <DashboardWelcome name={firstName} />
       <DashboardHorizontalNavUser />
       <div className="max-w-full mx-auto">
