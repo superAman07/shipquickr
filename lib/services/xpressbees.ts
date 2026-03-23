@@ -7,6 +7,9 @@ interface RateResult {
     courierCharges: number;
     codCharges: number;
     totalPrice: number;
+    expectedDelivery: string;
+    courierPartnerId: number;
+    image?: string;
 }
 
 interface ShipmentData {
@@ -66,7 +69,7 @@ class XpressbeesClient {
                 return null;
             }
         } catch (error: any) {
-            console.error("XpressbeesClient: Error fetching new token:", error.response?.data || error.message);  
+            console.error("XpressbeesClient: Error fetching new token:", error.response?.data || error.message);
             this.tokenExpiry = null;
             this.currentToken = null;
             return null;
@@ -91,9 +94,9 @@ class XpressbeesClient {
             // Sort events by time to find the latest one... event_time is a Unix timestamp.
             allEvents.sort((a: any, b: any) => parseInt(b.event_time) - parseInt(a.event_time));
             const latestStatus = allEvents[0] as any;
-            
+
             const attempts = allEvents.reduce((count: number, event: any) => {
-                const statusLower = (event.status || "").toLowerCase(); 
+                const statusLower = (event.status || "").toLowerCase();
                 if (statusLower.includes("undelivered") || statusLower.includes("failed delivery")) {
                     return count + 1;
                 }
@@ -106,7 +109,7 @@ class XpressbeesClient {
                 location: latestStatus.location,
                 date: new Date(parseInt(latestStatus.event_time) * 1000).toISOString(),
                 delivered: (latestStatus.ship_status || "").toLowerCase() === 'delivered',
-                attempts: attempts,  
+                attempts: attempts,
                 history: allEvents.map((item: any) => ({
                     status: item.status,
                     description: item.message,
@@ -197,13 +200,18 @@ class XpressbeesClient {
                         const calculatedTotal = (isNaN(courierCharges) ? 0 : courierCharges) + (isNaN(codCharges) ? 0 : codCharges);
 
                         if (!isNaN(courierCharges)) {
+                            const serviceNameLower = (rate.name || "").toLowerCase();
+                            const isAir = serviceNameLower.includes("air") || serviceNameLower.includes("express");
                             return {
                                 courierName: "Xpressbees",
                                 serviceType: rate.name || "Standard",
                                 weight: cw,
                                 courierCharges: courierCharges,
                                 codCharges: isNaN(codCharges) ? 0 : codCharges,
-                                totalPrice: calculatedTotal
+                                totalPrice: calculatedTotal,
+                                expectedDelivery: isAir ? "2-3 Days" : "4-6 Days", // Dynamic estimation
+                                image: "/xpressbees.png",
+                                courierPartnerId: 998,
                             };
                         }
                         return null;
@@ -374,13 +382,13 @@ class XpressbeesClient {
             return false;
         }
     }
-    public async cancelShipment (awbNumber: string): Promise<{success: boolean; message: string}> {
+    public async cancelShipment(awbNumber: string): Promise<{ success: boolean; message: string }> {
         const token = await this.getValidXpressbeesToken();
         const apiUrl = process.env.XPRESSBEES_CANCEL_SHIPMENT_API_URL;
-        if(!token || !apiUrl) {
+        if (!token || !apiUrl) {
             const errorMsg = "XpressbeesClient: Token or Cancel API URL is missing";
             console.error(errorMsg);
-            return {success: false, message: errorMsg};
+            return { success: false, message: errorMsg };
         }
         const payload = {
             awb_number: awbNumber,
@@ -392,15 +400,15 @@ class XpressbeesClient {
                     'Content-Type': 'application/json'
                 },
             });
-            if(response.data && (response.data.response === true || response.data.status === true)) {
+            if (response.data && (response.data.response === true || response.data.status === true)) {
                 return { success: true, message: response.data.message || "Shipment cancelled successfully." };
-            }else {
+            } else {
                 const errorMsg = response.data?.message || "Unknown error during cancellation";
-                return {success: false, message: errorMsg};
+                return { success: false, message: errorMsg };
             }
-        }catch (error: any){
+        } catch (error: any) {
             const errorMsg = error.response?.data?.message || error.message || "An error occurred while cancelling the shipment";
-            return {success: false, message: errorMsg}
+            return { success: false, message: errorMsg }
         }
     }
     async trackShipment(awbNumber: string) {

@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
                 };
                 
                 // Fire and forget
-                forwardWebhookToMerchant(order.user.webhookUrl, forwardPayload);
+                await forwardWebhookToMerchant(order.user.webhookUrl, forwardPayload);
             }
         }
 

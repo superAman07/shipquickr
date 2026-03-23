@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
+import { xpressbeesClient } from "@/lib/services/xpressbees";
+import { shadowfaxClient } from "@/lib/services/shadowfax";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 
@@ -37,9 +39,8 @@ export async function POST(req: NextRequest) {
         const adminCodType = adminRates?.codChargesType ?? "fixed";
 
         // 2. Fetch Raw Rates from Aggregator
-        // 2. Fetch Rates from Aggregator AND Delhivery
-        // 2. Fetch Rates from Aggregator AND Delhivery (Surface & Express)
-        const [rawRates, delhiverySurface, delhiveryExpress] = await Promise.all([
+        // 2. Fetch Rates from Aggregator AND Delhivery, Xpressbees, Shadowfax
+        const [rawRatesResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult] = await Promise.allSettled([
             shippingAggregatorClient.fetchRatesStandard(
                 body.pickupPincode,
                 body.destinationPincode,
@@ -64,17 +65,31 @@ export async function POST(req: NextRequest) {
                 "Express",
                 body.paymentMode,
                 declaredValue
+            ),
+            xpressbeesClient.getXpressbeesOptions(
+                { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
+                cw,
+                { l: dimensions.length, w: dimensions.width, h: dimensions.height }
+            ),
+            shadowfaxClient.getShadowfaxOptions(
+                body.pickupPincode,
+                body.destinationPincode,
+                cw,
+                body.paymentMode,
+                codAmount
             )
         ]);
 
-        let combinedRates = rawRates || [];
-        if (delhiverySurface) combinedRates.push(delhiverySurface);
-        if (delhiveryExpress) combinedRates.push(delhiveryExpress);
+        let combinedRates = rawRatesResult.status === "fulfilled" ? (rawRatesResult.value || []) : [];
+        if (delhiverySurfaceResult.status === "fulfilled" && delhiverySurfaceResult.value) combinedRates.push(delhiverySurfaceResult.value);
+        if (delhiveryExpressResult.status === "fulfilled" && delhiveryExpressResult.value) combinedRates.push(delhiveryExpressResult.value);
+        if (xpressbeesResult.status === "fulfilled" && xpressbeesResult.value) combinedRates.push(...xpressbeesResult.value);
+        if (shadowfaxResult.status === "fulfilled" && shadowfaxResult.value) combinedRates.push(...shadowfaxResult.value);
 
         try {
             const cookieStore = await cookies();
             const token = cookieStore.get("userToken")?.value;
-            
+
             if (token) {
                 const decoded: any = jwtDecode(token);
                 if (decoded && decoded.userId) {
@@ -82,12 +97,19 @@ export async function POST(req: NextRequest) {
                         where: { userId: decoded.userId, isActive: true },
                         select: { courier: true }
                     });
-                    
+
                     if (assignments.length > 0) {
-                        const assignedCourierNames = assignments.map(a => a.courier);
-                        combinedRates = combinedRates.filter(rate => 
-                            assignedCourierNames.includes(rate.courierName)
-                        );
+                        const assignedCourierNames = assignments.map(a => a.courier.toLowerCase());
+                        combinedRates = combinedRates.filter(rate => {
+                            const rateName = rate.courierName.toLowerCase();
+                            // Catch misspelling permutations: Xpressbees vs Expressbees, ecom vs ecom express
+                            if (rateName.includes("xpressbees") && assignedCourierNames.some(c => c.includes("xpress") || c.includes("express"))) return true;
+                            if (rateName.includes("delhivery") && assignedCourierNames.some(c => c.includes("delhivery"))) return true;
+                            if (rateName.includes("shadowfax") && assignedCourierNames.some(c => c.includes("shadowfax") || c.includes("shadow fax"))) return true;
+                            if (rateName.includes("ecom") && assignedCourierNames.some(c => c.includes("ecom"))) return true;
+
+                            return assignedCourierNames.includes(rateName) || assignedCourierNames.some(c => rateName.includes(c));
+                        });
                     }
                 }
             }

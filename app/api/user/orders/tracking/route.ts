@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       console.log(`Status updated for AWB ${awbNumber}: ${order.status} → ${normalizedStatus}`);
 
       if (order.user?.webhookUrl) {
-          forwardWebhookToMerchant(order.user.webhookUrl, {
+          await forwardWebhookToMerchant(order.user.webhookUrl, {
               event: "order_status_update",
               orderId: order.orderId,
               awb: awbNumber,

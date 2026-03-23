@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
 import { forwardWebhookToMerchant } from "@/lib/webhook";
+import { xpressbeesClient } from "@/lib/services/xpressbees";
+import { shadowfaxClient } from "@/lib/services/shadowfax";
 
 interface TokenDetailsType {
   userId: number;
@@ -80,14 +82,10 @@ export async function POST(req: NextRequest) {
     let actualAwbNumber = "";
     let finalCourierName = selectedCourier.name;
     let labelUrl = "";
-    // A. Check if user selected Delhivery Direct
+        // A. Check if user selected Delhivery Direct
     if (selectedCourier.name.toLowerCase().includes("delhivery")) {
         console.log(`Processing Order ${orderId} via Delhivery Direct integration...`);
-        
-        // Determine Mode (Express/Surface)
-        // Check if rate calculator marked it as express or user chose express
         const mode = selectedCourier.name.toLowerCase().includes("express") ? "Express" : "Surface";
-        
         const bookingResult = await delhiveryClient.createOrder(order, mode);
         
         if (!bookingResult || !bookingResult.waybill) {
@@ -97,29 +95,60 @@ export async function POST(req: NextRequest) {
         actualAwbNumber = bookingResult.waybill;
         finalCourierName = "Delhivery " + mode;
         console.log("Delhivery Direct Booking Success. AWB:", actualAwbNumber);
+        
         const labelResult = await delhiveryClient.generateLabel(actualAwbNumber);
-        if (labelResult.success && labelResult.url) {
-            labelUrl = labelResult.url;
-            console.log("Delhivery Label URL:", labelUrl);
-        }
+        if (labelResult.success && labelResult.url) { labelUrl = labelResult.url; }
     } 
+    // B. Check if user selected Xpressbees
+    else if (selectedCourier.name.toLowerCase().includes("xpressbees")) {
+        console.log(`Processing Order ${orderId} via Xpressbees Direct integration...`);
+        
+        // Fetch KYC for Xpressbees GST requirements
+        const kycDetail = await prisma.kycDetail.findUnique({
+             where: { userId: order.userId },
+             select: { gstNumber: true }
+        });
+        
+        const shipmentDetails = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber);
+
+        if (!shipmentDetails || !shipmentDetails.awbNumber) {
+            return NextResponse.json({ error: "Failed to book order with Xpressbees. Serviceable pins error." }, { status: 502 });
+        }
+        
+        actualAwbNumber = shipmentDetails.awbNumber;
+        finalCourierName = selectedCourier.name;
+        labelUrl = shipmentDetails.labelUrl || "";
+        console.log("Xpressbees Booking Success. AWB:", actualAwbNumber);
+        
+        // Trigger background manifest creation silently
+        await xpressbeesClient.createManifest([actualAwbNumber]).catch(e => console.error("Xpressbees background manifest failed:", e));
+    }
+    // C. Check if user selected Shadowfax
+    else if (selectedCourier.name.toLowerCase().includes("shadowfax")) {
+        console.log(`Processing Order ${orderId} via Shadowfax Direct integration...`);
+        const shipmentDetails = await shadowfaxClient.generateAwb(order, selectedCourier.serviceType);
+        
+        if (!shipmentDetails || !shipmentDetails.awbNumber) {
+             return NextResponse.json({ error: "Failed to book order with Shadowfax." }, { status: 502 });
+        }
+        
+        actualAwbNumber = shipmentDetails.awbNumber;
+        finalCourierName = selectedCourier.name;
+        labelUrl = shipmentDetails.labelUrl || "";
+        console.log("Shadowfax Booking Success. AWB:", actualAwbNumber);
+    }
+    // D. Aggregator Fallback (Any other courier logic)
     else {
         const warehouseId = process.env.SHIPPING_AGGREGATOR_WAREHOUSE_ID;
         if (!warehouseId) {
-            console.error("Env var SHIPPING_AGGREGATOR_WAREHOUSE_ID is missing.");
             return NextResponse.json({ error: "Server configuration error: Warehouse ID missing." }, { status: 500 });
         }
         const aggregatorOrderId = await shippingAggregatorClient.pushOrder(order, warehouseId);
-        
         if (!aggregatorOrderId) {
             return NextResponse.json({ error: "Failed to push order to shipping provider." }, { status: 502 });
         }
-        const courierPartnerId = selectedCourier.courierPartnerId;
-        if (!courierPartnerId) {
-             return NextResponse.json({ error: "Invalid Courier ID. Refresh rates." }, { status: 400 });
-        }
-        const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId as string, courierPartnerId);
         
+        const assignResult = await shippingAggregatorClient.assignCourier(aggregatorOrderId as string, selectedCourier.courierPartnerId!);
         if (!assignResult.success) {
             return NextResponse.json({ error: "Failed to assign courier. Pincode might not be serviceable." }, { status: 502 });
         }
