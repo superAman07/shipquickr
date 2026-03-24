@@ -81,7 +81,7 @@ export class DelhiveryClient {
 
             try {
                 const rateResponse = await axios.get(`${BASE_URL}/api/kinko/v1/invoice/charges/.json`, {
-                    headers: { 
+                    headers: {
                         Authorization: `Token ${token}`,
                         'Content-Type': 'application/json'
                     },
@@ -95,8 +95,8 @@ export class DelhiveryClient {
                     }
                 });
 
-                const data = rateResponse.data[0]; 
-                const totalApiAmount = data?.total_amount || 0; 
+                const data = rateResponse.data[0];
+                const totalApiAmount = data?.total_amount || 0;
                 codCharge = data?.cod_charges || (isCod ? 50 : 0);
                 if (totalApiAmount > 0) {
                     courierCharges = totalApiAmount - codCharge;
@@ -106,7 +106,7 @@ export class DelhiveryClient {
                 baseRate = courierCharges;
             } catch (rateErr) {
                 console.error("Delhivery Rates API Error:", rateErr);
-                return null; 
+                return null;
             }
             let expectedDelivery = "3-5 Days";
             try {
@@ -119,10 +119,10 @@ export class DelhiveryClient {
                         pdt: "B2C"
                     }
                 });
-                
+
                 const responseBody = tatResponse.data;
                 let days = null;
-                
+
                 if (responseBody?.data?.tat) {
                     days = responseBody.data.tat;
                 } else if (responseBody?.tat) {
@@ -170,7 +170,8 @@ export class DelhiveryClient {
         const paymentMode = order.paymentMode === "COD" ? "COD" : "Prepaid";
         const codAmount = paymentMode === "COD" ? order.codAmount : 0;
         // 2. Prepare Payload
-        const warehouseName = order.warehouse?.warehouseName || order.pickupLocation;
+        // Normalize warehouse name: trim leading/trailing spaces + collapse double spaces
+        const warehouseName = (order.warehouse?.warehouseName || order.pickupLocation || "").trim().replace(/\s+/g, ' ');
 
         const dataObject = {
             pickup_location: {
@@ -235,18 +236,23 @@ export class DelhiveryClient {
                 const pkg = data.packages[0];
                 if (pkg.status === "Fail") {
                     console.error("Delhivery Order Creation Failed:", pkg.remarks);
-                    return null;
+                    return { error: pkg.remarks?.[0] || "Order creation failed at Delhivery." };
                 }
                 return {
                     waybill: pkg.waybill,
                     refnum: pkg.refnum,
-                    upload_wbn: pkg.upload_wbn // Sometimes present
+                    upload_wbn: pkg.upload_wbn
                 };
+            }
+            // If no packages returned, check for top-level error
+            if (data?.rmk) {
+                console.error("Delhivery CreateOrder Remark:", data.rmk);
+                return { error: data.rmk };
             }
             return null;
         } catch (error: any) {
             console.error("Delhivery CreateOrder Error:", error.response?.data || error.message);
-            return null;
+            return { error: error.response?.data?.rmk || error.message || "Network error connecting to Delhivery." };
         }
     }
     public async cancelOrder(waybill: string) {
@@ -272,12 +278,12 @@ export class DelhiveryClient {
                         }
                     }
                 );
-                console.log(`Delhivery Cancel Response (${token.slice(0,8)}...):`, response.data);
+                console.log(`Delhivery Cancel Response (${token.slice(0, 8)}...):`, response.data);
                 if (response.data?.status === true) {
                     return { success: true, message: "Shipment cancelled successfully" };
                 }
             } catch (e: any) {
-                console.error(`Cancel failed (${token.slice(0,8)}...):`, e.response?.data || e.message);
+                console.error(`Cancel failed (${token.slice(0, 8)}...):`, e.response?.data || e.message);
             }
         }
         return { success: false, message: "Cancellation failed on Delhivery" };
@@ -285,74 +291,74 @@ export class DelhiveryClient {
     public async generateLabel(waybill: string) {
         try {
             const tokensToTry = [
-            config.tokens.surface500g,
-            config.tokens.surface2kg,
-            config.tokens.surface5kg,
-            config.tokens.express500g,
-        ].filter(Boolean);
+                config.tokens.surface500g,
+                config.tokens.surface2kg,
+                config.tokens.surface5kg,
+                config.tokens.express500g,
+            ].filter(Boolean);
 
-        for (const token of tokensToTry) {
-            try {
-                const response = await axios.get(`${BASE_URL}/api/p/packing_slip`, {
-                    headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
-                    params: { wbns: waybill, pdf: "true"}
-                });
-                console.log("Delhivery Label Response:", response.data);
-                const data = response.data;
-                if (data?.packages?.length > 0) {
-                    const pdfUrl = data.packages[0].pdf_download_link || "";
-                    if (pdfUrl) return { success: true, url: pdfUrl };
+            for (const token of tokensToTry) {
+                try {
+                    const response = await axios.get(`${BASE_URL}/api/p/packing_slip`, {
+                        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+                        params: { wbns: waybill, pdf: "true" }
+                    });
+                    console.log("Delhivery Label Response:", response.data);
+                    const data = response.data;
+                    if (data?.packages?.length > 0) {
+                        const pdfUrl = data.packages[0].pdf_download_link || "";
+                        if (pdfUrl) return { success: true, url: pdfUrl };
+                    }
+                } catch (e: any) {
+                    console.error(`Label failed (${token.slice(0, 8)}...):`, e.response?.data || e.message);
                 }
-            } catch (e: any) {
-                console.error(`Label failed (${token.slice(0,8)}...):`, e.response?.data || e.message);
             }
-        }
-        return { success: false, message: "Label URL not found in response" };
+            return { success: false, message: "Label URL not found in response" };
 
         } catch (error: any) {
-             console.error("Delhivery Label Error:", error.response?.data || error.message);
-             return { success: false, message: "Failed to generate label" };
+            console.error("Delhivery Label Error:", error.response?.data || error.message);
+            return { success: false, message: "Failed to generate label" };
         }
     }
     public async trackOrder(waybill: string) {
         try {
             const tokensToTry = [
-            config.tokens.surface500g,
-            config.tokens.surface2kg,
-            config.tokens.surface5kg,
-            config.tokens.express500g,
-        ].filter(Boolean);
+                config.tokens.surface500g,
+                config.tokens.surface2kg,
+                config.tokens.surface5kg,
+                config.tokens.express500g,
+            ].filter(Boolean);
 
-        for (const token of tokensToTry) {
-            try {
-                const response = await axios.get(`${BASE_URL}/api/v1/packages/json/`, {
-                    headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
-                    params: { waybill: waybill, verbose: "0" }
-                });
-                const data = response.data;
-                if (data?.ShipmentData?.length > 0) {
-                    const shipment = data.ShipmentData[0];
-                    const scans = shipment.Scans?.map((scan: any) => ({
-                        status: scan.ScanDetail.Scan,
-                        location: scan.ScanDetail.ScannedLocation,
-                        timestamp: scan.ScanDetail.ScanDateTime,
-                        remark: scan.ScanDetail.Instructions || ""
-                    })) || [];
-                    return {
-                        success: true,
-                        currentStatus: shipment.Shipment.Status.Status,
-                        scans,
-                        expectedDelivery: shipment.Shipment.ExpectedDeliveryDate
-                    };
+            for (const token of tokensToTry) {
+                try {
+                    const response = await axios.get(`${BASE_URL}/api/v1/packages/json/`, {
+                        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+                        params: { waybill: waybill, verbose: "0" }
+                    });
+                    const data = response.data;
+                    if (data?.ShipmentData?.length > 0) {
+                        const shipment = data.ShipmentData[0];
+                        const scans = shipment.Scans?.map((scan: any) => ({
+                            status: scan.ScanDetail.Scan,
+                            location: scan.ScanDetail.ScannedLocation,
+                            timestamp: scan.ScanDetail.ScanDateTime,
+                            remark: scan.ScanDetail.Instructions || ""
+                        })) || [];
+                        return {
+                            success: true,
+                            currentStatus: shipment.Shipment.Status.Status,
+                            scans,
+                            expectedDelivery: shipment.Shipment.ExpectedDeliveryDate
+                        };
+                    }
+                } catch (e: any) {
+                    console.error(`Track failed (${token.slice(0, 8)}...):`, e.response?.data || e.message);
                 }
-            } catch (e: any) {
-                console.error(`Track failed (${token.slice(0,8)}...):`, e.response?.data || e.message);
             }
-        }
-        return { success: false, message: "No tracking data found" };
+            return { success: false, message: "No tracking data found" };
         } catch (error: any) {
-             console.error("Delhivery Tracking Error:", error.response?.data || error.message);
-             return { success: false, message: "Failed to track order" };
+            console.error("Delhivery Tracking Error:", error.response?.data || error.message);
+            return { success: false, message: "Failed to track order" };
         }
     }
 }

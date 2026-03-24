@@ -88,8 +88,19 @@ export async function POST(req: NextRequest) {
         const mode = selectedCourier.name.toLowerCase().includes("express") ? "Express" : "Surface";
         const bookingResult = await delhiveryClient.createOrder(order, mode);
         
-        if (!bookingResult || !bookingResult.waybill) {
-             return NextResponse.json({ error: "Failed to book order with Delhivery Direct. Please check address serviceability." }, { status: 502 });
+        if (!bookingResult) {
+             return NextResponse.json({ error: "Failed to connect to Delhivery. Please try again." }, { status: 502 });
+        }
+        if ('error' in bookingResult) {
+            const delhiveryError = (bookingResult as any).error;
+            let userMessage = `Delhivery: ${delhiveryError}`;
+            if (delhiveryError.includes("ClientWarehouse matching query does not exist")) {
+                userMessage = `Pickup location "${order.warehouse?.warehouseName}" is not registered in Delhivery. Please ensure the warehouse name in ShipQuickr exactly matches the one registered in your Delhivery portal.`;
+            }
+            return NextResponse.json({ error: userMessage }, { status: 502 });
+        }
+        if (!bookingResult.waybill) {
+             return NextResponse.json({ error: "Delhivery did not return a tracking number. Please try again or contact support." }, { status: 502 });
         }
         
         actualAwbNumber = bookingResult.waybill;
