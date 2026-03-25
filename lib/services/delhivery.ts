@@ -265,6 +265,8 @@ export class DelhiveryClient {
 
         console.log("Attempting Delhivery Cancellation for AWB:", waybill);
 
+        let lastMeaningfulError = "Cancellation failed on Delhivery";
+
         for (const token of tokensToTry) {
             try {
                 const response = await axios.post(
@@ -282,11 +284,15 @@ export class DelhiveryClient {
                 if (response.data?.status === true) {
                     return { success: true, message: "Shipment cancelled successfully" };
                 }
+                // Capture actual error from Delhivery (skip generic "Incorrect Waybill" from wrong tokens)
+                if (response.data?.error && !response.data.error.includes("Incorrect Waybill")) {
+                    lastMeaningfulError = response.data.error;
+                }
             } catch (e: any) {
                 console.error(`Cancel failed (${token.slice(0, 8)}...):`, e.response?.data || e.message);
             }
         }
-        return { success: false, message: "Cancellation failed on Delhivery" };
+        return { success: false, message: lastMeaningfulError };
     }
     public async generateLabel(waybill: string) {
         try {

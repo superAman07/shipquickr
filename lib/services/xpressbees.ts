@@ -27,9 +27,10 @@ interface Dimensions {
 }
 
 interface XpressbeesShipmentDetails {
-    awbNumber: string;
-    shippingId: string;
-    labelUrl: string;
+    awbNumber?: string;
+    shippingId?: string;
+    labelUrl?: string;
+    error?: string;
 }
 
 class XpressbeesClient {
@@ -340,12 +341,14 @@ class XpressbeesClient {
                     labelUrl: response.data.label,
                 };
             } else {
-                console.error("XpressbeesClient: Failed to fetch AWB from Xpressbees:", response.data?.message || "Unknown error from Xpressbees API");
-                return null;
+                const errorMsg = response.data?.message || "Unknown error from Xpressbees API";
+                console.error("XpressbeesClient: Failed to fetch AWB from Xpressbees:", errorMsg);
+                return { error: errorMsg };
             }
         } catch (error: any) {
-            console.error("XpressbeesClient: Error in Xpressbees AWB generation API call:", error.response?.data || error.message);
-            return null;
+            const errorMsg = error.response?.data?.message || error.message || "Network error while connecting to Xpressbees";
+            console.error("XpressbeesClient: Error in Xpressbees AWB generation API call:", errorMsg);
+            return { error: errorMsg };
         }
     }
     public async createManifest(awbNumbers: string[]): Promise<boolean> {

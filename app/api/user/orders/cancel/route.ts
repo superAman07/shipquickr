@@ -46,22 +46,43 @@ export async function POST(req: NextRequest) {
         //     return NextResponse.json({ error: `Cancellation for courier ${order.courierName} is not supported` }, { status: 400 });
         // }
 
-        let cancellationResult;
-        if (order.courierName.toLowerCase().includes("delhivery")) {
+        let cancellationResult: { success: boolean; message: string };
+        const courierLower = order.courierName.toLowerCase();
+
+        if (courierLower.includes("delhivery")) {
             console.log("Cancelling Delhivery Order:", order.awbNumber);
             const result = await delhiveryClient.cancelOrder(order.awbNumber);
-
             cancellationResult = {
                 success: result.success || false,
                 message: result.message || "Cancellation request processed"
             };
+            if (!cancellationResult.success) {
+                cancellationResult.message = `Delhivery: ${cancellationResult.message}`;
+            }
+        } else if (courierLower.includes("xpressbees") || courierLower.includes("expressbees")) {
+            console.log("Cancelling Xpressbees Order:", order.awbNumber);
+            cancellationResult = await xpressbeesClient.cancelShipment(order.awbNumber);
+            if (!cancellationResult.success) {
+                cancellationResult.message = `Xpressbees: ${cancellationResult.message}`;
+            }
+        } else if (courierLower.includes("shadowfax")) {
+            console.log("Cancelling Shadowfax Order:", order.awbNumber);
+            // Shadowfax doesn't have a cancel API yet — mark internally and inform user
+            cancellationResult = {
+                success: false,
+                message: "Shadowfax: Automatic cancellation is not supported yet. Please cancel directly on the Shadowfax portal or contact support."
+            };
         } else {
+            console.log("Cancelling via Aggregator for:", order.courierName, order.awbNumber);
             cancellationResult = await shippingAggregatorClient.cancelOrder(order.orderId, order.awbNumber);
+            if (!cancellationResult.success) {
+                cancellationResult.message = `${order.courierName}: ${cancellationResult.message}`;
+            }
         }
 
         if (cancellationResult.success) {
             await prisma.$transaction(async (tx) => {
-                 
+
                 await tx.order.update({
                     where: { id: order.id },
                     data: {

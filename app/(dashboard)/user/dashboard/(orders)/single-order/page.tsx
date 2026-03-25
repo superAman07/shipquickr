@@ -159,10 +159,11 @@ export default function SingleOrderPage() {
     }));
   };
   const generateOrderId = () => {
-    const prefix = "SQ"; 
-    const timestamp = Date.now();
-    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setForm(prev => ({ ...prev, orderId: `${prefix}-${timestamp}-${randomSuffix}` }));
+    const prefix = "SQ";
+    const now = new Date();
+    const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setForm(prev => ({ ...prev, orderId: `${prefix}${datePart}${randomPart}` }));
   };
 
   const totalOrderValue = form.items.reduce((sum, item) => {
@@ -250,7 +251,7 @@ export default function SingleOrderPage() {
 
   return (
     <>
-      <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
+      <header className="dark:text-amber-50 rounded-2xl bg-linear-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
         <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -369,7 +370,7 @@ export default function SingleOrderPage() {
                   <div>
                     <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
                     <div className="flex">
-                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="flex-grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                         <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-blue-600 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-r-md text-xs hover:bg-blue-200 dark:hover:bg-blue-800/60 transition-colors">
                             Auto Generate ID
                         </button>
@@ -405,29 +406,29 @@ export default function SingleOrderPage() {
                     </div>
                     )}
                     {totalOrderValue >= 50000 && (
-  <div className="md:col-span-3 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md border border-yellow-200 dark:border-yellow-800 mt-2">
-    <div className="flex items-start">
-      <div className="flex-grow">
-        <label htmlFor="ewaybill" className="block text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">
-          E-Way Bill Number <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          id="ewaybill"
-          name="ewaybill"
-          value={form.ewaybill}
-          onChange={handleChange}
-          required
-          placeholder="Enter 12-digit E-Way Bill No."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-        />
-        <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
-          ⚠️ Mandatory for orders exceeding ₹50,000.
-        </p>
-      </div>
-    </div>
-  </div>
-)}
+                      <div className="md:col-span-3 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md border border-yellow-200 dark:border-yellow-800 mt-2">
+                        <div className="flex items-start">
+                          <div className="grow">
+                            <label htmlFor="ewaybill" className="block text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">
+                              E-Way Bill Number <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="ewaybill"
+                              name="ewaybill"
+                              value={form.ewaybill}
+                              onChange={handleChange}
+                              required
+                              placeholder="Enter 12-digit E-Way Bill No."
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                            <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
+                              ⚠️ Mandatory for orders exceeding ₹50,000.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">

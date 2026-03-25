@@ -164,9 +164,10 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
  
   const generateOrderId = () => {
     const prefix = "SQ";
-    const timestamp = Date.now();
-    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setForm(prev => ({ ...prev, orderId: `${prefix}-${timestamp}-${randomSuffix}` }));
+    const now = new Date();
+    const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setForm(prev => ({ ...prev, orderId: `${prefix}${datePart}${randomPart}` }));
   };
 
 
@@ -355,7 +356,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                  <div>
                     <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
                     <div className="flex">
-                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="flex-grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                         <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-blue-600 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-r-md text-xs hover:bg-blue-200 dark:hover:bg-blue-800/60 transition-colors">
                             Auto Generate ID
                         </button>

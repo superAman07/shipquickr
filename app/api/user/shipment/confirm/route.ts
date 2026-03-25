@@ -70,9 +70,18 @@ export async function POST(req: NextRequest) {
     });
     
     if (assignments.length > 0) {
-      const assignedCourierNames = assignments.map(a => a.courier);
-      // Check if the requested courier is in their assigned list
-      if (!assignedCourierNames.includes(selectedCourier.name)) {
+      const assignedCourierNames = assignments.map(a => a.courier.toLowerCase());
+      const courierNameLower = selectedCourier.name.toLowerCase();
+      
+      const isAllowed = 
+        assignedCourierNames.includes(courierNameLower) ||
+        (courierNameLower.includes("xpressbees") && assignedCourierNames.some(c => c.includes("xpress") || c.includes("express"))) ||
+        (courierNameLower.includes("delhivery") && assignedCourierNames.some(c => c.includes("delhivery"))) ||
+        (courierNameLower.includes("shadowfax") && assignedCourierNames.some(c => c.includes("shadowfax") || c.includes("shadow fax"))) ||
+        (courierNameLower.includes("ecom") && assignedCourierNames.some(c => c.includes("ecom"))) ||
+        assignedCourierNames.some(c => courierNameLower.includes(c));
+
+      if (!isAllowed) {
         return NextResponse.json({ 
             error: `Unauthorized: You do not have permission to use ${selectedCourier.name}. Please contact support.` 
         }, { status: 403 });
@@ -122,8 +131,14 @@ export async function POST(req: NextRequest) {
         
         const shipmentDetails = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber);
 
-        if (!shipmentDetails || !shipmentDetails.awbNumber) {
-            return NextResponse.json({ error: "Failed to book order with Xpressbees. Serviceable pins error." }, { status: 502 });
+        if (!shipmentDetails) {
+            return NextResponse.json({ error: "Failed to connect to Xpressbees API." }, { status: 502 });
+        }
+        if (shipmentDetails.error) {
+            return NextResponse.json({ error: `Xpressbees: ${shipmentDetails.error}` }, { status: 502 });
+        }
+        if (!shipmentDetails.awbNumber) {
+            return NextResponse.json({ error: "Failed to book order with Xpressbees. No tracking number returned." }, { status: 502 });
         }
         
         actualAwbNumber = shipmentDetails.awbNumber;
