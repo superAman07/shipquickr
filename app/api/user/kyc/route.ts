@@ -112,41 +112,59 @@ export async function POST(req: NextRequest) {
     const aadhaarBackUrl = await saveFile(formData.get("aadhaarBack") as File | null, "kyc");
     const chequeUrl = await saveFile(formData.get("cheque") as File | null, "kyc");
 
-    const already = await prisma.kycDetail.findUnique({ where: { userId: parseInt(decoded.userId) } });
-    if (already) return NextResponse.json({ error: "KYC already submitted" }, { status: 409 });
+    // ONLY block if they are currently pending or approved
+    const userStatus = await prisma.user.findUnique({ where: { id: parseInt(decoded.userId) } });
+    if (userStatus?.kycStatus === "pending" || userStatus?.kycStatus === "approved") {
+      return NextResponse.json({ error: "KYC already submitted and is pending or approved" }, { status: 409 });
+    }
 
-    const kyc = await prisma.kycDetail.create({
-      data: {
-        userId: parseInt(decoded.userId),
-        mobile: formData.get("mobile")?.toString() || "",
-        gst: formData.get("gst") === "yes",
-        gstNumber: formData.get("gstNumber")?.toString() || "",
-        gstCertificateUrl,
-        shipments: formData.get("shipments")?.toString() || "",
-        companyName: formData.get("companyName")?.toString() || "",
-        companyEmail: formData.get("companyEmail")?.toString() || "",
-        companyContact: formData.get("companyContact")?.toString() || "",
-        billingAddress: formData.get("billingAddress")?.toString() || "",
-        pincode: formData.get("pincode")?.toString() || "",
-        state: formData.get("state")?.toString() || "",
-        city: formData.get("city")?.toString() || "",
-        website: formData.get("website")?.toString() || "",
-        signatureUrl,
-        companyLogoUrl,
-        companyType: formData.get("companyType")?.toString() || "",
-        panCardNo: formData.get("panCardNo")?.toString() || "",
-        panCardUrl,
-        aadhaarNo: formData.get("aadhaarNo")?.toString() || "",
-        aadhaarFrontUrl,
-        aadhaarBackUrl,
-        accountHolder: formData.get("accountHolder")?.toString() || "",
-        bankName: formData.get("bankName")?.toString() || "",
-        accountType: formData.get("accountType")?.toString() || "",
-        accountNo: formData.get("accountNo")?.toString() || "",
-        ifsc: formData.get("ifsc")?.toString() || "",
-        chequeUrl,
-      },
-    });
+    const kycData = {
+      mobile: formData.get("mobile")?.toString() || "",
+      gst: formData.get("gst") === "yes",
+      gstNumber: formData.get("gstNumber")?.toString() || "",
+      gstCertificateUrl,
+      shipments: formData.get("shipments")?.toString() || "",
+      companyName: formData.get("companyName")?.toString() || "",
+      companyEmail: formData.get("companyEmail")?.toString() || "",
+      companyContact: formData.get("companyContact")?.toString() || "",
+      billingAddress: formData.get("billingAddress")?.toString() || "",
+      pincode: formData.get("pincode")?.toString() || "",
+      state: formData.get("state")?.toString() || "",
+      city: formData.get("city")?.toString() || "",
+      website: formData.get("website")?.toString() || "",
+      signatureUrl,
+      companyLogoUrl,
+      companyType: formData.get("companyType")?.toString() || "",
+      panCardNo: formData.get("panCardNo")?.toString() || "",
+      panCardUrl,
+      aadhaarNo: formData.get("aadhaarNo")?.toString() || "",
+      aadhaarFrontUrl,
+      aadhaarBackUrl,
+      accountHolder: formData.get("accountHolder")?.toString() || "",
+      bankName: formData.get("bankName")?.toString() || "",
+      accountType: formData.get("accountType")?.toString() || "",
+      accountNo: formData.get("accountNo")?.toString() || "",
+      ifsc: formData.get("ifsc")?.toString() || "",
+      chequeUrl,
+    };
+
+    const already = await prisma.kycDetail.findUnique({ where: { userId: parseInt(decoded.userId) } });
+
+    let kyc;
+    if (already) {
+      kyc = await prisma.kycDetail.update({
+        where: { userId: parseInt(decoded.userId) },
+        data: kycData,
+      });
+    } else {
+      kyc = await prisma.kycDetail.create({
+        data: {
+          userId: parseInt(decoded.userId),
+          ...kycData,
+        },
+      });
+    }
+
     await prisma.user.update({
       where: { id: parseInt(decoded.userId) },
       data: { kycStatus: "pending" },
