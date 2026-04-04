@@ -49,3 +49,6 @@ amplify_outputs*
 amplifyconfiguration*
 
 seed.ts
+
+# Local file uploads
+/public/uploads/

@@ -91,7 +91,7 @@ export default function DashboardHorizontalNavUser() {
 
   return (
     <div className="w-full mb-6"> 
-      <nav className="hidden lg:flex w-full justify-between gap-3 rounded-2xl bg-white border border-slate-200 p-2 shadow-sm">
+      <nav className="hidden lg:flex w-full justify-between gap-3 rounded-t-3xl rounded-b-none bg-gradient-to-b from-white to-gray-50 dark:to-[#10162A] pt-3 px-2 pb-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href
           const IconComponent = item.icon
@@ -147,7 +147,7 @@ export default function DashboardHorizontalNavUser() {
       </nav>
 
       {/* Mobile Navigation */}
-      <nav className="flex lg:hidden w-full justify-between gap-1 rounded-2xl bg-white border border-slate-200 p-2 shadow-sm">
+      <nav className="flex lg:hidden w-full justify-between gap-1 rounded-t-2xl rounded-b-none bg-gradient-to-b from-white to-gray-50 dark:to-[#10162A] p-2 pb-1">
         {visibleItems.map((item) => {
           const isActive = pathname === item.href
           const IconComponent = item.icon

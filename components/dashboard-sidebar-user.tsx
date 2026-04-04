@@ -285,13 +285,14 @@ export default function DashboardSidebarUser({ mobileMenuOpen, setMobileMenuOpen
       )}
       {/* sidebar */}
       <aside
-        className={cn(
-          `bg-[#0a0c37] text-[#f9fafb] h-full transition-all duration-300 ease-in-out flex flex-col`,
-          !isMobile && (sidebarCollapsed ? "w-16" : "w-50"),
-          isMobile && [
-            "fixed top-0 left-0 z-40 w-50 h-full transform transition-transform duration-300",
-            mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-          ]
+         className={cn(
+          "bg-[#0a0c37] text-[#f9fafb] h-full transition-all duration-300 ease-in-out flex flex-col",
+          
+          "fixed top-0 left-0 z-50 w-50 transform",
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+          
+          "md:static md:translate-x-0 md:z-auto",
+          sidebarCollapsed ? "md:w-16" : "md:w-50"
         )}
       >
         {!isMobile && (
@@ -301,7 +302,7 @@ export default function DashboardSidebarUser({ mobileMenuOpen, setMobileMenuOpen
             aria-label="Toggle sidebar"
             onClick={toggleSidebar}
             className={cn(
-              "absolute z-40 cursor-pointer right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-[#f9fafb] border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
+              "hidden md:flex absolute z-40 cursor-pointer right-[-18px] top-1/2 -translate-y-1/2 bg-indigo-700 text-[#f9fafb] border border-indigo-900 shadow-lg rounded-full p-1 transition-transform",
               "hover:bg-indigo-800",
               "backdrop-blur bg-indigo-700/60",
               sidebarCollapsed ? "rotate-180" : "",
@@ -312,7 +313,7 @@ export default function DashboardSidebarUser({ mobileMenuOpen, setMobileMenuOpen
           </Button>
         )}
 
-        <nav className={cn("flex-1", isMobile ? "pt-20" : "pt-4")}>
+        <nav className="flex-1 pt-20 md:pt-4">
           <NavItem
             icon={<Package className="h-5 w-5" />}
             label="Dashboard"
