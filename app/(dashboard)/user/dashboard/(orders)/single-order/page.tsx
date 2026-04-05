@@ -67,9 +67,6 @@ interface Order {
 
 export default function SingleOrderPage() { 
   const [submitting, setSubmitting] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [orders, setOrders] = useState<any[]>([])
-  
   const [warehouses, setWarehouses] = useState<any[]>([])
   const [showWarehouseModal, setShowWarehouseModal] = useState(false)
 
@@ -103,13 +100,6 @@ export default function SingleOrderPage() {
   };
   const [form, setForm] = useState<FormState>(initialForm);
 
-  useEffect(() => {
-    setLoading(true)
-    axios
-      .get("/api/user/orders/single-order")
-      .then((res) => setOrders(res.data.orders || []))
-      .finally(() => setLoading(false))
-  }, [submitting])
   const handleWarehouseFromDB = async () => {
     try {
       const response = await axios.get("/api/user/warehouses")
@@ -117,6 +107,10 @@ export default function SingleOrderPage() {
       setWarehouses(data)
     } catch {}
   }
+
+  useEffect(() => {
+    handleWarehouseFromDB()
+  }, [])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -251,61 +245,54 @@ export default function SingleOrderPage() {
 
   return (
     <>
-      <header className="dark:text-amber-50 rounded-2xl bg-linear-to-r from-indigo-950 to-purple-900 px-2 py-2 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
-        <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center justify-end gap-2 dark:text-amber-50">
-                <FileCheck className="h-5 w-5 sm:h-6 sm:w-6" />
-                <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">
-                  Add Single Order
-                </h1>
-              </div> 
-              <div className="mt-2 flex flex-wrap items-center gap-1 min-w-0 text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-                <Link
-                  href="/user/dashboard"
-                  className="flex items-center hover:text-gray-300 transition-colors min-w-0 shrink-0"
-                >
-                  <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                  <span className="truncate">Dashboard</span>
-                </Link>
-                <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
-                <span className="font-medium truncate">Single Order</span>
-              </div>
-            </div>  
+      <div className="px-4 pb-2 sm:px-6 pt-4 sm:pt-6">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-[#0a0c37] dark:text-indigo-400">
+            <FileCheck className="h-6 w-6" />
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Add Single Order
+            </h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+            <Link href="/user/dashboard" className="flex items-center hover:text-[#0a0c37] dark:hover:text-indigo-400 transition-colors">
+              <Home className="mr-1 h-3.5 w-3.5" />
+              <span>Dashboard</span>
+            </Link>
+            <ChevronRight className="mx-1 h-3.5 w-3.5" />
+            <span className="font-medium text-gray-700 dark:text-gray-300">Single Order</span>
           </div>
         </div>
-      </header>
+      </div>
     
     <KycGuard>
-      <div className="max-w-6xl mx-auto p-2 sm:p-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 mb-8 transition-colors duration-200">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Add Single Order</h2>
+      <div className="mx-auto w-full max-w-full p-4 sm:p-6 lg:px-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-8 mb-8 transition-colors duration-200">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-4">Add Single Order</h2>
           <form onSubmit={handleSubmit} className="space-y-8">
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
+                <span className="bg-[#0a0c37] text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
                   1
                 </span>
                 <span className="font-semibold text-lg text-gray-900 dark:text-white">Consignee Details</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Customer Full Name *"
                   required
                   value={form.customerName}
                   onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Mobile No. *"
                   required
                   value={form.mobile}
                   onChange={(e) => setForm((f) => ({ ...f, mobile: e.target.value }))}
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Email ID"
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -315,28 +302,28 @@ export default function SingleOrderPage() {
 
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
+                <span className="bg-[#0a0c37] text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
                   2
                 </span>
                 <span className="font-semibold text-lg text-gray-900 dark:text-white">Customer Address</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md col-span-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md col-span-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Complete Address *"
                   required
                   value={form.address}
                   onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Pincode *"
                   required
                   value={form.pincode}
                   onChange={handlePincodeChange}
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200 cursor-not-allowed"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200 cursor-not-allowed"
                   placeholder="State *"
                   readOnly
                   tabIndex={-1}
@@ -344,7 +331,7 @@ export default function SingleOrderPage() {
                   onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200 cursor-not-allowed"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200 cursor-not-allowed"
                   placeholder="City *"
                   readOnly
                   tabIndex={-1}
@@ -352,7 +339,7 @@ export default function SingleOrderPage() {
                   onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md col-span-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md col-span-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Famous Landmark"
                   value={form.landmark}
                   onChange={(e) => setForm((f) => ({ ...f, landmark: e.target.value }))}
@@ -362,7 +349,9 @@ export default function SingleOrderPage() {
 
             <section>
                 <h2 className="text-lg font-semibold mb-4 border-b pb-2 text-gray-800 dark:text-gray-200 flex items-center">
-                    <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 text-sm">3</span>
+                    <span className="bg-[#0a0c37] text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
+                      3
+                    </span>
                     Order Details
                 </h2>
 
@@ -370,19 +359,19 @@ export default function SingleOrderPage() {
                   <div>
                     <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
                     <div className="flex">
-                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-blue-600 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-r-md text-xs hover:bg-blue-200 dark:hover:bg-blue-800/60 transition-colors">
+                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 cursor-pointer border-[#0a0c37] bg-gray-100 dark:bg-blue-900/50 text-[#0a0c37] dark:text-blue-300 rounded-r-md text-xs hover:bg-gray-200 dark:hover:bg-blue-800/60 transition-colors">
                             Auto Generate ID
                         </button>
                     </div>
                   </div>
                   <div>
                     <label htmlFor="orderDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Date <span className="text-red-500">*</span></label>
-                    <input type="date" id="orderDate" name="orderDate" value={form.orderDate} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                    <input type="date" id="orderDate" name="orderDate" value={form.orderDate} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                   </div>
                   <div>
                     <label htmlFor="paymentMode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Mode <span className="text-red-500">*</span></label>
-                    <select id="paymentMode" name="paymentMode" value={form.paymentMode} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <select id="paymentMode" name="paymentMode" value={form.paymentMode} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <option value="">Select</option>
                       <option value="Prepaid">Prepaid</option>
                       <option value="COD">COD</option>
@@ -400,7 +389,7 @@ export default function SingleOrderPage() {
                         required={form.paymentMode === 'COD'}
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         placeholder="Total amount to collect"
                         />
                     </div>
@@ -449,11 +438,11 @@ export default function SingleOrderPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="md:col-span-2">
                           <label htmlFor={`productName-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
-                          <input type="text" id={`productName-${index}`} name="productName" value={item.productName} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="text" id={`productName-${index}`} name="productName" value={item.productName} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                         <div>
                           <label htmlFor={`category-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                          <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
+                          <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
                             <option value="">Select</option>
                             <option value="Accessories">Accessories</option>
                             <option value="Fashion & Clothing">Fashion & Clothing</option>
@@ -471,15 +460,15 @@ export default function SingleOrderPage() {
                         </div>
                         <div>
                           <label htmlFor={`quantity-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
-                          <input type="number" id={`quantity-${index}`} name="quantity" value={item.quantity} onChange={(e) => handleChange(e, index)} required min="1" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="number" id={`quantity-${index}`} name="quantity" value={item.quantity} onChange={(e) => handleChange(e, index)} required min="1" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                         <div>
                           <label htmlFor={`orderValue-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Value (per item)</label>
-                          <input type="number" id={`orderValue-${index}`} name="orderValue" value={item.orderValue} onChange={(e) => handleChange(e, index)} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="number" id={`orderValue-${index}`} name="orderValue" value={item.orderValue} onChange={(e) => handleChange(e, index)} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                         <div className="md:col-span-1">
                           <label htmlFor={`hsn-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">HSN</label>
-                          <input type="text" id={`hsn-${index}`} name="hsn" value={item.hsn} onChange={(e) => handleChange(e, index)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="text" id={`hsn-${index}`} name="hsn" value={item.hsn} onChange={(e) => handleChange(e, index)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                       </div>
                     </div>
@@ -490,7 +479,7 @@ export default function SingleOrderPage() {
                   <button
                     type="button"
                     onClick={addItem} 
-                    className="inline-flex items-center px-4 py-2 border border-dashed border-blue-500 text-sm font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="inline-flex items-center px-4 py-2 border border-dashed border-blue-500 text-sm font-medium rounded-md text-[#0a0c37] dark:text-blue-300 bg-white dark:bg-blue-900/30 hover:bg-gray-100 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0a0c37] transition-colors"
                   >
                     <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" /> 
                     Add More Item
@@ -501,48 +490,48 @@ export default function SingleOrderPage() {
                    <div>
                       <label htmlFor="physicalWeight" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Physical Weight <span className="text-red-500">*</span></label>
                       <div className="relative">
-                        <input type="number" id="physicalWeight" name="physicalWeight" value={form.physicalWeight} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="physicalWeight" name="physicalWeight" value={form.physicalWeight} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">KG</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="length" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Length <span className="text-red-500">*</span></label>
                        <div className="relative">
-                        <input type="number" id="length" name="length" value={form.length} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="length" name="length" value={form.length} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="breadth" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breadth <span className="text-red-500">*</span></label>
                        <div className="relative">
-                        <input type="number" id="breadth" name="breadth" value={form.breadth} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="breadth" name="breadth" value={form.breadth} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="height" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Height <span className="text-red-500">*</span></label>
                        <div className="relative">
-                        <input type="number" id="height" name="height" value={form.height} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="height" name="height" value={form.height} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
                       </div>
                     </div>
                 </div>
             </section>
  
-            <section className="transition-all duration-200">
+            <section className="transition-all duration-200" onMouseEnter={handleWarehouseFromDB}>
               <div className="flex items-center mb-4">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
+                <span className="bg-[#0a0c37] text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
                   4
                 </span>
                 <span className="font-semibold text-lg text-gray-900 dark:text-white">Pickup Location</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
                   placeholder="Search Pickup Location"
                   value={form.pickupLocation}
                   onChange={(e) => {
-                    setForm((f) => ({ ...f, pickupLocation: e.target.value }))
+                    setForm((f) => ({ ...f, pickupLocation: e.target.value, warehouseId: null }))
                   }}
                   onFocus={handleWarehouseFromDB}
                   required
@@ -550,59 +539,61 @@ export default function SingleOrderPage() {
                 <button
                   type="button"
                   onClick={() => setShowWarehouseModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md cursor-pointer px-4 py-2 font-semibold transition-colors duration-200 shadow-sm"
+                  className="bg-[#0a0c37] hover:opacity-90 text-white rounded-md cursor-pointer px-4 py-2 font-semibold transition-colors duration-200 shadow-sm w-max md:w-auto md:ml-auto"
                 >
-                  Add Warehouse
+                  + Add Warehouse
                 </button>
               </div>
 
-              <div className="mt-2">
+              <div className="w-full">
                 {warehouses.length === 0 ? (
-                  <div className="text-gray-500 dark:text-gray-400 text-sm p-2">No warehouses found.</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-sm py-4 text-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                    No warehouses found. Click the button above to add one.
+                  </div>
                 ) : (
-                  <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 transition-colors duration-200">
-                    {(form.pickupLocation
-                      ? warehouses.filter(
-                          (w) =>
-                            w.warehouseName.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
-                            w.city.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
-                            w.state.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
-                            w.pincode.includes(form.pickupLocation),
-                        )
-                      : warehouses
-                    )
-                      .slice(0, 2)
-                      .map((w) => (
-                        <div
-                          key={w.id}
-                          className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-b border-gray-300 dark:border-gray-600 last:border-b-0 transition-colors duration-200"
-                          onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName,warehouseId: w.id  }))}
-                        >
-                          <div className="font-semibold text-gray-900 dark:text-white">{w.warehouseName}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {w.address1}, {w.city}, {w.state} - {w.pincode}
-                          </div>
-                        </div>
-                      ))}
-                    {warehouses.length > 2 && (
-                      <details>
-                        <summary className="p-2 text-indigo-700 dark:text-indigo-400 cursor-pointer select-none hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors duration-200">
-                          Show more...
-                        </summary>
-                        {warehouses.slice(2).map((w) => (
+                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar pr-2 pb-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      {(form.pickupLocation && !form.warehouseId
+                        ? warehouses.filter(
+                            (w) =>
+                              w.warehouseName.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
+                              w.city.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
+                              w.state.toLowerCase().includes(form.pickupLocation.toLowerCase()) ||
+                              w.pincode.includes(form.pickupLocation),
+                          )
+                        : warehouses
+                      ).map((w) => {
+                        const isSelected = form.warehouseId === w.id;
+                        return (
                           <div
                             key={w.id}
-                            className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-b border-gray-300 dark:border-gray-600 last:border-b-0 transition-colors duration-200"
-                            onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName }))}
+                            onClick={() => setForm((f) => ({ ...f, pickupLocation: w.warehouseName, warehouseId: w.id }))}
+                            className={`relative cursor-pointer transition-all duration-200 rounded-lg p-4 flex flex-col text-center justify-center items-center shadow-sm min-h-[140px]
+                              ${isSelected 
+                                ? 'bg-[#0a0c37] border-[#0a0c37] text-white shadow-md transform scale-[1.01]' 
+                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-indigo-300 hover:shadow-md'
+                              }`}
                           >
-                            <div className="font-semibold text-gray-900 dark:text-white">{w.warehouseName}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {w.address1}, {w.city}, {w.state} - {w.pincode}
+                            {isSelected && (
+                              <div className="absolute right-3 top-3 bg-white text-[#0a0c37] rounded-full p-0.5 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              </div>
+                            )}
+                            
+                            <div className="font-bold text-sm mb-1 uppercase tracking-wide">
+                              {w.warehouseName}
+                            </div>
+                            <div className="text-sm font-semibold opacity-90 mb-2">
+                              {w.phone || w.mobile || "9891094700"}
+                            </div>
+                            
+                            <div className="text-xs uppercase opacity-80 max-w-[280px] mx-auto leading-relaxed">
+                              {w.address1 && `${w.address1}, `}{w.city}, {w.state} - {w.pincode}
                             </div>
                           </div>
-                        ))}
-                      </details>
-                    )}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -610,7 +601,7 @@ export default function SingleOrderPage() {
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer px-8 py-2 font-semibold transition-colors duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                className="bg-[#0a0c37] hover:opacity-90 text-white rounded-md cursor-pointer px-8 py-2 font-semibold transition-colors duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={submitting}
               >
                 {submitting ? "Adding..." : "Add Order"}
@@ -624,76 +615,9 @@ export default function SingleOrderPage() {
           />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 transition-colors duration-200">
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">My Orders</h2>
-            {loading ? (
-              <div className="flex justify-center items-center py-8 text-gray-600 dark:text-gray-300">
-                <Loader2 className="animate-spin mr-2 h-5 w-5" /> Loading orders...
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-md border border-gray-300 dark:border-gray-600 transition-colors duration-200">
-                <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-                  <thead className="bg-gray-100 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Order ID</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Product Details</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Total Qty</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Total Value</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-r dark:border-gray-600">Status</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Order Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {orders.length === 0 && (
-                       <tr>
-                         <td colSpan={6} className="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                           No orders found.
-                         </td>
-                       </tr>
-                    )}
-                    {orders.map((o: Order) => (
-                      <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
-                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-xs font-mono">{o.orderId}</td>
-                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 align-top text-xs">
-                          {o.items && o.items.length > 0 ? (
-                            o.items.map((item: OrderItem, index: number) => (
-                              <div key={index} className={index > 0 ? "mt-1 pt-1 border-t border-gray-200 dark:border-gray-700" : ""}>
-                                {item.productName} ({item.quantity}x) - ₹{item.orderValue}
-                                {item.hsn && <span className="text-gray-500 dark:text-gray-400 text-[10px] block">HSN: {item.hsn}</span>}
-                              </div>
-                            ))
-                          ) : (
-                            <>
-                              <span className="text-gray-400">No items</span>
-                            </>
-                          )}
-                        </td>
-                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center text-sm">
-                          {o.items ? o.items.reduce((sum: number, item: OrderItem) => sum + Number(item.quantity || 0), 0) : 0}
-                        </td>
-                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-right text-sm">
-                          ₹{o.items ? (o.items.reduce((sum: number, item: OrderItem) => sum + (Number(item.orderValue || 0) * Number(item.quantity || 0)), 0)).toFixed(2) : '0.00'}
-                        </td>
-                        <td className="p-2 border-b border-r border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              o.status === "delivered" ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300" :
-                              "bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            {o.status ? o.status.replace(/_/g, ' ').toUpperCase() : "PENDING"}
-                          </span>
-                        </td>
-                        <td className="p-2 border-b border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 text-center text-sm">
-                          {new Date(o.orderDate).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+        <div className="hidden">
+           {/* Legacy My Orders Table completely removed to preserve UI parity matching current bulk strategy */}
+        </div>
       </div>
     </KycGuard>
     </>
