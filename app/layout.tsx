@@ -37,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className="overflow-x-hidden">
         {children}
         <ToastContainer position="top-right" autoClose={3000} />
       </body>

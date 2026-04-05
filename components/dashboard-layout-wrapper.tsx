@@ -14,37 +14,39 @@ interface DashboardLayoutWrapperProps {
 
 export default function DashboardLayoutWrapper({ userRole, userName, children }: DashboardLayoutWrapperProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-    const pathname = usePathname() 
+    const pathname = usePathname()
 
     return (
         <>
-            <Navbar
-                userRole={userRole}
-                userName={userName}
-                mobileMenuOpen={mobileMenuOpen}
-                setMobileMenuOpenAction={setMobileMenuOpen}
-            />
-            <div className="flex bg-gray-50 dark:bg-[#10162A] pt-16">
-                <div className="block sm:hidden w-full h-[180px] bg-linear-to-r from-[#0a0c37] to-[#0a0c37] absolute left-0 top-0 z-0 pointer-events-none" />
-                {pathname === "/user/dashboard" && (
+        <Navbar
+            userRole={userRole}
+            userName={userName}
+            mobileMenuOpen={mobileMenuOpen}
+            setMobileMenuOpenAction={setMobileMenuOpen}
+        />
+        {/* REMOVED overflow-x-hidden here to restore sticky behaviour */}
+        <div className="flex bg-gray-50 dark:bg-[#10162A] pt-16" >
+            <div className="block sm:hidden w-full h-[180px] bg-linear-to-r from-[#0a0c37] to-[#0a0c37] absolute left-0 top-0 z-0 pointer-events-none" />
+                { pathname === "/user/dashboard" && (
                     <div className="hidden sm:block w-full h-[200px] bg-[#0a0c37] absolute left-0 top-0 z-0 pointer-events-none" />
+                )
+            }
+            <div className="relative flex flex-1 min-w-0 w-full" >
+                <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30" >
+                    { userRole === "admin" ? (
+                    <DashboardSidebarAdmin />
+                ) : (
+                    <DashboardSidebarUser
+                            mobileMenuOpen={mobileMenuOpen}
+                            setMobileMenuOpen={setMobileMenuOpen}
+                    />
                 )}
-                <div className="relative flex flex-1"> 
-                    <aside className="sticky top-16 h-[calc(100vh-4rem)] z-30">
-                        {userRole === "admin" ? (
-                            <DashboardSidebarAdmin />
-                        ) : (
-                            <DashboardSidebarUser
-                                mobileMenuOpen={mobileMenuOpen}
-                                setMobileMenuOpen={setMobileMenuOpen}
-                            />
-                        )}
-                    </aside>
-                    <div className="flex-1 flex flex-col min-w-0 w-full">
-                        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-hidden">{children}</main>
-                    </div>
+                </aside>
+                <div className = "flex-1 flex flex-col min-w-0 w-full" >
+                    <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-hidden" > { children } </main>
                 </div>
             </div>
+        </div>
         </>
     )
 }

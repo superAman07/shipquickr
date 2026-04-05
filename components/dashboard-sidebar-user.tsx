@@ -70,7 +70,9 @@ function OrdersNavItem({ collapsed, onMobileClick }: { collapsed: boolean; onMob
 
   return (
     <div className="relative" onMouseEnter={() => setShowSubMenu(true)} onMouseLeave={() => setShowSubMenu(false)}>
-      <div
+      <Link
+        href="/user/dashboard/bulk"
+        onClick={onMobileClick}
         className={cn(
           "flex items-center px-4 py-3 mt-2 cursor-pointer rounded-l-full transition-colors",
           active ? "bg-[#f9fafb] text-[#252525]" : "hover:bg-indigo-900",
@@ -78,7 +80,7 @@ function OrdersNavItem({ collapsed, onMobileClick }: { collapsed: boolean; onMob
         )}
       >
         <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
-          <Truck className="h-5 w-5 flex-shrink-0 cursor-pointer" />
+          <Truck className="h-5 w-5 shrink-0 cursor-pointer" />
 
           <span
             className={cn(
@@ -89,11 +91,11 @@ function OrdersNavItem({ collapsed, onMobileClick }: { collapsed: boolean; onMob
             Orders
           </span>
         </div>
-      </div>
+      </Link>
 
       <div
         className={cn(
-          "absolute left-full top-0 bg-indigo-800 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
+          "absolute left-full top-0 bg-indigo-900 rounded-r-lg shadow-lg overflow-hidden transition-all duration-200 z-50",
           showSubMenu ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible",
           collapsed ? "mt-3" : "mt-3 ml-0",
           "submenu"
@@ -102,7 +104,7 @@ function OrdersNavItem({ collapsed, onMobileClick }: { collapsed: boolean; onMob
         <Link
           href="/user/dashboard/single-order"
           onClick={onMobileClick}
-          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+          className="flex items-center px-4 py-3 hover:bg-indigo-800 transition-colors w-full"
         >
           <Plus className="h-4 w-4" />
           <span className="ml-3 whitespace-nowrap">Add Single Order</span>
@@ -110,7 +112,7 @@ function OrdersNavItem({ collapsed, onMobileClick }: { collapsed: boolean; onMob
         <Link
           href="/user/dashboard/bulk"
           onClick={onMobileClick}
-          className="flex items-center px-4 py-3 hover:bg-indigo-700 transition-colors w-full"
+          className="flex items-center px-4 py-3 hover:bg-indigo-800 transition-colors w-full"
         >
           <ListFilter className="h-4 w-4" />
           <span className="ml-3 whitespace-nowrap">Process Bulk Orders</span>
