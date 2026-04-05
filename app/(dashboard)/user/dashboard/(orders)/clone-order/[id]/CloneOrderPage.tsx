@@ -5,7 +5,8 @@ import axios from "axios";
 import AddWarehouseModal from "@/components/AddWarehouse";
 import KycGuard from "@/components/isKycDone";
 import { toast } from "react-toastify";
-import { Plus, Trash2 } from "lucide-react";  
+import { Plus, Trash2, Home, ChevronRight, FileCheck } from "lucide-react";
+import Link from "next/link";  
 
 interface OrderItem {
   productName: string;
@@ -274,12 +275,38 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
     }
   };
 
-  if (loading) return <div className="p-6 text-center">Loading order details...</div>; 
+  useEffect(() => {
+    handleWarehouseFromDB();
+  }, []);
+
+  if (loading) return <div className="p-6 text-center text-[#0a0c37] dark:text-white">Loading order details...</div>; 
   return (
+    <>
+      <div className="px-4 pb-2 sm:px-6 pt-4 sm:pt-6">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-[#0a0c37] dark:text-indigo-400">
+            <FileCheck className="h-6 w-6" />
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Clone Order
+            </h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+            <Link href="/user/dashboard" className="flex items-center hover:text-[#0a0c37] dark:hover:text-indigo-400 transition-colors">
+              <Home className="mr-1 h-3.5 w-3.5" />
+              <span>Dashboard</span>
+            </Link>
+            <ChevronRight className="mx-1 h-3.5 w-3.5" />
+            <span className="font-medium text-gray-700 dark:text-gray-300">Clone Order</span>
+          </div>
+        </div>
+      </div>
+
     <KycGuard>
-      <div className="max-w-6xl mx-auto p-2 sm:p-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-8 mb-8 transition-colors duration-200">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Clone Order</h2>
+      <div className="mx-auto w-full max-w-full p-4 sm:p-6 lg:px-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-8 mb-8 transition-colors duration-200">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-4">
+            Clone Order - <span className="text-gray-500 font-mono text-lg">{orderId}</span>
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-8"> 
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
@@ -356,19 +383,19 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                  <div>
                     <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
                     <div className="flex">
-                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-blue-600 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-r-md text-xs hover:bg-blue-200 dark:hover:bg-blue-800/60 transition-colors">
+                        <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-[#0a0c37] bg-[#0a0c37]/10 dark:bg-blue-900/50 text-[#0a0c37] dark:text-blue-300 rounded-r-md text-xs hover:bg-gray-100 dark:hover:bg-blue-800/60 transition-colors">
                             Auto Generate ID
                         </button>
                     </div>
                   </div>
                   <div>
                     <label htmlFor="orderDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Date <span className="text-red-500">*</span></label>
-                    <input type="date" id="orderDate" name="orderDate" value={form.orderDate} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                    <input type="date" id="orderDate" name="orderDate" value={form.orderDate} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                   </div>
                   <div>
                     <label htmlFor="paymentMode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Mode <span className="text-red-500">*</span></label>
-                    <select id="paymentMode" name="paymentMode" value={form.paymentMode} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <select id="paymentMode" name="paymentMode" value={form.paymentMode} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <option value="">Select</option>
                       <option value="COD">COD</option>
                       <option value="Prepaid">Prepaid</option>
@@ -379,7 +406,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                         <label htmlFor="codAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">COD Amount (₹) <span className="text-red-500">*</span></label>
                         <input
                         type="number" id="codAmount" name="codAmount" value={form.codAmount} onChange={handleChange} required min="0" step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         placeholder="Total amount to collect"
                         />
                     </div>
@@ -404,11 +431,11 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="md:col-span-2">  
                           <label htmlFor={`productName-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
-                          <input type="text" id={`productName-${index}`} name="productName" value={item.productName} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="text" id={`productName-${index}`} name="productName" value={item.productName} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                         <div>
                           <label htmlFor={`category-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                          <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
+                          <select id={`category-${index}`} name="category" value={item.category} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
                             <option value="">Select</option>
                             <option value="Accessories">Accessories</option>
                             <option value="Fashion & Clothing">Fashion & Clothing</option>
@@ -426,15 +453,15 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                         </div>
                         <div>
                           <label htmlFor={`quantity-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
-                          <input type="number" id={`quantity-${index}`} name="quantity" value={item.quantity} onChange={(e) => handleChange(e, index)} required min="1" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="number" id={`quantity-${index}`} name="quantity" value={item.quantity} onChange={(e) => handleChange(e, index)} required min="1" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                         <div>
                           <label htmlFor={`orderValue-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Value (per item)</label>
-                          <input type="number" id={`orderValue-${index}`} name="orderValue" value={item.orderValue} onChange={(e) => handleChange(e, index)} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="number" id={`orderValue-${index}`} name="orderValue" value={item.orderValue} onChange={(e) => handleChange(e, index)} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                         <div className="md:col-span-1"> 
                           <label htmlFor={`hsn-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">HSN</label>
-                          <input type="text" id={`hsn-${index}`} name="hsn" value={item.hsn} onChange={(e) => handleChange(e, index)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
+                          <input type="text" id={`hsn-${index}`} name="hsn" value={item.hsn} onChange={(e) => handleChange(e, index)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
                       </div>
                     </div>
@@ -445,7 +472,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                   <button
                     type="button"
                     onClick={addItem}
-                    className="inline-flex items-center px-4 py-2 border border-dashed border-blue-500 text-sm font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="inline-flex items-center px-4 py-2 border border-dashed border-blue-500 text-sm font-medium rounded-md text-[#0a0c37] dark:text-blue-300 bg-gray-50 dark:bg-blue-900/30 hover:bg-[#0a0c37]/10 dark:hover:bg-blue-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0a0c37] transition-colors"
                   >
                     <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
                     Add More Item
@@ -456,98 +483,118 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                    <div>
                       <label htmlFor="physicalWeight" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Physical Weight <span className="text-red-500">*</span></label>
                       <div className="relative">
-                        <input type="number" id="physicalWeight" name="physicalWeight" value={form.physicalWeight} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="physicalWeight" name="physicalWeight" value={form.physicalWeight} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">KG</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="length" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Length <span className="text-red-500">*</span></label>
                       <div className="relative">
-                        <input type="number" id="length" name="length" value={form.length} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="length" name="length" value={form.length} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="breadth" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Breadth <span className="text-red-500">*</span></label>
                        <div className="relative">
-                        <input type="number" id="breadth" name="breadth" value={form.breadth} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="breadth" name="breadth" value={form.breadth} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
                       </div>
                     </div>
                     <div>
                       <label htmlFor="height" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Height <span className="text-red-500">*</span></label>
                        <div className="relative">
-                        <input type="number" id="height" name="height" value={form.height} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
+                        <input type="number" id="height" name="height" value={form.height} onChange={handleChange} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-10" />
                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 dark:text-gray-400">CM</span>
                       </div>
                     </div>
                 </div>
             </section>
  
-            <section className="transition-all duration-200">
+            <section className="transition-all duration-200" onMouseEnter={handleWarehouseFromDB}>
               <div className="flex items-center mb-4">
-                <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">4</span>
+                <span className="bg-[#0a0c37] text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
+                  4
+                </span>
                 <span className="font-semibold text-lg text-gray-900 dark:text-white">Pickup Location</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  placeholder="Search or Select Pickup Location *" required
-                  value={warehouseSearch} 
+                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0a0c37] focus:border-[#0a0c37] outline-none transition-colors duration-200"
+                  placeholder="Search Pickup Location"
+                  value={warehouseSearch}
                   onChange={(e) => {
-                      setWarehouseSearch(e.target.value); 
-                      const selectedW = warehouses.find(w => w.id === form.warehouseId);
-                      if (selectedW && selectedW.warehouseName !== e.target.value) {
-                          setForm(f => ({ ...f, warehouseId: null }));
-                      }
+                    setWarehouseSearch(e.target.value);
+                    const selectedW = warehouses.find(w => w.id === form.warehouseId);
+                    if (selectedW && selectedW.warehouseName !== e.target.value) {
+                        setForm(f => ({ ...f, warehouseId: null }));
+                    }
                   }}
                   onFocus={handleWarehouseFromDB}
-                  name="pickupLocationDisplay"  
+                  required
                 />
                 <button
                   type="button"
                   onClick={() => setShowWarehouseModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 font-semibold transition-colors duration-200 shadow-sm"
+                  className="bg-[#0a0c37] hover:opacity-90 text-white rounded-md cursor-pointer px-4 py-2 font-semibold transition-colors duration-200 shadow-sm w-max md:w-auto md:ml-auto"
                 >
-                  Add Warehouse
+                  + Add Warehouse
                 </button>
-              </div> 
-              {form.warehouseId && (
-                <div className="text-sm text-green-700 dark:text-green-400 mt-1">
-                    Selected: {warehouses.find(w => w.id === form.warehouseId)?.warehouseName}
-                </div>
-              )}
-              <div className="mt-2">
+              </div>
+
+              <div className="w-full">
                 {warehouses.length === 0 ? (
-                  <div className="text-gray-500 dark:text-gray-400 text-sm p-2">No warehouses found...</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-sm py-4 text-center border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                    No warehouses found. Click the button above to add one.
+                  </div>
                 ) : (
-                  warehouseSearch && !form.warehouseId && (
-                    <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 transition-colors duration-200">
+                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar pr-2 pb-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                       {warehouses
                         .filter(w =>
+                          !form.warehouseId ? (
                             w.warehouseName.toLowerCase().includes(warehouseSearch.toLowerCase()) ||
                             w.city.toLowerCase().includes(warehouseSearch.toLowerCase()) ||
+                            w.state.toLowerCase().includes(warehouseSearch.toLowerCase()) ||
                             w.pincode.includes(warehouseSearch)
+                          ) : true
                         )
-                        .slice(0, 5)  
-                        .map((w) => (
+                        .map((w) => {
+                        const isSelected = form.warehouseId === w.id;
+                        return (
                           <div
                             key={w.id}
-                            className="p-2 cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border-b border-gray-300 dark:border-gray-600 last:border-b-0 transition-colors duration-200"
-                           
                             onClick={() => {
-                                setForm((f) => ({ ...f, warehouseId: w.id }));  
-                                setWarehouseSearch(w.warehouseName);  
-                            }} 
+                              setForm((f) => ({ ...f, warehouseId: w.id }));
+                              setWarehouseSearch(w.warehouseName);
+                            }}
+                            className={`relative cursor-pointer transition-all duration-200 rounded-lg p-4 flex flex-col text-center justify-center items-center shadow-sm min-h-[140px]
+                              ${isSelected 
+                                ? 'bg-[#0a0c37] border-[#0a0c37] text-white shadow-md transform scale-[1.01]' 
+                                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-[#0a0c37] hover:shadow-md'
+                              }`}
                           >
-                            <div className="font-semibold text-gray-900 dark:text-white">{w.warehouseName}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {w.address1}, {w.city}, {w.state} - {w.pincode}
+                            {isSelected && (
+                              <div className="absolute right-3 top-3 bg-white text-[#0a0c37] rounded-full p-0.5 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              </div>
+                            )}
+                            
+                            <div className="font-bold text-sm mb-1 uppercase tracking-wide">
+                              {w.warehouseName}
+                            </div>
+                            <div className="text-sm font-semibold opacity-90 mb-2">
+                              {w.phone || w.mobile || "9891094700"}
+                            </div>
+                            
+                            <div className="text-xs uppercase opacity-80 max-w-[280px] mx-auto leading-relaxed">
+                              {w.address1 && `${w.address1}, `}{w.city}, {w.state} - {w.pincode}
                             </div>
                           </div>
-                        ))} 
+                        );
+                      })}
                     </div>
-                  )
+                  </div>
                 )}
               </div>
             </section>
@@ -555,7 +602,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-8 py-2 font-semibold transition-colors duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                className="bg-[#0a0c37] hover:opacity-90 text-white rounded-md px-8 py-2 font-semibold transition-colors duration-200 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={submitting || loading}
               >
                 {submitting ? "Cloning..." : "Clone Order"}
@@ -570,5 +617,6 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
         onSuccess={handleWarehouseFromDB}
       />
     </KycGuard>
+    </>
   );
 }
