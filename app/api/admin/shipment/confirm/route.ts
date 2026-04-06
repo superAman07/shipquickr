@@ -81,9 +81,9 @@ export async function POST(req: NextRequest) {
             console.warn(`Order ID ${order.id} has no warehouseId. This might be an issue for future manifest.`);
         }
 
-        let actualAwbNumber: string | null = null; 
+        let actualAwbNumber: string | null = null;
         let shippingId: string | null = null;
-        let labelUrl: string | null = null; 
+        let labelUrl: string | null = null;
 
         if (selectedCourier.name === "Ecom Express") {
             console.log("ADMIN: Attempting to fetch AWB from Ecom Express...");
@@ -100,11 +100,11 @@ export async function POST(req: NextRequest) {
             }
         } else if (selectedCourier.name === "Xpressbees") {
             console.log("ADMIN: Attempting to fetch AWB from Xpressbees...");
-            const shipmentDetails = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber);  
+            const shipmentDetails = await xpressbeesClient.generateAwb(order, selectedCourier.serviceType, kycDetail?.gstNumber);
             if (!shipmentDetails) {
                 return NextResponse.json({ error: "Failed to obtain AWB from Xpressbees." }, { status: 503 });
             }
-            
+
             actualAwbNumber = shipmentDetails.awbNumber;
             const manifestSuccess = await xpressbeesClient.createManifest([actualAwbNumber]);
             if (!manifestSuccess) {
