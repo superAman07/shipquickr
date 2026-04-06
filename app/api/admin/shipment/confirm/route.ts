@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
         if (selectedCourier.name === "Ecom Express") {
             console.log("ADMIN: Attempting to fetch AWB from Ecom Express...");
-            actualAwbNumber = await ecomExpressClient.fetchAwbNumber(order.paymentMode as "COD" | "Prepaid");
+            actualAwbNumber = (await ecomExpressClient.fetchAwbNumber(order.paymentMode as "COD" | "Prepaid")) ?? null;
             if (!actualAwbNumber) {
                 console.error("ADMIN: Failed to fetch AWB number from Ecom Express.");
                 return NextResponse.json({ error: "Failed to obtain AWB from Ecom Express. Please check API logs/config." }, { status: 503 });
@@ -105,7 +105,10 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: "Failed to obtain AWB from Xpressbees." }, { status: 503 });
             }
 
-            actualAwbNumber = shipmentDetails.awbNumber;
+            actualAwbNumber = shipmentDetails.awbNumber ?? null;
+            if (!actualAwbNumber) {
+                return NextResponse.json({ error: "Failed to obtain AWB from Xpressbees response." }, { status: 503 });
+            }
             const manifestSuccess = await xpressbeesClient.createManifest([actualAwbNumber]);
             if (!manifestSuccess) {
                 console.error("ADMIN: Manifest creation failed for Xpressbees AWB:", actualAwbNumber);
