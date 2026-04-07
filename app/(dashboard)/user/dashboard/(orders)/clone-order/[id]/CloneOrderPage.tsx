@@ -384,7 +384,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                     <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
                     <div className="flex">
                         <input type="text" id="orderId" name="orderId" value={form.orderId} onChange={handleChange} required className="grow px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border border-l-0 border-[#0a0c37] bg-[#0a0c37]/10 dark:bg-blue-900/50 text-[#0a0c37] dark:text-blue-300 rounded-r-md text-xs hover:bg-gray-100 dark:hover:bg-blue-800/60 transition-colors">
+                        <button type="button" onClick={generateOrderId} className="px-3 py-2 border cursor-pointer border-l-0 border-[#0a0c37] bg-[#0a0c37]/10 dark:bg-blue-900/50 text-[#0a0c37] dark:text-blue-300 rounded-r-md text-xs hover:bg-gray-100 dark:hover:bg-blue-800/60 transition-colors">
                             Auto Generate ID
                         </button>
                     </div>
