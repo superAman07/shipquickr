@@ -81,8 +81,11 @@ export async function POST(req: NextRequest) {
       const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`;
 
       try {
-        // Define the absolute upload directory (e.g., public/uploads/kyc)
-        const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
+        // Define the persistent upload directory
+        const isProd = process.env.NODE_ENV === "production";
+        const uploadDir = isProd
+          ? path.join(process.cwd(), "..", "storage", "uploads", folder)
+          : path.join(process.cwd(), "storage", "uploads", folder);
 
         // Ensure the directory exists
         await mkdir(uploadDir, { recursive: true });
@@ -93,8 +96,8 @@ export async function POST(req: NextRequest) {
 
         console.log(`Successfully saved ${filename} locally to ${uploadDir}.`);
 
-        // Return the public URL for accessing the file
-        return `/uploads/${folder}/${filename}`;
+        // Return the dynamic API URL for accessing the file
+        return `/api/uploads/${folder}/${filename}`;
       } catch (error) {
         console.error(`Error saving ${filename} locally:`, error);
         if (error instanceof Error) {
