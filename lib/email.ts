@@ -176,3 +176,60 @@ export async function sendEmail(options: { to: string; subject: string; html: st
 
   await transporter.sendMail({ from: fromAddress, to: options.to, subject: options.subject, html });
 }
+
+// 1. Welcome Email (Signup)
+export async function sendWelcomeEmail(to: string, firstName: string) {
+  const content = `
+    <p>Hi ${firstName},</p>
+    <p>Welcome to <strong>ShipQuickr!</strong> 🚀 We're thrilled to have you on board.</p>
+    <p>Our platform is designed to make shipping faster, safer, and simpler for your business. Whether you are sending a single package or managing bulk orders, we've got you covered.</p>
+    
+    <div class="btn-container">
+      <a href="https://shipquickr.com/dashboard" class="button">Go to Dashboard</a>
+    </div>
+    
+    <p>If you have any questions, feel free to reply to this email. We're here to help.</p>
+  `;
+  
+  const html = createEmailTemplate('Welcome to ShipQuickr!', content);
+  await transporter.sendMail({ from: fromAddress, to, subject: 'Welcome to ShipQuickr! 🚀', html });
+}
+
+// 2. New Login Alert (Security)
+export async function sendLoginAlertEmail(to: string, firstName: string, ipAddress: string) {
+  const content = `
+    <p>Hi ${firstName},</p>
+    <p>We noticed a recent login to your ShipQuickr account.</p>
+    
+    <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
+      <p style="margin-bottom: 8px;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+      <p style="margin-bottom: 0;"><strong>IP Address:</strong> ${ipAddress}</p>
+    </div>
+    
+    <p>If this was you, no action is needed. If you don't recognize this activity, please reset your password immediately and contact our support team.</p>
+  `;
+  
+  const html = createEmailTemplate('New Login Alert', content);
+  await transporter.sendMail({ from: fromAddress, to, subject: 'Security Alert: New Login to your Account', html });
+}
+
+// 3. Order Confirmation Message
+export async function sendOrderConfirmationEmail(to: string, firstName: string, orderId: string, amount: string) {
+  const content = `
+    <p>Hi ${firstName},</p>
+    <p>Great news! Your order <strong>#${orderId}</strong> has been successfully placed.</p>
+    <p>We are currently processing it, and you'll receive another update once the courier confirms the pickup.</p>
+    
+    <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
+      <p style="margin-bottom: 8px;"><strong>Order ID:</strong> ${orderId}</p>
+      <p style="margin-bottom: 0;"><strong>Amount:</strong> ₹${amount}</p>
+    </div>
+    
+    <div class="btn-container">
+      <a href="https://shipquickr.com/dashboard/orders" class="button">Track Your Order</a>
+    </div>
+  `;
+  
+  const html = createEmailTemplate('Order Confirmation - ShipQuickr', content);
+  await transporter.sendMail({ from: fromAddress, to, subject: `Order Confirmed: #${orderId}`, html });
+}

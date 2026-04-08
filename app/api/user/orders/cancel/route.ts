@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
 import { forwardWebhookToMerchant } from "@/lib/webhook";
+import { shadowfaxClient } from "@/lib/services/shadowfax";
 
 interface TokenDetailsType {
     userId: number;
@@ -67,11 +68,10 @@ export async function POST(req: NextRequest) {
             }
         } else if (courierLower.includes("shadowfax")) {
             console.log("Cancelling Shadowfax Order:", order.awbNumber);
-            // Shadowfax doesn't have a cancel API yet — mark internally and inform user
-            cancellationResult = {
-                success: false,
-                message: "Shadowfax: Automatic cancellation is not supported yet. Please cancel directly on the Shadowfax portal or contact support."
-            };
+            cancellationResult = await shadowfaxClient.cancelShipment(order.awbNumber);
+            if (!cancellationResult.success) {
+                cancellationResult.message = `Shadowfax: ${cancellationResult.message}`;
+            }
         } else {
             console.log("Cancelling via Aggregator for:", order.courierName, order.awbNumber);
             cancellationResult = await shippingAggregatorClient.cancelOrder(order.orderId, order.awbNumber);

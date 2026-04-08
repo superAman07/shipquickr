@@ -5,7 +5,7 @@ import bcrypt from "bcrypt"
 import { signToken } from "@/lib/jwt";
 import { ratelimit } from "@/lib/rateLimit";
 import { randomInt } from "crypto";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, sendLoginAlertEmail } from "@/lib/email";
 
 export async function POST(req:NextRequest) {
     const ip = req.headers.get("x-forwarded-for") || "unknown";
@@ -60,6 +60,7 @@ export async function POST(req:NextRequest) {
                 return NextResponse.json({ message: "Invalid OTP provided." }, { status: 401 });
             } 
             await prisma.user.update({ where: { email }, data: { hashedOtp: null, otpExpires: null, lastLogin: new Date() } });
+            sendLoginAlertEmail(user.email, user.firstName, ip as string).catch(console.error);
             
             const token = signToken({userId: user.id, firstName: user.firstName,lastName:user.lastName, email: user.email, role: user.role}, process.env.JWT_SECRET || "default_secret")
             const response = NextResponse.json({ message: "Login successful" }, { status: 200 });

@@ -147,12 +147,106 @@ class ShadowfaxClient {
         }
     }
 
-    // Placeholder for AWB generation (Shadowfax specific flow might be added later)
     public async generateAwb(order: any, selectedServiceType?: string): Promise<{ awbNumber: string; labelUrl?: string; shippingId?: string } | null> {
         console.log(`Shadowfax generate AWB for order: ${order.id}`);
-        return {
-            awbNumber: `SFX${Date.now()}${order.id}`,
+        const apiToken = process.env.SHADOWFAX_API_TOKEN;
+        const apiUrl = "https://dale.shadowfax.in/api/v3/clients/orders/";
+
+        if (!apiToken) {
+            console.error("Shadowfax API Token is not configured.");
+            return null;
         }
+
+        const headers = {
+            "Authorization": `Token ${apiToken}`,
+            "Content-Type": "application/json"
+        };
+
+        const physicalWeight = parseFloat(order.physicalWeight) || 0;
+        const volumetricWeight = ((parseFloat(order.length) || 10) * (parseFloat(order.breadth) || 10) * (parseFloat(order.height) || 10)) / 5000;
+        const weightGms = Math.ceil(Math.max(physicalWeight, volumetricWeight) * 1000); // Send in grams
+
+        const productValue = order.items?.reduce((sum: number, item: any) => sum + (parseFloat(item.orderValue) || 0) * (item.quantity || 1), 0) || 50;
+
+        const payload = {
+            "order_type": "marketplace",
+            "order_details": {
+                "client_order_id": order.orderId ? String(order.orderId) : `SQ${Date.now()}`,
+                "actual_weight": weightGms || 500,
+                "volumetric_weight": weightGms || 500,
+                "product_value": productValue,
+                "payment_mode": order.paymentMode === "COD" || order.paymentMode === "cod" ? "COD" : "Prepaid",
+                "cod_amount": order.paymentMode === "COD" || order.paymentMode === "cod" ? String(order.codAmount || productValue) : "0",
+                "total_amount": productValue,
+                "order_service": selectedServiceType?.toLowerCase().includes("express") ? "express" : "regular",
+                "eway_bill": order.ewaybill || ""
+            },
+            "customer_details": {
+                "name": order.customerName || "Customer",
+                "contact": order.mobile ? String(order.mobile) : "9999999999",
+                "address_line_1": order.address?.substring(0, 100) || "Customer Address",
+                "city": order.city || "City",
+                "state": order.state || "State",
+                "pincode": Number(order.pincode) || 110001
+            },
+            "pickup_details": {
+                "name": order.warehouse?.name || "Sender",
+                "contact": order.warehouse?.mobile ? String(order.warehouse.mobile) : "9999999999",
+                "address_line_1": order.warehouse?.address1?.substring(0, 100) || "Warehouse Address",
+                "city": order.warehouse?.city || "City",
+                "state": order.warehouse?.state || "State",
+                "pincode": Number(order.warehouse?.pincode) || 110001
+            },
+            "rts_details": {
+                "name": order.warehouse?.name || "Sender RTS",
+                "contact": order.warehouse?.mobile ? String(order.warehouse.mobile) : "9999999999",
+                "address_line_1": order.warehouse?.address1?.substring(0, 100) || "RTS Address",
+                "city": order.warehouse?.city || "City",
+                "state": order.warehouse?.state || "State",
+                "pincode": Number(order.warehouse?.pincode) || 110001
+            },
+            "product_details": order.items?.map((item: any) => ({
+                "sku_name": item.productName || "Product",
+                "price": parseFloat(item.orderValue) || 50,
+                "additional_details": { "quantity": item.quantity || 1 }
+            })) || [{
+                "sku_name": "General Goods",
+                "price": 50,
+                "additional_details": { "quantity": 1 }
+            }]
+        };
+
+        try {
+            console.log("Shadowfax AWB Payload:", JSON.stringify(payload, null, 2));
+            const response = await axios.post(apiUrl, payload, { headers });
+            const responseData = response.data;
+            console.log("Shadowfax API Response:", JSON.stringify(responseData, null, 2));
+
+            if (responseData && responseData.message === "Success" && responseData.data?.awb_number) {
+                return {
+                    awbNumber: responseData.data.awb_number,
+                    shippingId: String(responseData.data.id || "")
+                };
+            } else if (responseData && responseData.errors) {
+                console.error("Shadowfax AWB Generation returned errors:", responseData.errors);
+                return null;
+            }
+            return null;
+        } catch (error: any) {
+            console.error("Shadowfax AWB Generation error:", error.response?.data || error.message);
+            return null;
+        }
+    }
+
+    // We will attempt to track/cancel if the APIs become available, returning placeholders for now.
+    public async trackShipment(awbNumber: string): Promise<any | null> {
+        console.warn("Shadowfax Track: Not explicitly defined in unified api without webhook, returning mock / pending.");
+        return null; // A proper impl would use their track API if found or rely on Webhooks
+    }
+
+    public async cancelShipment(awbNumber: string): Promise<{ success: boolean; message: string }> {
+        console.warn(`Shadowfax Cancel: ${awbNumber} (API endpoint unknown, returning mock).`);
+        return { success: true, message: "Mock cancellation successful. Requires webhook or explicit endpoint." };
     }
 }
 

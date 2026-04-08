@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import type React from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -13,19 +14,39 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, MoreVertical, Search } from "lucide-react"
+import { ArrowUpDown, CheckSquare, Mail, MoreVertical, Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table" 
-import axios from "axios" 
-import { StatusToggle } from "./StatusToggleAdminsUserAction"
-import { prisma } from "@/lib/prisma"
+import { Label } from "@/components/ui/label"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import axios from "axios"
 import { toast } from "react-toastify"
+
+import { StatusToggle } from "./StatusToggleAdminsUserAction"
 import { CourierAssignmentModal } from "./CourierAssignmentModal"
 import { AdminWalletRechargeModal } from "./admin-wallet-recharge-modal"
+import { BulkEmailModal } from "./bulk-email-modal"
 
 type User = {
   id: string
@@ -34,8 +55,12 @@ type User = {
   lastName: string
   email: string
   status: boolean
+  kycStatus: string
+  kycDetail?: { updatedAt: string }
+  wallet?: { balance: number }
+  _count?: { orders: number }
+  orders?: { createdAt: string }[]
 }
-
 
 export function UsersInAdminDashboard() {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -43,82 +68,136 @@ export function UsersInAdminDashboard() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [pageSize, setPageSize] = useState(10)
-  // ADD THESE TWO LINES:
   const [selectedCourierUser, setSelectedCourierUser] = useState<User | null>(null)
-  const [isCourierModalOpen, setIsCourierModalOpen] = useState(false);
+  const [isCourierModalOpen, setIsCourierModalOpen] = useState(false)
   const [selectedRechargeUser, setSelectedRechargeUser] = useState<User | null>(null)
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
-
-  const [data,setData] = useState<User[]>([]);
+  const [isBulkEmailModalOpen, setIsBulkEmailModalOpen] = useState(false)
+  const [customFilter, setCustomFilter] = useState<
+    "all" | "low_balance" | "no_orders_after_kyc" | "inactive"
+  >("all")
+  const [data, setData] = useState<User[]>([])
 
   useEffect(() => {
-    axios.get("/api/admin/update-user-status")
+    axios
+      .get("/api/admin/update-user-status")
       .then((res) => {
         if (res.data.success) {
-          setData(res.data.data);
+          setData(res.data.data)
         }
       })
-      .catch((err) => console.log("Axios error:", err));
-  }, []);
- 
+      .catch((err) => console.log("Axios error:", err))
+  }, [])
+
   const columns: ColumnDef<User>[] = [
     {
-      accessorKey: "serialNo",
-      header: ({ column }) => {
-        return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            S.No
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
-      cell: ({ row }) => {
-        const serialNo = row.index + 1; 
-        return <div className="pl-4">{serialNo}</div>
+      id: "select",
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllPageRowsSelected()}
+          onChange={(e) => table.toggleAllPageRowsSelected(!!e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300"
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={(e) => row.toggleSelected(!!e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300"
+        />
+      ),
     },
+    {
+      accessorKey: "serialNo",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          S.No
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const serialNo = row.index + 1
+        return <div className="pl-4">{serialNo}</div>
+      },
     },
     {
       accessorKey: "firstName",
-      header: ({ column }) => {
-        return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            First Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          First Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => <div>{row.getValue("firstName")}</div>,
     },
     {
       accessorKey: "lastName",
-      header: ({ column }) => {
-        return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Last Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Last Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => <div>{row.getValue("lastName")}</div>,
     },
     {
       accessorKey: "email",
-      header: ({ column }) => {
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    },
+    {
+      accessorKey: "wallet",
+      header: "Balance",
+      cell: ({ row }) => {
+        const bal = row.original.wallet?.balance || 0
         return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
+          <div
+            className={
+              bal <= 200
+                ? "text-red-500 font-medium"
+                : "text-emerald-600 font-medium"
+            }
+          >
+            ₹{bal.toFixed(2)}
+          </div>
         )
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    },
+    {
+      accessorKey: "orders",
+      header: "Shipments",
+      cell: ({ row }) => {
+        return <div>{row.original._count?.orders || 0}</div>
+      },
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => { 
+      cell: ({ row }) => {
         return (
-          <StatusToggle userId={row.original.id} initialStatus={row.original.status}  />
+          <StatusToggle
+            userId={row.original.id}
+            initialStatus={row.original.status}
+          />
         )
       },
     },
@@ -136,33 +215,52 @@ export function UsersInAdminDashboard() {
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>Copy email</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                setSelectedCourierUser(user)
-                setIsCourierModalOpen(true)
-              }}>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>
+                Copy email
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedCourierUser(user)
+                  setIsCourierModalOpen(true)
+                }}
+              >
                 Manage Couriers
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                setSelectedRechargeUser(user)
-                setIsRechargeModalOpen(true)
-              }}>
+
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedRechargeUser(user)
+                  setIsRechargeModalOpen(true)
+                }}
+              >
                 Manual Recharge
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={async ()=>{
-                if (!confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
-                  return
-                }
-                try{
-                  const res = await axios.delete('/api/admin/update-user-status', {data: {userId: user.id}});
-                  toast.success(res.data.message)
-                  setData(prev => prev.filter(u => u.id !== user.id))
-                }catch(e:any){
-                  toast.error("Delete error:", e)
-                  alert("Failed to delete user. See console for details.")
-                }
-              }}>
+
+              <DropdownMenuItem
+                onClick={async () => {
+                  if (
+                    !confirm(
+                      `Are you sure you want to delete ${user.firstName} ${user.lastName}?`,
+                    )
+                  ) {
+                    return
+                  }
+
+                  try {
+                    const res = await axios.delete("/api/admin/update-user-status", {
+                      data: { userId: user.id },
+                    })
+                    toast.success(res.data.message)
+                    setData((prev) => prev.filter((u) => u.id !== user.id))
+                  } catch (e: any) {
+                    toast.error("Delete error:", e)
+                    alert("Failed to delete user. See console for details.")
+                  }
+                }}
+              >
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -191,16 +289,96 @@ export function UsersInAdminDashboard() {
     },
   })
 
+  const totalBalance = data.reduce((sum, user) => sum + (user.wallet?.balance || 0), 0)
+  const lowBalanceCount = data.filter((u) => (u.wallet?.balance || 0) <= 200).length
+
+  const visibleRows = table.getRowModel().rows.filter((row) => {
+    const user = row.original
+
+    if (customFilter === "low_balance") {
+      return (user.wallet?.balance || 0) <= 200
+    }
+
+    if (customFilter === "no_orders_after_kyc") {
+      if (user.kycStatus === "approved" && user._count?.orders === 0 && user.kycDetail?.updatedAt) {
+        const hoursSinceKyc =
+          (new Date().getTime() - new Date(user.kycDetail.updatedAt).getTime()) /
+          (1000 * 60 * 60)
+        return hoursSinceKyc >= 24
+      }
+      return false
+    }
+
+    if (customFilter === "inactive") {
+      if ((user._count?.orders || 0) > 0 && user.orders && user.orders.length > 0) {
+        const daysSinceLastOrder =
+          (new Date().getTime() - new Date(user.orders[0].createdAt).getTime()) /
+          (1000 * 60 * 60 * 24)
+        return daysSinceLastOrder >= 4
+      }
+      return false
+    }
+
+    return true
+  })
+
+  const selectedUsers = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
+
   return (
     <div className="w-full space-y-4">
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white border rounded-xl p-5 shadow-sm text-center">
+          <p className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">
+            Total User Balances
+          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mt-2">₹{totalBalance.toFixed(2)}</h2>
+        </div>
+
+        <div
+          onClick={() =>
+            setCustomFilter(customFilter === "low_balance" ? "all" : "low_balance")
+          }
+          className={`bg-white border rounded-xl p-5 shadow-sm text-center cursor-pointer transition-all hover:ring-2 hover:ring-red-500 ${
+            customFilter === "low_balance" ? "ring-2 ring-red-500 bg-red-50" : ""
+          }`}
+        >
+          <p className="text-sm text-red-600 uppercase tracking-wider font-semibold">
+            Low Balance Users (≤ 200)
+          </p>
+          <h2 className="text-3xl font-bold text-red-700 mt-2">
+            {lowBalanceCount} Users
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">Click to filter</p>
+        </div>
+
+        <div className="bg-white flex flex-col justify-center items-center border rounded-xl p-5 shadow-sm">
+          <Label className="mb-2 text-sm text-muted-foreground uppercase tracking-wider font-semibold">
+            Advanced Filters
+          </Label>
+          <Select value={customFilter} onValueChange={(val: any) => setCustomFilter(val)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="No active filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Show All Users</SelectItem>
+              <SelectItem value="no_orders_after_kyc">No Orders &gt;24h after KYC</SelectItem>
+              <SelectItem value="inactive">Inactive &gt; 4 Days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Action Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center py-2 sm:py-4 gap-3 sm:gap-4 justify-between">
         <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
           <span>Show</span>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => {
-              setPageSize(Number.parseInt(value))
-              table.setPageSize(Number.parseInt(value))
+              const nextPageSize = Number.parseInt(value)
+              setPageSize(nextPageSize)
+              table.setPageSize(nextPageSize)
             }}
           >
             <SelectTrigger className="w-[70px]">
@@ -224,41 +402,61 @@ export function UsersInAdminDashboard() {
             <Input
               placeholder="Search..."
               value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-              onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
+              onChange={(event) =>
+                table.getColumn("email")?.setFilterValue(event.target.value)
+              }
               className="pl-7 sm:pl-8 h-8 text-xs sm:text-sm w-full sm:w-[200px] md:w-[300px]"
             />
           </div>
         </div>
+
+        {selectedUsers.length > 0 && (
+          <Button
+            onClick={() => setIsBulkEmailModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0"
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Send Bulk Email ({selectedUsers.length})
+          </Button>
+        )}
       </div>
 
-      {/* <div className="rounded-md border overflow-x-auto"> */}
       <div className="rounded-md border w-full max-w-full overflow-x-auto lg:overflow-x-visible">
         <Table className="min-w-max table-auto">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm">
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+            {visibleRows.length ? (
+              visibleRows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-2 py-2 sm:px-4 sm:py-3">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id} className="px-2 py-2 sm:px-4 sm:py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-16 sm:h-24 text-center text-xs sm:text-sm">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-16 sm:h-24 text-center text-xs sm:text-sm"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -269,13 +467,15 @@ export function UsersInAdminDashboard() {
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2 py-2 sm:py-4">
         <div className="text-xs sm:text-sm text-muted-foreground">
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
+          Showing{" "}
+          {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
           {Math.min(
             (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
             table.getFilteredRowModel().rows.length,
           )}{" "}
           of {table.getFilteredRowModel().rows.length} entries
         </div>
+
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <Button
             variant="outline"
@@ -286,21 +486,29 @@ export function UsersInAdminDashboard() {
           >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="text-xs h-8 px-2 sm:px-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="text-xs h-8 px-2 sm:px-3"
+          >
             Next
           </Button>
         </div>
       </div>
+
       {selectedCourierUser && (
-        <CourierAssignmentModal 
+        <CourierAssignmentModal
           userId={parseInt(selectedCourierUser.id)}
           userName={selectedCourierUser.firstName + " " + selectedCourierUser.lastName}
           isOpen={isCourierModalOpen}
           onClose={() => setIsCourierModalOpen(false)}
         />
       )}
+
       {selectedRechargeUser && (
-        <AdminWalletRechargeModal 
+        <AdminWalletRechargeModal
           userId={parseInt(selectedRechargeUser.id)}
           userName={selectedRechargeUser.firstName + " " + selectedRechargeUser.lastName}
           isOpen={isRechargeModalOpen}
@@ -310,6 +518,13 @@ export function UsersInAdminDashboard() {
           }}
         />
       )}
+
+      <BulkEmailModal
+        isOpen={isBulkEmailModalOpen}
+        onClose={() => setIsBulkEmailModalOpen(false)}
+        selectedUsers={selectedUsers}
+        onSuccess={() => setRowSelection({})}
+      />
     </div>
   )
 }

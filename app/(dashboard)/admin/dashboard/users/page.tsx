@@ -1,6 +1,7 @@
-import type { Metadata } from "next" 
+import type { Metadata } from "next"
 import { ChevronRight, FileCheck, Home } from "lucide-react"
 import Link from "next/link"
+
 import { UsersInAdminDashboard } from "@/components/users-in-admin-dashboard"
 
 export const metadata: Metadata = {
@@ -9,34 +10,45 @@ export const metadata: Metadata = {
 }
 
 export default function KycPage() {
-  const title = "User Management", subtitle="Review and manage user status"
+  const title = "User Management"
+  const subtitle = "Review and manage user status"
+
   return (
-    <div className="flex flex-col  min-h-screen">
-      <header className="dark:text-amber-50 rounded-2xl bg-gradient-to-r from-indigo-950 to-purple-900 px-2 py-4 shadow text-primary-foreground mb-4 md:mb-6 mx-2 md:mx-4">
-      <div className="container mx-auto py-3 px-3 sm:py-4 sm:px-6">
-        <div className="flex flex-col gap-1 sm:gap-2">
-          <div className="flex items-center gap-2 dark:text-amber-50">
-            <FileCheck className="h-5 w-5 sm:h-6 sm:w-6" />
-            <h1 className="text-xl sm:text-2xl dark:text-amber-50 font-bold tracking-tight">{title}</h1>
+    <div className="flex min-h-screen flex-col">
+      <header className="flex items-center justify-between border-b bg-white px-4 py-3 dark:bg-slate-900 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <FileCheck className="h-5 w-5 text-indigo-600" />
+            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:text-xl">
+              {title}
+            </h1>
           </div>
 
-          {subtitle && <p className="text-xs sm:text-sm text-primary-foreground/80 dark:text-amber-50/90">{subtitle}</p>}
+          {subtitle && (
+            <div className="hidden border-l border-slate-200 pl-4 dark:border-slate-700 sm:block">
+              <p className="text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+            </div>
+          )}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center text-xs sm:text-sm text-primary-foreground/70 dark:text-amber-50/80">
-          <Link href="/admin/dashboard" className="flex items-center hover:text-gray-300 transition-colors">
-            <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+        {/* Breadcrumbs on the right */}
+        <div className="hidden items-center text-xs text-muted-foreground md:flex">
+          <Link
+            href="/admin/dashboard"
+            className="flex items-center transition-colors hover:text-indigo-600"
+          >
+            <Home className="mr-1 h-3.5 w-3.5" />
             <span>Dashboard</span>
-          </Link> 
+          </Link>
 
-          <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 mx-1" />
-          <span className="font-medium">User</span>
+          <ChevronRight className="mx-1 h-3.5 w-3.5 opacity-50" />
+
+          <span className="font-medium text-slate-900 dark:text-slate-100">Users</span>
         </div>
-      </div>
-    </header>
+      </header>
 
-      <main className="flex-1 container mx-auto p-4 md:p-6">
-        <div className="bg-card w-full rounded-lg shadow-sm p-4 md:p-6">
+      <main className="container mx-auto flex-1 p-4 md:p-6">
+        <div className="bg-card w-full rounded-lg p-4 shadow-sm md:p-6">
           <UsersInAdminDashboard />
         </div>
       </main>

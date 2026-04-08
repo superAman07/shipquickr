@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { prisma } from "@/lib/prisma";
 import { ecomExpressClient } from "@/lib/services/ecom-express";
 import { xpressbeesClient } from "@/lib/services/xpressbees";
+import { shadowfaxClient } from "@/lib/services/shadowfax";
 
 interface AdminTokenDetailsType {
     userId: number;
@@ -114,6 +115,15 @@ export async function POST(req: NextRequest) {
                 console.error("ADMIN: Manifest creation failed for Xpressbees AWB:", actualAwbNumber);
                 // We can continue even if manifest fails - manifest can be created later
             }
+        } else if (selectedCourier.name === "Shadowfax") {
+            console.log("ADMIN: Attempting to fetch AWB from Shadowfax...");
+            const shipmentDetails = await shadowfaxClient.generateAwb(order, selectedCourier.serviceType);
+            if (!shipmentDetails || !shipmentDetails.awbNumber) {
+                return NextResponse.json({ error: "Failed to obtain AWB from Shadowfax." }, { status: 503 });
+            }
+            actualAwbNumber = shipmentDetails.awbNumber;
+            shippingId = shipmentDetails.shippingId || null;
+            // Manifest step is omitted here unless Shadowfax has a specific one required
         } else {
             console.warn(`ADMIN: No specific AWB fetch logic for ${selectedCourier.name}. Using generic placeholder.`);
             actualAwbNumber = `GENERIC-ADMIN-${orderId}-${Date.now().toString().slice(-6)}`;
