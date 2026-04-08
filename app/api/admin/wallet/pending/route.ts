@@ -24,7 +24,7 @@ function isAdminAuth(token: string | undefined) {
 // GET — list all Pending recharge transactions with user info
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("userToken")?.value;
+  const token = cookieStore.get("adminToken")?.value;
   if (!isAdminAuth(token)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 // POST — verify a single pending transaction against PhonePe and credit if successful
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("userToken")?.value;
+  const token = cookieStore.get("adminToken")?.value;
   if (!isAdminAuth(token)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

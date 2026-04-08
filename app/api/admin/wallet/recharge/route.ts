@@ -22,8 +22,8 @@ interface TokenDetailsType {
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("userToken")?.value;
-    
+    const token = cookieStore.get("adminToken")?.value;
+
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const decoded = jwtDecode<TokenDetailsType>(token);
