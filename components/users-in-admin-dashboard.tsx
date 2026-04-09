@@ -14,7 +14,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, CheckSquare, Mail, MoreVertical, Search } from "lucide-react"
+import { ArrowUpDown, Mail, MoreVertical, Search } from "lucide-react"
+import axios from "axios"
+import { toast } from "react-toastify"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,13 +42,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import axios from "axios"
-import { toast } from "react-toastify"
 
 import { StatusToggle } from "./StatusToggleAdminsUserAction"
 import { CourierAssignmentModal } from "./CourierAssignmentModal"
 import { AdminWalletRechargeModal } from "./admin-wallet-recharge-modal"
 import { BulkEmailModal } from "./bulk-email-modal"
+import { AdminUserDetailsSheet } from "./admin-user-details-sheet"
 
 type User = {
   id: string
@@ -68,14 +69,22 @@ export function UsersInAdminDashboard() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [pageSize, setPageSize] = useState(10)
+
   const [selectedCourierUser, setSelectedCourierUser] = useState<User | null>(null)
   const [isCourierModalOpen, setIsCourierModalOpen] = useState(false)
+
   const [selectedRechargeUser, setSelectedRechargeUser] = useState<User | null>(null)
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false)
+
   const [isBulkEmailModalOpen, setIsBulkEmailModalOpen] = useState(false)
+
+  const [selectedUserDetailsId, setSelectedUserDetailsId] = useState<number | null>(null)
+  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false)
+
   const [customFilter, setCustomFilter] = useState<
     "all" | "low_balance" | "no_orders_after_kyc" | "inactive"
   >("all")
+
   const [data, setData] = useState<User[]>([])
 
   useEffect(() => {
@@ -136,7 +145,17 @@ export function UsersInAdminDashboard() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("firstName")}</div>,
+      cell: ({ row }) => (
+        <span
+          className="cursor-pointer font-medium text-indigo-600 hover:underline"
+          onClick={() => {
+            setSelectedUserDetailsId(Number(row.original.id))
+            setIsDetailsSheetOpen(true)
+          }}
+        >
+          {row.getValue("firstName")}
+        </span>
+      ),
     },
     {
       accessorKey: "lastName",
@@ -172,9 +191,7 @@ export function UsersInAdminDashboard() {
         return (
           <div
             className={
-              bal <= 200
-                ? "text-red-500 font-medium"
-                : "text-emerald-600 font-medium"
+              bal <= 200 ? "font-medium text-red-500" : "font-medium text-emerald-600"
             }
           >
             ₹{bal.toFixed(2)}
@@ -327,33 +344,31 @@ export function UsersInAdminDashboard() {
   return (
     <div className="w-full space-y-4">
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white border rounded-xl p-5 shadow-sm text-center">
-          <p className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-xl border bg-white p-5 text-center shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Total User Balances
           </p>
-          <h2 className="text-3xl font-bold text-gray-900 mt-2">₹{totalBalance.toFixed(2)}</h2>
+          <h2 className="mt-2 text-3xl font-bold text-gray-900">₹{totalBalance.toFixed(2)}</h2>
         </div>
 
         <div
           onClick={() =>
             setCustomFilter(customFilter === "low_balance" ? "all" : "low_balance")
           }
-          className={`bg-white border rounded-xl p-5 shadow-sm text-center cursor-pointer transition-all hover:ring-2 hover:ring-red-500 ${
+          className={`cursor-pointer rounded-xl border bg-white p-5 text-center shadow-sm transition-all hover:ring-2 hover:ring-red-500 ${
             customFilter === "low_balance" ? "ring-2 ring-red-500 bg-red-50" : ""
           }`}
         >
-          <p className="text-sm text-red-600 uppercase tracking-wider font-semibold">
+          <p className="text-sm font-semibold uppercase tracking-wider text-red-600">
             Low Balance Users (≤ 200)
           </p>
-          <h2 className="text-3xl font-bold text-red-700 mt-2">
-            {lowBalanceCount} Users
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">Click to filter</p>
+          <h2 className="mt-2 text-3xl font-bold text-red-700">{lowBalanceCount} Users</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Click to filter</p>
         </div>
 
-        <div className="bg-white flex flex-col justify-center items-center border rounded-xl p-5 shadow-sm">
-          <Label className="mb-2 text-sm text-muted-foreground uppercase tracking-wider font-semibold">
+        <div className="flex flex-col items-center justify-center rounded-xl border bg-white p-5 shadow-sm">
+          <Label className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Advanced Filters
           </Label>
           <Select value={customFilter} onValueChange={(val: any) => setCustomFilter(val)}>
@@ -362,7 +377,7 @@ export function UsersInAdminDashboard() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Show All Users</SelectItem>
-              <SelectItem value="no_orders_after_kyc">No Orders &gt;24h after KYC</SelectItem>
+              <SelectItem value="no_orders_after_kyc">No Orders &gt; 24h after KYC</SelectItem>
               <SelectItem value="inactive">Inactive &gt; 4 Days</SelectItem>
             </SelectContent>
           </Select>
@@ -370,8 +385,8 @@ export function UsersInAdminDashboard() {
       </div>
 
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center py-2 sm:py-4 gap-3 sm:gap-4 justify-between">
-        <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+      <div className="flex flex-col justify-between gap-3 py-2 sm:flex-row sm:items-center sm:gap-4 sm:py-4">
+        <div className="flex items-center gap-1 text-xs sm:gap-2 sm:text-sm">
           <span>Show</span>
           <Select
             value={pageSize.toString()}
@@ -395,17 +410,17 @@ export function UsersInAdminDashboard() {
           <span>entries</span>
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm">
+        <div className="flex w-full items-center gap-1 text-xs sm:w-auto sm:gap-2 sm:text-sm">
           <span>Search:</span>
           <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-2 top-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground sm:h-4 sm:w-4" />
             <Input
               placeholder="Search..."
               value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
               onChange={(event) =>
                 table.getColumn("email")?.setFilterValue(event.target.value)
               }
-              className="pl-7 sm:pl-8 h-8 text-xs sm:text-sm w-full sm:w-[200px] md:w-[300px]"
+              className="h-8 w-full pl-7 text-xs sm:w-[200px] sm:pl-8 sm:text-sm md:w-[300px]"
             />
           </div>
         </div>
@@ -413,15 +428,15 @@ export function UsersInAdminDashboard() {
         {selectedUsers.length > 0 && (
           <Button
             onClick={() => setIsBulkEmailModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0"
+            className="shrink-0 bg-indigo-600 text-white hover:bg-indigo-700"
           >
-            <Mail className="h-4 w-4 mr-2" />
+            <Mail className="mr-2 h-4 w-4" />
             Send Bulk Email ({selectedUsers.length})
           </Button>
         )}
       </div>
 
-      <div className="rounded-md border w-full max-w-full overflow-x-auto lg:overflow-x-visible">
+      <div className="w-full max-w-full overflow-x-auto rounded-md border lg:overflow-x-visible">
         <Table className="min-w-max table-auto">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -429,7 +444,7 @@ export function UsersInAdminDashboard() {
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="px-2 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm"
+                    className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm"
                   >
                     {header.isPlaceholder
                       ? null
@@ -455,7 +470,7 @@ export function UsersInAdminDashboard() {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-16 sm:h-24 text-center text-xs sm:text-sm"
+                  className="h-16 text-center text-xs sm:h-24 sm:text-sm"
                 >
                   No results.
                 </TableCell>
@@ -465,8 +480,8 @@ export function UsersInAdminDashboard() {
         </Table>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2 py-2 sm:py-4">
-        <div className="text-xs sm:text-sm text-muted-foreground">
+      <div className="flex flex-col justify-between gap-3 py-2 sm:flex-row sm:items-center sm:gap-2 sm:py-4">
+        <div className="text-xs text-muted-foreground sm:text-sm">
           Showing{" "}
           {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
           {Math.min(
@@ -476,13 +491,13 @@ export function UsersInAdminDashboard() {
           of {table.getFilteredRowModel().rows.length} entries
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="text-xs h-8 px-2 sm:px-3"
+            className="h-8 px-2 text-xs sm:px-3"
           >
             Previous
           </Button>
@@ -491,7 +506,7 @@ export function UsersInAdminDashboard() {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="text-xs h-8 px-2 sm:px-3"
+            className="h-8 px-2 text-xs sm:px-3"
           >
             Next
           </Button>
@@ -501,7 +516,7 @@ export function UsersInAdminDashboard() {
       {selectedCourierUser && (
         <CourierAssignmentModal
           userId={parseInt(selectedCourierUser.id)}
-          userName={selectedCourierUser.firstName + " " + selectedCourierUser.lastName}
+          userName={`${selectedCourierUser.firstName} ${selectedCourierUser.lastName}`}
           isOpen={isCourierModalOpen}
           onClose={() => setIsCourierModalOpen(false)}
         />
@@ -510,7 +525,7 @@ export function UsersInAdminDashboard() {
       {selectedRechargeUser && (
         <AdminWalletRechargeModal
           userId={parseInt(selectedRechargeUser.id)}
-          userName={selectedRechargeUser.firstName + " " + selectedRechargeUser.lastName}
+          userName={`${selectedRechargeUser.firstName} ${selectedRechargeUser.lastName}`}
           isOpen={isRechargeModalOpen}
           onClose={() => setIsRechargeModalOpen(false)}
           onSuccess={() => {
@@ -524,6 +539,12 @@ export function UsersInAdminDashboard() {
         onClose={() => setIsBulkEmailModalOpen(false)}
         selectedUsers={selectedUsers}
         onSuccess={() => setRowSelection({})}
+      />
+
+      <AdminUserDetailsSheet
+        userId={selectedUserDetailsId}
+        isOpen={isDetailsSheetOpen}
+        onClose={() => setIsDetailsSheetOpen(false)}
       />
     </div>
   )
