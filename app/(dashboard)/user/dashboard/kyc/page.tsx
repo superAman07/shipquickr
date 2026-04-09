@@ -409,7 +409,7 @@ export default function KYC() {
                       {!isEditingMobile ? (
                         <button
                           type="button"
-                          className="rounded-lg border border-purple-200 px-3 font-semibold text-purple-600 cursor-pointer transition-colors hover:bg-purple-50"
+                          className="rounded-lg border border-purple-200 cursor-pointer px-3 font-semibold text-purple-600 transition-colors hover:bg-purple-50"
                           onClick={() => setIsEditingMobile(true)}
                         >
                           Edit
@@ -417,7 +417,7 @@ export default function KYC() {
                       ) : (
                         <button
                           type="button"
-                          className=" rounded-lg bg-purple-600 px-4 cursor-pointer font-semibold text-white transition-colors hover:bg-purple-700"
+                          className="rounded-lg bg-purple-600 px-4 font-semibold text-white transition-colors hover:bg-purple-700 cursor-pointer"
                           disabled={mobileLoading}
                           onClick={async () => {
                             setMobileLoading(true)
@@ -978,10 +978,10 @@ export default function KYC() {
           <button
             onClick={handlePrev}
             disabled={currentStep === 0}
-            className={`flex items-center gap-1.5 cursor-pointer rounded-xl px-5 py-2.5 font-bold transition-all ${
+            className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 font-bold transition-all ${
               currentStep === 0
                 ? "cursor-not-allowed bg-transparent text-gray-300"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                : "bg-gray-50 text-gray-600 hover:bg-gray-100 cursor-pointer"
             }`}
           >
             <ChevronLeft size={18} />
@@ -991,7 +991,7 @@ export default function KYC() {
           {currentStep < steps.length - 1 ? (
             <button
               onClick={handleNext}
-              className="flex items-center gap-1.5 rounded-xl bg-purple-600 px-6 py-2.5 font-bold text-white shadow-md cursor-pointer shadow-purple-500/20 transition-all hover:scale-[1.02] hover:bg-purple-700"
+              className="flex items-center gap-1.5 rounded-xl bg-purple-600 px-6 py-2.5 cursor-pointer font-bold text-white shadow-md shadow-purple-500/20 transition-all hover:scale-[1.02] hover:bg-purple-700"
             >
               Next Step
               <ChevronRight size={18} />
