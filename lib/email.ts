@@ -3,10 +3,10 @@ import nodemailer from 'nodemailer';
 export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: parseInt(process.env.EMAIL_PORT || "465", 10),
-  secure: true, 
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER,  
-    pass: process.env.EMAIL_PASS,  
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
   tls: {
     rejectUnauthorized: false,
@@ -150,7 +150,7 @@ const createEmailTemplate = (title: string, content: string) => `
 
 export async function sendResetEmail(to: string, token: string, role: string) {
   const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/${role}/auth/reset-password?token=${token}`;
-  
+
   // Note: Uses the new .btn-container and .button styles defined in the CSS above
   const content = `
     <p>Hi there,</p>
@@ -164,7 +164,7 @@ export async function sendResetEmail(to: string, token: string, role: string) {
       This link will securely expire in 15 minutes.
     </p>
   `;
-  
+
   const html = createEmailTemplate('Reset Your Password', content);
 
   await transporter.sendMail({ from: fromAddress, to, subject: 'Reset Your ShipQuickr Password', html });
@@ -190,7 +190,7 @@ export async function sendWelcomeEmail(to: string, firstName: string) {
     
     <p>If you have any questions, feel free to reply to this email. We're here to help.</p>
   `;
-  
+
   const html = createEmailTemplate('Welcome to ShipQuickr!', content);
   await transporter.sendMail({ from: fromAddress, to, subject: 'Welcome to ShipQuickr! 🚀', html });
 }
@@ -208,7 +208,7 @@ export async function sendLoginAlertEmail(to: string, firstName: string, ipAddre
     
     <p>If this was you, no action is needed. If you don't recognize this activity, please reset your password immediately and contact our support team.</p>
   `;
-  
+
   const html = createEmailTemplate('New Login Alert', content);
   await transporter.sendMail({ from: fromAddress, to, subject: 'Security Alert: New Login to your Account', html });
 }
@@ -229,7 +229,78 @@ export async function sendOrderConfirmationEmail(to: string, firstName: string, 
       <a href="https://shipquickr.com/dashboard/orders" class="button">Track Your Order</a>
     </div>
   `;
-  
+
   const html = createEmailTemplate('Order Confirmation - ShipQuickr', content);
   await transporter.sendMail({ from: fromAddress, to, subject: `Order Confirmed: #${orderId}`, html });
+}
+
+// 4. KYC Pending Email (to User)
+export async function sendKycPendingEmail(to: string, firstName: string) {
+  const content = `
+    <p>Hi ${firstName},</p>
+    <p>We have successfully received your KYC details!</p>
+    <p>Our moderation team is currently reviewing your documents to ensure everything is correct. Standard approval time is typically within <strong>24-48 Business Hours</strong>.</p>
+    <p>You will receive another email as soon as your account has been verified.</p>
+    
+    <div class="btn-container">
+      <a href="https://shipquickr.com/dashboard/kyc" class="button">View Status</a>
+    </div>
+  `;
+
+  const html = createEmailTemplate('Your KYC is Under Review', content);
+  await transporter.sendMail({ from: fromAddress, to, subject: 'Your KYC is Under Review', html });
+}
+
+// 5. KYC Status Update Email (to User)
+export async function sendKycStatusUpdateEmail(to: string, firstName: string, status: string) {
+  let title = '';
+  let content = '';
+
+  if (status.toLowerCase() === 'approved') {
+    title = 'KYC Approved!';
+    content = `
+      <p>Hi ${firstName},</p>
+      <p>Great news! Your KYC documents have been <strong>approved</strong> by our team.</p>
+      <p>Your account is now fully verified and you have unrestricted access to all features on ShipQuickr.</p>
+      <div class="btn-container">
+        <a href="https://shipquickr.com/dashboard" class="button">Start Shipping</a>
+      </div>
+    `;
+  } else if (status.toLowerCase() === 'rejected') {
+    title = 'KYC Rejected';
+    content = `
+      <p>Hi ${firstName},</p>
+      <p>We have reviewed your KYC submission, but unfortunately, we could not approve it at this time.</p>
+      <p>Common reasons for rejection include blurry document scans, name mismatches, or missing information. Please log in to your dashboard to precisely update and resubmit your details.</p>
+      <div class="btn-container">
+        <a href="https://shipquickr.com/dashboard/kyc" class="button">Resubmit KYC</a>
+      </div>
+    `;
+  } else {
+    return;
+  }
+
+  const html = createEmailTemplate(title, content);
+  await transporter.sendMail({ from: fromAddress, to, subject: title, html });
+}
+
+// 6. KYC Admin Alert (to Admin)
+export async function sendKycSubmittedEmailToAdmin(userFullName: string, userEmail: string) {
+  const content = `
+    <p>Hi Admin,</p>
+    <p>A new KYC application has just been submitted by <strong>${userFullName}</strong> (${userEmail}).</p>
+    <p>Please log in to the admin dashboard to review their documents.</p>
+    
+    <div class="btn-container">
+      <a href="https://shipquickr.com/admin/dashboard/kyc" class="button">Review KYC</a>
+    </div>
+  `;
+
+  const html = createEmailTemplate('New Request: KYC Submission', content);
+
+  // Send to ADMIN_EMAIL if configured, otherwise fallback to the system email user
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+  if (adminEmail) {
+    await transporter.sendMail({ from: fromAddress, to: adminEmail, subject: 'Action Required: New KYC Submission', html });
+  }
 }

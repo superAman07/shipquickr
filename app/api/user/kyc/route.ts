@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
+import { sendKycPendingEmail, sendKycSubmittedEmailToAdmin } from "@/lib/email";
 
 interface TokenDetailsType {
   userId: string;
@@ -172,6 +173,18 @@ export async function POST(req: NextRequest) {
       where: { id: parseInt(decoded.userId) },
       data: { kycStatus: "pending" },
     });
+
+    // Fire emails asynchronously without blocking the response
+    try {
+      if (userStatus?.firstName) {
+        sendKycPendingEmail(decoded.email, userStatus.firstName).catch(console.error);
+        const fullName = `${userStatus.firstName} ${userStatus.lastName || ''}`.trim();
+        sendKycSubmittedEmailToAdmin(fullName, decoded.email).catch(console.error);
+      }
+    } catch (emailErr) {
+      console.error("Failed to trigger KYC submission emails:", emailErr);
+    }
+
     return NextResponse.json({ message: "KYC details submitted successfully", kyc }, { status: 201 });
   } catch (err: any) {
     console.error("KYC POST error:", err);

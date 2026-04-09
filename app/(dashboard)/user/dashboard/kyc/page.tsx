@@ -11,6 +11,8 @@ import {
   FileText,
   ChevronRight,
   ChevronLeft,
+  Clock,
+  CheckCircle2,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import axios from "axios"
@@ -296,12 +298,61 @@ export default function KYC() {
     setCurrentStep((prev) => Math.max(prev - 1, 0))
   }
 
+  if (currentUserKycStatus === "pending") {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 p-4 pt-12 animate-in fade-in zoom-in-95 duration-500">
+        <div className="flex flex-col items-center justify-center space-y-6 rounded-3xl border border-yellow-100 bg-yellow-50/50 p-12 text-center shadow-sm dark:border-yellow-900/30 dark:bg-yellow-900/10">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-500">
+            <Clock size={48} strokeWidth={2} />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+              Verification Pending
+            </h1>
+
+            <p className="mx-auto max-w-lg text-lg text-gray-600 dark:text-gray-400">
+              Your KYC details have been successfully submitted and are currently under review by our moderation team.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-white/10">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Standard approval time is typically within <strong>24 - 48 Business Hours</strong>. We will notify you via email once your account has been verified.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (currentUserKycStatus === "approved") {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 p-4 pt-12 animate-in fade-in zoom-in-95 duration-500">
+        <div className="flex flex-col items-center justify-center space-y-6 rounded-3xl border border-green-100 bg-green-50/50 p-12 text-center shadow-sm dark:border-green-900/30 dark:bg-green-900/10">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-lg shadow-green-500/20 dark:bg-green-900/50 dark:text-green-500">
+            <CheckCircle2 size={48} strokeWidth={2} />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
+              KYC Verified
+            </h1>
+
+            <p className="mx-auto max-w-md text-lg text-gray-600 dark:text-gray-400">
+              Your account is fully verified and ready. You have unrestricted access to all active features on ShipQuickr!
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4">
       <div className="mb-6 flex items-center space-x-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          KYC Verification
-        </h1>
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">KYC Verification</h1>
+
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusBadgeClass(
             currentUserKycStatus,
@@ -331,18 +382,12 @@ export default function KYC() {
                   : "border-2 border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800"
               }`}
             >
-              {currentStep > idx ? (
-                <Check size={22} strokeWidth={3} />
-              ) : (
-                <step.icon size={22} />
-              )}
+              {currentStep > idx ? <Check size={22} strokeWidth={3} /> : <step.icon size={22} />}
             </div>
 
             <span
               className={`text-xs font-bold uppercase tracking-wider transition-colors duration-300 ${
-                currentStep >= idx
-                  ? "text-purple-700 dark:text-purple-400"
-                  : "text-gray-400"
+                currentStep >= idx ? "text-purple-700 dark:text-purple-400" : "text-gray-400"
               }`}
             >
               {step.title}
@@ -396,6 +441,7 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Mobile No {requiredField}
                     </label>
+
                     <div className="flex gap-2">
                       <Input
                         className="font-medium focus:ring-purple-500"
@@ -409,7 +455,7 @@ export default function KYC() {
                       {!isEditingMobile ? (
                         <button
                           type="button"
-                          className="rounded-lg border border-purple-200 cursor-pointer px-3 font-semibold text-purple-600 transition-colors hover:bg-purple-50"
+                          className="cursor-pointer rounded-lg border border-purple-200 px-3 font-semibold text-purple-600 transition-colors hover:bg-purple-50"
                           onClick={() => setIsEditingMobile(true)}
                         >
                           Edit
@@ -417,7 +463,7 @@ export default function KYC() {
                       ) : (
                         <button
                           type="button"
-                          className="rounded-lg bg-purple-600 px-4 font-semibold text-white transition-colors hover:bg-purple-700 cursor-pointer"
+                          className="cursor-pointer rounded-lg bg-purple-600 px-4 font-semibold text-white transition-colors hover:bg-purple-700"
                           disabled={mobileLoading}
                           onClick={async () => {
                             setMobileLoading(true)
@@ -456,8 +502,9 @@ export default function KYC() {
                 <div className="grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1.5">
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Are you having GST?
+                      Are you having GST ?{" "}
                     </label>
+
                     <div className="flex gap-4 rounded-lg border bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800">
                       <label className="flex cursor-pointer items-center gap-2 font-medium">
                         <Input
@@ -476,6 +523,7 @@ export default function KYC() {
                         />
                         Yes
                       </label>
+
                       <label className="flex cursor-pointer items-center gap-2 font-medium">
                         <Input
                           type="radio"
@@ -504,9 +552,7 @@ export default function KYC() {
                         </label>
                         <Input
                           value={form.gstNumber}
-                          onChange={(e) =>
-                            setForm({ ...form, gstNumber: e.target.value.toUpperCase() })
-                          }
+                          onChange={(e) => setForm({ ...form, gstNumber: e.target.value.toUpperCase() })}
                           className="uppercase focus:ring-purple-500"
                           placeholder="22AAAAA0000A1Z5"
                         />
@@ -516,15 +562,15 @@ export default function KYC() {
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                           GST Certificate {requiredField}
                         </label>
+
                         <div className="relative">
                           <Input
                             className="sr-only"
                             type="file"
                             id="gst-cert"
-                            onChange={(e) =>
-                              validateAndSetFile(e.target.files?.[0], "gstCertificate")
-                            }
+                            onChange={(e) => validateAndSetFile(e.target.files?.[0], "gstCertificate")}
                           />
+
                           <label
                             htmlFor="gst-cert"
                             className="flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 px-4 py-2 transition-colors hover:bg-gray-50"
@@ -545,12 +591,13 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Monthly Shipments {requiredField}
                     </label>
+
                     <select
                       value={form.shipments}
                       onChange={(e) => setForm({ ...form, shipments: e.target.value })}
                       className="w-full rounded-lg border bg-white px-4 py-2 text-sm focus:ring-purple-500"
                     >
-                      <option>Select</option>
+                      <option>Select </option>
                       <option>0 - 50</option>
                       <option>51 - 100</option>
                       <option>101 - 500</option>
@@ -653,6 +700,7 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Company Logo
                     </label>
+
                     <div className="relative">
                       <Input
                         className="sr-only"
@@ -660,6 +708,7 @@ export default function KYC() {
                         id="company-logo"
                         onChange={(e) => validateAndSetFile(e.target.files?.[0], "companyLogo")}
                       />
+
                       <label
                         htmlFor="company-logo"
                         className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed px-4 py-2 transition-colors hover:bg-gray-50"
@@ -676,6 +725,7 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Digital Signature
                     </label>
+
                     <div className="relative">
                       <Input
                         className="sr-only"
@@ -683,6 +733,7 @@ export default function KYC() {
                         id="company-sig"
                         onChange={(e) => validateAndSetFile(e.target.files?.[0], "signature")}
                       />
+
                       <label
                         htmlFor="company-sig"
                         className="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed px-4 py-2 transition-colors hover:bg-gray-50"
@@ -715,12 +766,13 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Registration Type {requiredField}
                     </label>
+
                     <select
                       value={form.companyType}
                       onChange={(e) => setForm({ ...form, companyType: e.target.value })}
                       className="w-full rounded-lg border bg-white px-4 py-2 text-sm focus:ring-purple-500"
                     >
-                      <option>Select Company Type</option>
+                      <option>Select Company Type </option>
                       <option>Individual</option>
                       <option>Business</option>
                     </select>
@@ -745,6 +797,7 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       PAN Card Image {requiredField}
                     </label>
+
                     <div className="relative">
                       <Input
                         className="sr-only"
@@ -752,6 +805,7 @@ export default function KYC() {
                         id="pan-img"
                         onChange={(e) => validateAndSetFile(e.target.files?.[0], "panCardFile")}
                       />
+
                       <label
                         htmlFor="pan-img"
                         className="flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-2 transition-colors hover:bg-purple-50"
@@ -785,6 +839,7 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Aadhar Front Image {requiredField}
                     </label>
+
                     <div className="relative">
                       <Input
                         className="sr-only"
@@ -792,6 +847,7 @@ export default function KYC() {
                         id="aadhar-f"
                         onChange={(e) => validateAndSetFile(e.target.files?.[0], "aadhaarFront")}
                       />
+
                       <label
                         htmlFor="aadhar-f"
                         className="flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-2 transition-colors hover:bg-purple-50"
@@ -808,6 +864,7 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Aadhar Back Image {requiredField}
                     </label>
+
                     <div className="relative">
                       <Input
                         className="sr-only"
@@ -815,6 +872,7 @@ export default function KYC() {
                         id="aadhar-b"
                         onChange={(e) => validateAndSetFile(e.target.files?.[0], "aadhaarBack")}
                       />
+
                       <label
                         htmlFor="aadhar-b"
                         className="flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-2 transition-colors hover:bg-purple-50"
@@ -859,12 +917,13 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Bank Name {requiredField}
                     </label>
+
                     <select
                       value={form.bankName}
                       onChange={(e) => setForm({ ...form, bankName: e.target.value })}
                       className="w-full rounded-lg border bg-white px-4 py-2 text-sm focus:ring-purple-500"
                     >
-                      <option>Select Bank Name</option>
+                      <option>Select Bank Name </option>
                       <option>State Bank of India</option>
                       <option>HDFC Bank</option>
                       <option>ICICI Bank</option>
@@ -877,12 +936,13 @@ export default function KYC() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Account Type {requiredField}
                     </label>
+
                     <select
                       value={form.accountType}
                       onChange={(e) => setForm({ ...form, accountType: e.target.value })}
                       className="w-full rounded-lg border bg-white px-4 py-2 text-sm focus:ring-purple-500"
                     >
-                      <option>Select Account Type</option>
+                      <option>Select Account Type </option>
                       <option>Savings</option>
                       <option>Current</option>
                     </select>
@@ -922,7 +982,7 @@ export default function KYC() {
 
                   <div className="space-y-1.5">
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Re-Enter Account Number {requiredField}
+                      Re - Enter Account Number {requiredField}
                     </label>
                     <Input
                       value={form.reAccountNo}
@@ -938,15 +998,14 @@ export default function KYC() {
                         accountError ? "border-red-500 focus:ring-red-500" : ""
                       }`}
                     />
-                    {accountError && (
-                      <p className="text-xs font-medium text-red-500">{accountError}</p>
-                    )}
+                    {accountError && <p className="text-xs font-medium text-red-500">{accountError}</p>}
                   </div>
 
                   <div className="mt-3 space-y-1.5 sm:col-span-2 max-w-sm">
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Cancelled Cheque Photo {requiredField}
                     </label>
+
                     <div className="relative">
                       <Input
                         className="sr-only"
@@ -954,6 +1013,7 @@ export default function KYC() {
                         id="bank-cheque"
                         onChange={(e) => validateAndSetFile(e.target.files?.[0], "cheque")}
                       />
+
                       <label
                         htmlFor="bank-cheque"
                         className="flex w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-3 shadow-sm transition-colors hover:bg-gray-50"
@@ -981,7 +1041,7 @@ export default function KYC() {
             className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 font-bold transition-all ${
               currentStep === 0
                 ? "cursor-not-allowed bg-transparent text-gray-300"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                : "cursor-pointer bg-gray-50 text-gray-600 hover:bg-gray-100"
             }`}
           >
             <ChevronLeft size={18} />
@@ -991,7 +1051,7 @@ export default function KYC() {
           {currentStep < steps.length - 1 ? (
             <button
               onClick={handleNext}
-              className="flex items-center gap-1.5 rounded-xl bg-purple-600 px-6 py-2.5 cursor-pointer font-bold text-white shadow-md shadow-purple-500/20 transition-all hover:scale-[1.02] hover:bg-purple-700"
+              className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-purple-600 px-6 py-2.5 font-bold text-white shadow-md shadow-purple-500/20 transition-all hover:scale-[1.02] hover:bg-purple-700"
             >
               Next Step
               <ChevronRight size={18} />
@@ -1003,7 +1063,7 @@ export default function KYC() {
               className={`flex items-center gap-2 rounded-xl px-8 py-2.5 font-bold transition-all ${
                 loading || !isFormValid
                   ? "cursor-not-allowed bg-gray-200 text-gray-400"
-                  : "bg-emerald-600 text-white shadow-md shadow-emerald-500/20 hover:scale-[1.02] hover:bg-emerald-700"
+                  : "cursor-pointer bg-emerald-600 text-white shadow-md shadow-emerald-500/20 hover:scale-[1.02] hover:bg-emerald-700"
               }`}
             >
               {loading ? (
