@@ -8,6 +8,7 @@ import NewsSection from '@/components/NewsSectionUser';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import ShipmentChart from '@/components/ShipmentChart';
+import { KycAlertBanner } from '@/components/ui/kyc-alert-banner';
 
 interface ShipmentCardProps {
   title: string;
@@ -232,6 +233,7 @@ export default async function Dashboard() {
         </div>
         <div className="flex flex-col lg:flex-row gap-6 mb-8">
           <div className="lg:w-2/3 flex flex-col gap-6">
+          <KycAlertBanner />
             
             {/* 1. Status Cards Grid Container (UPDATED for Mobile) */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
