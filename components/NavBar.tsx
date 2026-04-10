@@ -6,12 +6,11 @@ import {
   Wallet,
   ChevronDown,
   User,
-  Lock,
   LogOut,
   BadgePlusIcon as BatteryPlus,
-  MoreVertical,
   Settings,
   Search,
+  Lock,
 } from "lucide-react";
 import LogoutButton from "./logout";
 import Link from "next/link";
@@ -50,12 +49,14 @@ export default function Navbar({
 }: NavbarProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const calculatedCustomerId = userId ? 150000 + Number(userId) : null;
   const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
+
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
   const mobileDropdownRef = useRef<HTMLDivElement>(null);
+
+  const calculatedCustomerId = userId ? 150000 + Number(userId) : null;
+
   const { balance, isLoadingBalance } = useConditionalWallet(userRole);
-  // const router = useRouter();
 
   const getInitials = (name: string) => {
     if (!name) return "";
@@ -81,7 +82,6 @@ export default function Navbar({
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -93,11 +93,102 @@ export default function Navbar({
     setIsMobileMenuOpen(false);
   };
 
+  /* ── Shared dropdown menu items ── */
+  const renderDropdownMenu = (onClose: () => void) => (
+    <>
+      {/* Header with avatar + customer ID */}
+      <div className="flex items-center gap-3 bg-[#0a0c37] p-5 text-left">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-white">
+          {getInitials(userName)}
+        </div>
+
+        <div className="flex min-w-0 flex-col">
+          <span className="mb-1 truncate text-[15px] font-bold leading-tight text-white">
+            {userName}
+          </span>
+
+          {userRole !== "admin" && (
+            <div className="flex flex-col gap-0.5 text-[11px] leading-none text-slate-300">
+              <span>Customer Id</span>
+              <strong className="text-[13px] font-semibold tracking-wide text-white">
+                {calculatedCustomerId || "N/A"}
+              </strong>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Links */}
+      <div className="space-y-0.5 p-2">
+        <Link
+          href={`/${userRole}/dashboard/profile`}
+          className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
+          onClick={onClose}
+        >
+          <User className="h-4 w-4 text-slate-400" />
+          My Profile
+        </Link>
+
+        {userRole !== "admin" && (
+          <Link
+            href={`/${userRole}/dashboard/wallet`}
+            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
+            onClick={onClose}
+          >
+            <Wallet className="h-4 w-4 text-slate-400" />
+            Wallet
+          </Link>
+        )}
+
+        {userRole !== "admin" && (
+          <button
+            onClick={(e) => {
+              handleRechargeClick(e);
+              onClose();
+            }}
+            className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-emerald-600 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+          >
+            <BatteryPlus className="h-4 w-4" />
+            Recharge Wallet
+          </button>
+        )}
+
+        {userRole !== "admin" && (
+          <Link
+            href={`/${userRole}/dashboard/settings`}
+            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
+            onClick={onClose}
+          >
+            <Lock className="h-4 w-4 text-slate-400" />
+            API Integration
+          </Link>
+        )}
+
+        <div className="my-1 mx-2 h-px bg-slate-100 dark:bg-gray-700" />
+
+        <div
+          className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
+          onClick={onClose}
+        >
+          <LogOut className="h-4 w-4 text-slate-400 transition-colors group-hover:text-rose-500" />
+          <LogoutButton
+            propUser={userRole}
+            propStyle={{
+              color:
+                "text-slate-700 dark:text-gray-200 group-hover:text-rose-600 transition-colors",
+            }}
+          />
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         <div className="mx-auto max-w-8xl px-0 sm:px-6 lg:px-12">
           <div className="flex h-16 items-center justify-between">
+            {/* ── Logo (Desktop) ── */}
             <div className="hidden items-center md:flex">
               <Link href={`/${userRole}/dashboard`} className="flex items-center">
                 <img
@@ -108,7 +199,7 @@ export default function Navbar({
               </Link>
             </div>
 
-            {/* Desktop Search Bar */}
+            {/* ── Desktop Search Bar ── */}
             <div className="hidden max-w-3xl flex-1 items-center px-8 lg:px-16 md:flex">
               <div className="group relative w-full">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -123,7 +214,9 @@ export default function Navbar({
               </div>
             </div>
 
+            {/* ── Desktop Right Section ── */}
             <div className="hidden items-center gap-3 md:flex">
+              {/* Wallet + Recharge */}
               {userRole !== "admin" && (
                 <div
                   onClick={handleRechargeClick}
@@ -138,32 +231,35 @@ export default function Navbar({
                     </span>
                   </div>
 
-                  <div className="ml-3 flex items-center rounded-lg bg-[#0a0c37] px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#1a1c57] active:scale-95">
-                    <BatteryPlus className="mr-1 h-3.5 w-3.5" />
-                    Recharge
+                  <div className="ml-2 flex items-center justify-center rounded-lg bg-[#0a0c37] p-2 text-white shadow-sm transition hover:bg-[#1a1c57] active:scale-95">
+                    <BatteryPlus className="h-4 w-4" />
                   </div>
                 </div>
               )}
 
+              {/* Profile Trigger + Dropdown */}
               <div
                 className="relative ml-1 cursor-pointer"
                 onMouseEnter={() => setIsProfileOpen(true)}
                 onMouseLeave={() => setIsProfileOpen(false)}
               >
+                {/* Trigger */}
                 <div className="flex cursor-pointer items-center gap-2 rounded-xl p-2 pl-2.5 pr-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0c37] text-sm font-semibold text-gray-200 shadow-sm dark:bg-gray-700 dark:text-gray-200">
                     {getInitials(userName)}
                   </div>
-
                   <span className="cursor-pointer text-[14px] font-semibold text-gray-700 dark:text-gray-300">
                     {userName}
                   </span>
-
                   <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                 </div>
 
-                {/* Invisible Hover Bridge */}
-                <div className="absolute top-full right-0 z-50 pt-2">
+                {/* Hover Bridge — pointer-events-none when closed prevents ghost triggers */}
+                <div
+                  className={`absolute top-full right-0 z-50 pt-2 ${
+                    isProfileOpen ? "" : "pointer-events-none"
+                  }`}
+                >
                   <div
                     ref={desktopDropdownRef}
                     className={`relative w-64 overflow-hidden rounded-xl border border-gray-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out origin-top-right dark:border-gray-700 dark:bg-gray-800 ${
@@ -172,90 +268,15 @@ export default function Navbar({
                         : "-translate-y-2 scale-95 pointer-events-none opacity-0 invisible"
                     }`}
                   >
-                    <div className="flex items-center gap-3 bg-[#0a0c37] p-5 text-left">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-white">
-                        {getInitials(userName)}
-                      </div>
-
-                      <div className="flex min-w-0 flex-col">
-                        <span className="mb-1 truncate text-[15px] font-bold leading-tight text-white">
-                          {userName}
-                        </span>
-
-                        {userRole !== "admin" && (
-                          <div className="flex flex-col gap-0.5 text-[11px] leading-none text-slate-300">
-                            <span>Customer Id </span>
-                            <strong className="text-[13px] font-semibold tracking-wide text-white">
-                              {calculatedCustomerId || "N/A"}
-                            </strong>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-0.5 p-2">
-                      <Link
-                        href={`/${userRole}/dashboard/profile`}
-                        className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <User className="h-4 w-4 text-slate-400" />
-                        My Profile
-                      </Link>
-
-                      {userRole !== "admin" && (
-                        <Link
-                          href={`/${userRole}/dashboard/wallet`}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <Wallet className="h-4 w-4 text-slate-400" />
-                          My Balance
-                        </Link>
-                      )}
-
-                      <Link
-                        href={`/${userRole}/dashboard/settings`}
-                        className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <Settings className="h-4 w-4 text-slate-400" />
-                        Account Settings
-                      </Link>
-
-                      {userRole !== "admin" && (
-                        <Link
-                          href={`/${userRole}/dashboard/settings/api`}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <Lock className="h-4 w-4 text-slate-400" />
-                          API Integration
-                        </Link>
-                      )}
-
-                      <div className="my-1 mx-2 h-px bg-slate-100 dark:bg-gray-700" />
-
-                      <div
-                        className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <LogOut className="h-4 w-4 text-slate-400 transition-colors group-hover:text-rose-500" />
-                        <LogoutButton
-                          propUser={userRole}
-                          propStyle={{
-                            color:
-                              "text-slate-700 dark:text-gray-200 group-hover:text-rose-600 transition-colors",
-                          }}
-                        />
-                      </div>
-                    </div>
+                    {renderDropdownMenu(() => setIsProfileOpen(false))}
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* ── Mobile Layout ── */}
             <div className="flex w-full items-center justify-between md:hidden">
+              {/* Hamburger + Logo */}
               <div className="flex items-center">
                 {userRole !== "admin" && (
                   <button
@@ -289,13 +310,11 @@ export default function Navbar({
                 </Link>
               </div>
 
+              {/* Mobile Right — Wallet + Profile */}
               <div className="flex items-center gap-2">
                 {userRole !== "admin" && (
                   <div className="flex items-center rounded-lg bg-gray-100 px-1 py-2 dark:bg-gray-800">
-                    <Link
-                      href="/user/dashboard/wallet"
-                      className="flex items-center gap-2"
-                    >
+                    <Link href="/user/dashboard/wallet" className="flex items-center gap-2">
                       <Wallet className="mr-1 h-4 w-4 text-gray-600 dark:text-gray-400" />
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">
                         ₹{balance !== null ? balance.toFixed(2) : "0.00"}
@@ -304,17 +323,20 @@ export default function Navbar({
                   </div>
                 )}
 
-                {/* Mobile Profile Avatar - Make it clickable */}
+                {/* Mobile Profile Avatar */}
                 <div
                   className="relative"
                   onMouseEnter={() => setIsProfileOpen(true)}
                   onMouseLeave={() => setIsProfileOpen(false)}
                 >
-                  <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#0a0c37] text-sm font-semibold text-gray-200 transition-colors hover:bg-[#0a0c37e1] dark:bg-gray-700 dark:text-gray-200">
+                  <div
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#0a0c37] text-sm font-semibold text-gray-200 transition-colors hover:bg-[#0a0c37e1] dark:bg-gray-700 dark:text-gray-200"
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  >
                     {getInitials(userName)}
                   </div>
 
-                  {/* Profile Dropdown - Mobile Version */}
+                  {/* Mobile Dropdown */}
                   <div
                     ref={mobileDropdownRef}
                     className={`absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-gray-200/60 bg-white text-left shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out origin-top-right dark:border-gray-700 dark:bg-gray-800 ${
@@ -323,124 +345,27 @@ export default function Navbar({
                         : "-translate-y-2 scale-95 pointer-events-none opacity-0 invisible"
                     }`}
                   >
-                    <div className="flex items-center gap-3 bg-[#0a0c37] p-5">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-white">
-                        {getInitials(userName)}
-                      </div>
-
-                      <div className="flex min-w-0 flex-col">
-                        <span className="mb-1 truncate text-[15px] font-bold leading-tight text-white">
-                          {userName}
-                        </span>
-
-                        {userRole !== "admin" && (
-                          <div className="flex flex-col gap-0.5 text-[11px] leading-none text-slate-300">
-                            <span>Customer Id </span>
-                            <strong className="text-[13px] font-semibold tracking-wide text-white">
-                              {calculatedCustomerId || "N/A"}
-                            </strong>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-0.5 p-2">
-                      <Link
-                        href={`/${userRole}/dashboard/profile`}
-                        className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <User className="h-4 w-4 text-slate-400" />
-                        My Profile
-                      </Link>
-
-                      {userRole !== "admin" && (
-                        <Link
-                          href={`/${userRole}/dashboard/wallet`}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <Wallet className="h-4 w-4 text-slate-400" />
-                          My Balance
-                        </Link>
-                      )}
-
-                      <Link
-                        href={`/${userRole}/dashboard/settings`}
-                        className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <Settings className="h-4 w-4 text-slate-400" />
-                        Account Settings
-                      </Link>
-
-                      {userRole !== "admin" && (
-                        <Link
-                          href={`/${userRole}/dashboard/settings/api`}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <Lock className="h-4 w-4 text-slate-400" />
-                          API Integration
-                        </Link>
-                      )}
-
-                      <div className="my-1 mx-2 h-px bg-slate-100 dark:bg-gray-700" />
-
-                      <div
-                        className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <LogOut className="h-4 w-4 text-slate-400 transition-colors group-hover:text-rose-500" />
-                        <LogoutButton
-                          propUser={userRole}
-                          propStyle={{
-                            color:
-                              "text-slate-700 dark:text-gray-200 group-hover:text-rose-600 transition-colors",
-                          }}
-                        />
-                      </div>
-                    </div>
+                    {renderDropdownMenu(() => setIsProfileOpen(false))}
                   </div>
                 </div>
 
-                {/* Mobile 3-dot Menu - Only for new features */}
-                <div className="relative" ref={mobileDropdownRef}>
+                {/* Mobile Recharge Button */}
+                {userRole !== "admin" && (
                   <button
-                    type="button"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={handleRechargeClick}
+                    className="flex items-center justify-center rounded-lg bg-[#0a0c37] p-2 text-white transition-colors hover:bg-[#0a0c37e1]"
+                    aria-label="Recharge wallet"
                   >
-                    <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <BatteryPlus className="h-5 w-5" />
                   </button>
-
-                  {/* 3-dot Dropdown - Only new features */}
-                  <div
-                    className={`absolute right-0 mt-1 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl transition-all duration-300 ease-out origin-top-right dark:border-gray-700 dark:bg-gray-800 ${
-                      isMobileMenuOpen
-                        ? "translate-y-0 scale-100 opacity-100"
-                        : "-translate-y-2 scale-95 pointer-events-none opacity-0"
-                    }`}
-                  >
-                    <div className="py-2">
-                      {userRole !== "admin" && (
-                        <button
-                          onClick={handleRechargeClick}
-                          className="flex w-full items-center gap-3 bg-[#0a0c37] px-4 py-3 text-white transition-colors hover:bg-[#0a0c37e1]"
-                        >
-                          <BatteryPlus className="h-5 w-5" />
-                          <span className="font-semibold">Recharge</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Recharge Modal */}
       {userRole !== "admin" && (
         <RechargeModal
           isOpen={isRechargeModalOpen}
