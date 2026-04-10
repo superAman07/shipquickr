@@ -20,7 +20,7 @@ export async function DELETE(request: Request) {
     }
 
     const url = new URL(request.url);
-    const id = url.pathname.split("/").pop(); 
+    const id = url.pathname.split("/").pop();
     if (!id) return NextResponse.json({ error: "Order ID missing" }, { status: 400 });
 
 
@@ -48,33 +48,36 @@ export async function DELETE(request: Request) {
 }
 
 export async function GET(request: Request) {
-    try{
-        const cookieStore = await cookies();
-        const token = cookieStore.get("userToken")?.value;
-        if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("userToken")?.value;
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const decoded = jwtDecode<TokenDetailsType>(token);
-        if (decoded.exp * 1000 < Date.now()) {
-          return NextResponse.json({ error: "Token expired" }, { status: 401 });
-        }
-
-        const url = new URL(request.url);
-        const id = url.pathname.split("/").pop();
-        if (!id) return NextResponse.json({ error: "Order ID missing" }, { status: 400 });
-
-        const order = await prisma.order.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-              items: true,
-              warehouse: true,
-            }, 
-        });
-        if (!order || order.userId !== decoded.userId) {
-            return NextResponse.json({ error: "Order not found" }, { status: 404 });
-        }
-        return NextResponse.json({ order }, { status: 200 });
-    }catch(e){
-        console.error("Error fetching single order:", e);
-        return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
+    const decoded = jwtDecode<TokenDetailsType>(token);
+    if (decoded.exp * 1000 < Date.now()) {
+      return NextResponse.json({ error: "Token expired" }, { status: 401 });
     }
+
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop();
+    if (!id) return NextResponse.json({ error: "Order ID missing" }, { status: 400 });
+
+    const order = await prisma.order.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        items: true,
+        warehouse: true,
+        trackingHistory: {
+          orderBy: { timestamp: 'desc' }
+        }
+      },
+    });
+    if (!order || order.userId !== decoded.userId) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+    return NextResponse.json({ order }, { status: 200 });
+  } catch (e) {
+    console.error("Error fetching single order:", e);
+    return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 });
+  }
 }

@@ -19,6 +19,8 @@ import {
   type WalletContextType,
 } from "@/contexts/WalletContext";
 import RechargeModal from "./recharge-model";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 const useConditionalWallet = (userRole: string): WalletContextType => {
   if (userRole !== "admin") {
@@ -57,6 +59,37 @@ export default function Navbar({
   const calculatedCustomerId = userId ? 150000 + Number(userId) : null;
 
   const { balance, isLoadingBalance } = useConditionalWallet(userRole);
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const [searchType, setSearchType] = useState("AWB No");
+
+  // Debounced search effect
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (searchQuery.length < 2) {
+        setSearchResults([]);
+        setIsSearchDropdownOpen(false);
+        return;
+      }
+      setIsSearching(true);
+      setIsSearchDropdownOpen(true);
+      try {
+        // Logic still hits the global search but the placeholder guides the user
+        const res = await fetch(`/api/${userRole}/search?q=${searchQuery}`);
+        const data = await res.json();
+        setSearchResults(data.results || []);
+      } catch (err) {
+        console.error("Search failed", err);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+    const timer = setTimeout(fetchResults, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, userRole]);
 
   const getInitials = (name: string) => {
     if (!name) return "";
@@ -200,18 +233,85 @@ export default function Navbar({
             </div>
 
             {/* ── Desktop Search Bar ── */}
-            <div className="hidden max-w-3xl flex-1 items-center px-8 lg:px-16 md:flex">
-              <div className="group relative w-full">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5">
-                  <Search className="h-4 w-4 text-gray-400 transition-colors group-focus-within:text-indigo-500" />
-                </span>
-
-                <input
-                  type="text"
-                  placeholder="Search AWB or Customer Name..."
-                  className="block w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-4 text-[14px] font-medium text-gray-700 shadow-sm transition-colors placeholder:text-gray-400 hover:bg-gray-50/80 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                />
+            <div className="hidden max-w-xl flex-1 items-center px-4 lg:px-8 md:flex relative group">
+              <div className="flex w-full items-center overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-500/10 dark:border-gray-700 dark:bg-gray-800">
+                
+                {/* Search By Filter */}
+                <div className="relative flex-none">
+                  <select 
+                    value={searchType}
+                    onChange={(e) => setSearchType(e.target.value)}
+                    className="h-10 cursor-pointer appearance-none border-r border-gray-100 bg-gray-50/30 px-4 pr-9 text-[12px] font-bold text-gray-500 outline-none hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+                  >
+                    <option>Search By.</option>
+                    <option>AWB No</option>
+                    <option>Order ID</option>
+                    <option>Mobile No</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3 w-3 -translate-y-1/2 text-gray-400" />
+                </div>
+                {/* Search Input */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => searchQuery.length >= 2 && setIsSearchDropdownOpen(true)}
+                    placeholder={`Search ${searchType}...`}
+                    className="h-10 w-full bg-transparent px-4 text-[13px] font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none dark:text-gray-200"
+                  />
+                </div>
+                {/* Search Icon Button */}
+                <button className="flex h-10 w-11 items-center justify-center bg-[#0a0c37] text-white transition-all hover:bg-indigo-950 active:scale-95 cursor-pointer">
+                  {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </button>
               </div>
+              {/* Search Results Dropdown */}
+              {isSearchDropdownOpen && (
+                <div className="absolute top-full left-4 right-4 z-[60] mt-1 pr-2 max-h-[400px] overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-700 dark:bg-gray-800 custom-scrollbar">
+                  {searchResults.length > 0 ? (
+                    searchResults.map((order: any) => (
+                      <div
+                        key={order.id}
+                        onClick={() => {
+                          router.push(`/${userRole}/dashboard/order-details/${order.id}`);
+                          setIsSearchDropdownOpen(false);
+                          setSearchQuery("");
+                        }}
+                        className="group flex cursor-pointer flex-col gap-2 rounded-xl border border-gray-100 p-3.5 transition-all hover:bg-indigo-50/40 hover:border-indigo-100 dark:border-gray-700 dark:hover:bg-gray-700/50 dark:hover:border-gray-600 mb-1"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="truncate text-sm font-extrabold text-[#0a0c37] group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                              {order.awbNumber || order.orderId}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{order.customerName}</span>
+                              <span className="h-0.5 w-0.5 rounded-full bg-gray-300" />
+                              <span className="text-[10px] text-gray-400 font-medium">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1.5 shrink-0">
+                            <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                              order.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {order.status.replace('_', ' ')}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{order.paymentMode}</span>
+                              <span className={`h-1.5 w-1.5 rounded-full ${order.paymentMode === 'COD' ? 'bg-orange-400' : 'bg-green-400'}`} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : !isSearching && (
+                    <div className="p-6 text-center text-sm font-bold text-gray-400">No results found for "{searchQuery}"</div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ── Desktop Right Section ── */}
