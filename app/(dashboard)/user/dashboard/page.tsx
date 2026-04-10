@@ -231,7 +231,7 @@ export default async function Dashboard() {
     {
       title: "Avg. Shipment Cost",
       value: `₹${avgShipmentCost.toFixed(2)}`,
-      info: "Know More",
+      info: "Per Shipment",
       color: "bg-[linear-gradient(to_right,#22c55e,#15803d)] rounded-xl p-4 shadow-lg",
       icon: <Calculator className="h-6 w-6 text-white" />,
       link: "#",
