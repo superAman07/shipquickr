@@ -52,13 +52,13 @@ export default async function Dashboard({ children }: { children: React.ReactNod
   const fullName = `${decoded.firstName} ${decoded.lastName}`
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute= "class" defaultTheme = "light" enableSystem disableTransitionOnChange >
       <WalletProvider>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen" >
           <RouteLoadingBar />
-          <DashboardLayoutWrapper userRole={decoded.role} userName={fullName}>
-            {children}
-          </DashboardLayoutWrapper>
+          < DashboardLayoutWrapper userRole = { decoded.role } userName = { fullName } userId = { decoded.userId } >
+            { children }
+            </DashboardLayoutWrapper>
         </div>
       </WalletProvider>
     </ThemeProvider>

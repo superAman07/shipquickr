@@ -1,21 +1,21 @@
 "use client";
 import { useEffect, useState } from "react";
-import type React from "react"; 
+import type React from "react";
 import axios from "axios";
 import AddWarehouseModal from "@/components/AddWarehouse";
 import KycGuard from "@/components/isKycDone";
 import { toast } from "react-toastify";
-import { Plus, Trash2, Home, ChevronRight, FileCheck } from "lucide-react";
-import Link from "next/link";  
+import { Plus, Trash2, Home, ChevronRight, FileCheck, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface OrderItem {
   productName: string;
   category: string;
-  quantity: number | string; 
-  orderValue: number | string; 
+  quantity: number | string;
+  orderValue: number | string;
   hsn: string;
 }
- 
+
 interface FormState {
   customerName: string;
   mobile: string;
@@ -25,17 +25,17 @@ interface FormState {
   pincode: string;
   state: string;
   city: string;
-  orderId: string;  
+  orderId: string;
   orderDate: string;
   paymentMode: string;
-  items: OrderItem[];  
+  items: OrderItem[];
   codAmount: number | string;
   physicalWeight: number | string;
   length: number | string;
   breadth: number | string;
   height: number | string;
   pickupLocation: string;
-  warehouseId: number | null; 
+  warehouseId: number | null;
 }
 
 const initialItem: OrderItem = {
@@ -45,7 +45,7 @@ const initialItem: OrderItem = {
   orderValue: "",
   hsn: "",
 };
- 
+
 const initialForm: FormState = {
   customerName: "",
   mobile: "",
@@ -55,10 +55,10 @@ const initialForm: FormState = {
   pincode: "",
   state: "",
   city: "",
-  orderId: "",  
-  orderDate: new Date().toISOString().split("T")[0], 
+  orderId: "",
+  orderDate: new Date().toISOString().split("T")[0],
   paymentMode: "",
-  items: [initialItem],  
+  items: [initialItem],
   codAmount: "",
   physicalWeight: "",
   length: "",
@@ -68,15 +68,15 @@ const initialForm: FormState = {
   warehouseId: null,
 };
 
-
 export default function CloneOrderPage({ orderId }: { orderId: string }) {
-  const [form, setForm] = useState<FormState>(initialForm);  
+  const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(true);
   const [showWarehouseModal, setShowWarehouseModal] = useState(false);
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseSearch, setWarehouseSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const [pincodeAutoFilled, setPincodeAutoFilled] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -84,41 +84,40 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
       .then(res => {
         const fetchedOrder = res.data.order;
         const {
-          id,  
-          orderId: originalOrderId, 
-          orderDate: originalOrderDate, 
-          status,  
-          items: fetchedItems, 
-          createdAt, 
-          updatedAt, 
-          userId, 
-          ...rest  
+          id,
+          orderId: originalOrderId,
+          orderDate: originalOrderDate,
+          status,
+          items: fetchedItems,
+          createdAt,
+          updatedAt,
+          userId,
+          ...rest
         } = fetchedOrder;
- 
+
         const itemsForForm = (fetchedItems && fetchedItems.length > 0)
-          ? fetchedItems.map((item: any) => ({ 
-              productName: item.productName || "",
-              category: item.category || "",
-              quantity: item.quantity || 1,
-              orderValue: item.orderValue || "",
-              hsn: item.hsn || "",
-            }))
+          ? fetchedItems.map((item: any) => ({
+            productName: item.productName || "",
+            category: item.category || "",
+            quantity: item.quantity || 1,
+            orderValue: item.orderValue || "",
+            hsn: item.hsn || "",
+          }))
           : [initialItem];
         setForm({
           ...initialForm,
-          ...rest,  
-          items: itemsForForm,  
-          orderId: "",  
-          orderDate: new Date().toISOString().slice(0, 10),  
+          ...rest,
+          items: itemsForForm,
+          orderId: "",
+          orderDate: new Date().toISOString().slice(0, 10),
         });
       })
-      .catch(error => {  
-          console.error("Error fetching order to clone:", error);
-          toast.error("Failed to load order data for cloning.");
+      .catch(error => {
+        console.error("Error fetching order to clone:", error);
+        toast.error("Failed to load order data for cloning.");
       })
       .finally(() => setLoading(false));
   }, [orderId]);
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -130,10 +129,10 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
       setForm((prev) => {
         const newItems = [...prev.items];
         if (newItems[itemIndex]) {
-            newItems[itemIndex] = {
-                ...newItems[itemIndex],
-                [name]: value,
-            };
+          newItems[itemIndex] = {
+            ...newItems[itemIndex],
+            [name]: value,
+          };
         }
         return { ...prev, items: newItems };
       });
@@ -154,15 +153,15 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
 
   const removeItem = (index: number) => {
     if (form.items.length <= 1) {
-        toast.error("You must have at least one item in the order.");
-        return;
+      toast.error("You must have at least one item in the order.");
+      return;
     }
     setForm((prev) => ({
       ...prev,
       items: prev.items.filter((_, i) => i !== index),
     }));
   };
- 
+
   const generateOrderId = () => {
     const prefix = "SQ";
     const now = new Date();
@@ -171,8 +170,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
     setForm(prev => ({ ...prev, orderId: `${prefix}${datePart}${randomPart}` }));
   };
 
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
     const toastId = toast.loading("Cloning order...");
@@ -183,23 +181,22 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
       return;
     }
     if (form.items.some(item => !item.productName || !item.category || !item.quantity || !item.orderValue)) {
-       toast.update(toastId, { render: "Please fill all required fields for each item.", type: "error", isLoading: false, autoClose: 5000 });
-       setSubmitting(false);
-       return;
+      toast.update(toastId, { render: "Please fill all required fields for each item.", type: "error", isLoading: false, autoClose: 5000 });
+      setSubmitting(false);
+      return;
     }
     if (form.paymentMode === "COD" && (!form.codAmount || parseFloat(String(form.codAmount)) <= 0)) {
-        toast.update(toastId, { render: "Please enter a valid COD amount.", type: "error", isLoading: false, autoClose: 5000 });
-        setSubmitting(false);
-        return;
+      toast.update(toastId, { render: "Please enter a valid COD amount.", type: "error", isLoading: false, autoClose: 5000 });
+      setSubmitting(false);
+      return;
     }
 
-
     const apiData = {
-      ...form, 
+      ...form,
       items: form.items.map(item => ({
         ...item,
-        quantity: parseInt(String(item.quantity), 10) || 1,  
-        orderValue: parseFloat(String(item.orderValue)) || 0,  
+        quantity: parseInt(String(item.quantity), 10) || 1,
+        orderValue: parseFloat(String(item.orderValue)) || 0,
       })),
       warehouseId: form.warehouseId,
       physicalWeight: parseFloat(String(form.physicalWeight)) || 0,
@@ -207,11 +204,11 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
       breadth: parseFloat(String(form.breadth)) || 0,
       height: parseFloat(String(form.height)) || 0,
       codAmount: form.paymentMode === "COD" ? parseFloat(String(form.codAmount)) || 0 : undefined,
-      orderDate: new Date(form.orderDate).toISOString(),  
+      orderDate: new Date(form.orderDate).toISOString(),
     };
 
     if (apiData.paymentMode !== "COD") {
-        delete apiData.codAmount;
+      delete apiData.codAmount;
     }
 
     delete (apiData as any).productName;
@@ -220,58 +217,79 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
     delete (apiData as any).orderValue;
     delete (apiData as any).hsn;
 
-
     try {
       await axios.post("/api/user/orders/single-order", apiData, {
-         headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
       toast.update(toastId, { render: "Order cloned successfully!", type: "success", isLoading: false, autoClose: 5000 });
-      setForm(initialForm);  
+      setForm(initialForm);
       setTimeout(() => {
-          window.location.href = "/user/dashboard/bulk";
+        window.location.href = "/user/dashboard/bulk";
       }, 1500);
-    } catch (err: any) {  
-        console.error("Failed to clone order:", err);
-        const errorMessage = err.response?.data?.error || err.message || "An unknown error occurred";
-        toast.update(toastId, { render: `Failed to clone order: ${errorMessage}`, type: "error", isLoading: false, autoClose: 5000 });
+    } catch (err: any) {
+      console.error("Failed to clone order:", err);
+      const errorMessage = err.response?.data?.error || err.message || "An unknown error occurred";
+      toast.update(toastId, { render: `Failed to clone order: ${errorMessage}`, type: "error", isLoading: false, autoClose: 5000 });
     } finally {
       setSubmitting(false);
     }
   };
 
   const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const pincode = e.target.value;
+    const pincode = e.target.value.replace(/\D/g, "").slice(0, 6);
     setForm((f) => ({ ...f, pincode }));
+    setPincodeAutoFilled(false);
+
     if (pincode.length === 6) {
+      setPincodeLoading(true);
       try {
         const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
         const data = await res.json();
-        if (data[0].Status === "Success") {
+        if (data?.[0]?.Status === "Success" && data[0].PostOffice?.length > 0) {
           setForm((f) => ({
             ...f,
             state: data[0].PostOffice[0].State,
             city: data[0].PostOffice[0].District,
           }));
-        } else {
-           setForm((f) => ({ ...f, state: "", city: "" }));
+          setPincodeAutoFilled(true);
+          setPincodeLoading(false);
+          return;
         }
-      } catch {
-         setForm((f) => ({ ...f, state: "", city: "" }));
-      }
+      } catch {}
+
+      try {
+        const res2 = await fetch(`https://api.data.gov.in/resource/6176ee09-3d56-4a3b-8115-21841576b2f6?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&filters%5Bpincode%5D=${pincode}`);
+        const data2 = await res2.json();
+        if (data2?.records?.length > 0) {
+          setForm((f) => ({
+            ...f,
+            state: data2.records[0].statename || "",
+            city: data2.records[0].districtname || data2.records[0].officename || "",
+          }));
+          setPincodeAutoFilled(true);
+          setPincodeLoading(false);
+          return;
+        }
+      } catch {}
+
+      setPincodeAutoFilled(false);
+      setPincodeLoading(false);
     } else {
+      if (pincode.length === 0) {
         setForm((f) => ({ ...f, state: "", city: "" }));
+      }
     }
   };
- 
-  const handleWarehouseFromDB = async () => { 
+
+  const handleWarehouseFromDB = async () => {
     if (warehouses.length > 0) return;
     try {
       const response = await axios.get("/api/user/warehouses");
       const data = response.data.warehouses || [];
       setWarehouses(data);
-    } catch (error){
-        console.error("Error fetching warehouses:", error);
-        toast.error("Could not load warehouses.");
+    } catch (error) {
+      console.error("Error fetching warehouses:", error);
+      toast.error("Could not load warehouses.");
     }
   };
 
@@ -279,7 +297,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
     handleWarehouseFromDB();
   }, []);
 
-  if (loading) return <div className="p-6 text-center text-[#0a0c37] dark:text-white">Loading order details...</div>; 
+  if (loading) return <div className="p-6 text-center text-[#0a0c37] dark:text-white">Loading order details...</div>;
   return (
     <>
       <div className="px-4 pb-2 sm:px-6 pt-4 sm:pt-6">
@@ -307,7 +325,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
           <h2 className="text-xl sm:text-2xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-4">
             Clone Order - <span className="text-gray-500 font-mono text-lg">{orderId}</span>
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-8"> 
+          <form onSubmit={handleSubmit} className="space-y-8">
             <section className="transition-all duration-200">
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">1</span>
@@ -318,19 +336,19 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                   className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
                   placeholder="Customer Full Name *" required
                   value={form.customerName}
-                  onChange={handleChange} name="customerName"  
+                  onChange={handleChange} name="customerName"
                 />
                 <input
                   className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  placeholder="Mobile No. *" required type="tel" 
+                  placeholder="Mobile No. *" required type="tel"
                   value={form.mobile}
-                  onChange={handleChange} name="mobile"  
+                  onChange={handleChange} name="mobile"
                 />
                 <input
                   className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  placeholder="Email ID" type="email"  
+                  placeholder="Email ID" type="email"
                   value={form.email}
-                  onChange={handleChange} name="email"  
+                  onChange={handleChange} name="email"
                 />
               </div>
             </section>
@@ -345,31 +363,41 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                   className="border border-gray-300 dark:border-gray-600 p-2 rounded-md col-span-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
                   placeholder="Complete Address *" required
                   value={form.address}
-                  onChange={handleChange} name="address"  
+                  onChange={handleChange} name="address"
                 />
+                <div className="relative">
+                  <input
+                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
+                    placeholder="Pincode *" required maxLength={6}
+                    value={form.pincode}
+                    onChange={handlePincodeChange} name="pincode"
+                    inputMode="numeric"
+                  />
+                  {pincodeLoading && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                    </span>
+                  )}
+                </div>
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
-                  placeholder="Pincode *" required maxLength={6} 
-                  value={form.pincode}
-                  onChange={handlePincodeChange} name="pincode"
-                />
-                <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200 cursor-not-allowed"
-                  placeholder="State *" readOnly tabIndex={-1}
+                  className={`border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200 ${pincodeAutoFilled ? 'bg-green-50/50 cursor-not-allowed' : 'bg-white'}`}
+                  placeholder="State *" readOnly={pincodeAutoFilled} tabIndex={pincodeAutoFilled ? -1 : 0}
+                  required
                   value={form.state}
-                  onChange={handleChange} name="state"  
+                  onChange={handleChange} name="state"
                 />
                 <input
-                  className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200 cursor-not-allowed"
-                  placeholder="City *" readOnly tabIndex={-1}
+                  className={`border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200 ${pincodeAutoFilled ? 'bg-green-50/50 cursor-not-allowed' : 'bg-white'}`}
+                  placeholder="City *" readOnly={pincodeAutoFilled} tabIndex={pincodeAutoFilled ? -1 : 0}
+                  required
                   value={form.city}
-                  onChange={handleChange} name="city"  
+                  onChange={handleChange} name="city"
                 />
                 <input
                   className="border border-gray-300 dark:border-gray-600 p-2 rounded-md col-span-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors duration-200"
                   placeholder="Famous Landmark"
                   value={form.landmark}
-                  onChange={handleChange} name="landmark"  
+                  onChange={handleChange} name="landmark"
                 />
               </div>
             </section>
@@ -378,7 +406,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
               <div className="flex items-center mb-4">
                 <span className="bg-indigo-600 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">3</span>
                 <span className="font-semibold text-lg text-gray-900 dark:text-white">Order Details</span>
-              </div> 
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                  <div>
                     <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Id <span className="text-red-500">*</span></label>
@@ -400,9 +428,9 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                       <option value="COD">COD</option>
                       <option value="Prepaid">Prepaid</option>
                     </select>
-                  </div> 
+                  </div>
                   {form.paymentMode === "COD" && (
-                    <div className="md:col-start-3"> 
+                    <div className="md:col-start-3">
                         <label htmlFor="codAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">COD Amount (₹) <span className="text-red-500">*</span></label>
                         <input
                         type="number" id="codAmount" name="codAmount" value={form.codAmount} onChange={handleChange} required min="0" step="0.01"
@@ -412,12 +440,11 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                     </div>
                   )}
               </div>
- 
+
               <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Items <span className="text-red-500">*</span></label>
                   {form.items.map((item, index) => (
                     <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-md relative transition-all duration-200">
-                      
                       {form.items.length > 1 && (
                         <button
                           type="button"
@@ -427,9 +454,9 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                         >
                           <Trash2 size={18} />
                         </button>
-                      )} 
+                      )}
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                        <div className="md:col-span-2">  
+                        <div className="md:col-span-2">
                           <label htmlFor={`productName-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
                           <input type="text" id={`productName-${index}`} name="productName" value={item.productName} onChange={(e) => handleChange(e, index)} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
@@ -459,7 +486,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                           <label htmlFor={`orderValue-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Value (per item)</label>
                           <input type="number" id={`orderValue-${index}`} name="orderValue" value={item.orderValue} onChange={(e) => handleChange(e, index)} required min="0" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
-                        <div className="md:col-span-1"> 
+                        <div className="md:col-span-1">
                           <label htmlFor={`hsn-${index}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">HSN</label>
                           <input type="text" id={`hsn-${index}`} name="hsn" value={item.hsn} onChange={(e) => handleChange(e, index)} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0a0c37] focus:border-[#0a0c37] dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm" />
                         </div>
@@ -467,7 +494,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                     </div>
                   ))}
               </div>
- 
+
               <div className="mt-4">
                   <button
                     type="button"
@@ -478,7 +505,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                     Add More Item
                   </button>
               </div>
- 
+
               <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                    <div>
                       <label htmlFor="physicalWeight" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Physical Weight <span className="text-red-500">*</span></label>
@@ -510,7 +537,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                     </div>
                 </div>
             </section>
- 
+
             <section className="transition-all duration-200" onMouseEnter={handleWarehouseFromDB}>
               <div className="flex items-center mb-4">
                 <span className="bg-[#0a0c37] text-white rounded-full w-7 h-7 flex items-center justify-center font-bold mr-2 shadow-sm">
@@ -598,7 +625,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
                 )}
               </div>
             </section>
- 
+
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
@@ -610,7 +637,7 @@ export default function CloneOrderPage({ orderId }: { orderId: string }) {
             </div>
           </form>
         </div>
-      </div> 
+      </div>
       <AddWarehouseModal
         open={showWarehouseModal}
         onClose={() => setShowWarehouseModal(false)}
