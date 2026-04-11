@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Copy,
   Trash2,
@@ -13,17 +13,17 @@ import {
   MoreHorizontal,
   X,
   CheckSquare,
-} from 'lucide-react';
-import { toast } from 'react-toastify';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import OrderDetailDrawer from '@/components/OrderDetailDrawer';
+} from "lucide-react";
+import { toast } from "react-toastify";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import OrderDetailDrawer from "@/components/OrderDetailDrawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 interface OrderItem {
   productName: string;
@@ -58,77 +58,81 @@ interface Order {
 }
 
 type TabKey =
-  | 'all'
-  | 'in_transit'
-  | 'out_for_delivery'
-  | 'unshipped'
-  | 'delivered'
-  | 'undelivered'
-  | 'rto_intransit'
-  | 'rto_delivered'
-  | 'lost_shipment';
+  | "all"
+  | "in_transit"
+  | "out_for_delivery"
+  | "unshipped"
+  | "delivered"
+  | "undelivered"
+  | "rto_intransit"
+  | "rto_delivered"
+  | "lost_shipment";
 
 const TABS: { key: TabKey; label: string; status: string | undefined }[] = [
-  { key: 'all', label: 'ALL-SHIPMENT', status: undefined },
-  { key: 'in_transit', label: 'IN-TRANSIT', status: 'in_transit' },
-  { key: 'out_for_delivery', label: 'OUT FOR DELIVERY', status: 'out_for_delivery' },
-  { key: 'unshipped', label: 'UNSHIPPED', status: 'unshipped' },
-  { key: 'delivered', label: 'DELIVERED', status: 'delivered' },
-  { key: 'undelivered', label: 'UNDELIVERED', status: 'undelivered' },
-  { key: 'rto_intransit', label: 'RTO INTRANSIT', status: 'rto_intransit' },
-  { key: 'rto_delivered', label: 'RTO DELIVERED', status: 'rto_delivered' },
-  { key: 'lost_shipment', label: 'LOST SHIPMENT', status: 'lost_shipment' },
+  { key: "all", label: "ALL-SHIPMENT", status: undefined },
+  { key: "in_transit", label: "IN-TRANSIT", status: "in_transit" },
+  {
+    key: "out_for_delivery",
+    label: "OUT FOR DELIVERY",
+    status: "out_for_delivery",
+  },
+  { key: "unshipped", label: "UNSHIPPED", status: "unshipped" },
+  { key: "delivered", label: "DELIVERED", status: "delivered" },
+  { key: "undelivered", label: "UNDELIVERED", status: "undelivered" },
+  { key: "rto_intransit", label: "RTO INTRANSIT", status: "rto_intransit" },
+  { key: "rto_delivered", label: "RTO DELIVERED", status: "rto_delivered" },
+  { key: "lost_shipment", label: "LOST SHIPMENT", status: "lost_shipment" },
 ];
 
 const SS: Record<string, { bg: string; text: string; dot: string }> = {
   unshipped: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-700 dark:text-amber-400',
-    dot: 'bg-amber-500',
+    bg: "bg-amber-500/10",
+    text: "text-amber-700 dark:text-amber-400",
+    dot: "bg-amber-500",
   },
   shipped: {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-700 dark:text-blue-400',
-    dot: 'bg-blue-500',
+    bg: "bg-blue-500/10",
+    text: "text-blue-700 dark:text-blue-400",
+    dot: "bg-blue-500",
   },
   manifested: {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-700 dark:text-blue-400',
-    dot: 'bg-blue-500',
+    bg: "bg-blue-500/10",
+    text: "text-blue-700 dark:text-blue-400",
+    dot: "bg-blue-500",
   },
   in_transit: {
-    bg: 'bg-indigo-500/10',
-    text: 'text-indigo-700 dark:text-indigo-400',
-    dot: 'bg-indigo-500',
+    bg: "bg-indigo-500/10",
+    text: "text-indigo-700 dark:text-indigo-400",
+    dot: "bg-indigo-500",
   },
   out_for_delivery: {
-    bg: 'bg-cyan-500/10',
-    text: 'text-cyan-700 dark:text-cyan-400',
-    dot: 'bg-cyan-500',
+    bg: "bg-cyan-500/10",
+    text: "text-cyan-700 dark:text-cyan-400",
+    dot: "bg-cyan-500",
   },
   delivered: {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-700 dark:text-emerald-400',
-    dot: 'bg-emerald-500',
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-700 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
   cancelled: {
-    bg: 'bg-red-500/10',
-    text: 'text-red-700 dark:text-red-400',
-    dot: 'bg-red-500',
+    bg: "bg-red-500/10",
+    text: "text-red-700 dark:text-red-400",
+    dot: "bg-red-500",
   },
   undelivered: {
-    bg: 'bg-orange-500/10',
-    text: 'text-orange-700 dark:text-orange-400',
-    dot: 'bg-orange-500',
+    bg: "bg-orange-500/10",
+    text: "text-orange-700 dark:text-orange-400",
+    dot: "bg-orange-500",
   },
 };
 
 function gs(s: string) {
   return (
     SS[s.toLowerCase()] || {
-      bg: 'bg-gray-500/10',
-      text: 'text-gray-600 dark:text-gray-400',
-      dot: 'bg-gray-500',
+      bg: "bg-gray-500/10",
+      text: "text-gray-600 dark:text-gray-400",
+      dot: "bg-gray-500",
     }
   );
 }
@@ -141,7 +145,7 @@ function SBadge({ status }: { status: string }) {
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${st.bg} ${st.text}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
-      {status.replace(/_/g, ' ')}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }
@@ -149,12 +153,12 @@ function SBadge({ status }: { status: string }) {
 const ReportsPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = (searchParams.get('tab') as TabKey) || 'all';
+  const tabParam = (searchParams.get("tab") as TabKey) || "all";
   const currentTabObj = TABS.find((t) => t.key === tabParam) || TABS[0];
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
@@ -186,7 +190,7 @@ const ReportsPage: React.FC = () => {
 
       setOrders(ordersWithItems);
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Error fetching orders:", error);
       toast.error(`Failed to load ${currentTabObj.label} orders.`);
     } finally {
       setLoading(false);
@@ -197,10 +201,22 @@ const ReportsPage: React.FC = () => {
     window.location.href = `/user/dashboard/clone-order/${orderId}`;
   };
 
+  const handleDeleteOrder = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+
+    try {
+      await axios.delete(`/api/user/orders/single-order/${id}`);
+      toast.success("Order deleted successfully");
+      fetchOrders();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete order");
+    }
+  };
+
   const handleRowClick = (order: Order, e: React.MouseEvent) => {
     if (
-      (e.target as HTMLElement).closest('button') ||
-      (e.target as HTMLElement).closest('a') ||
+      (e.target as HTMLElement).closest("button") ||
+      (e.target as HTMLElement).closest("a") ||
       (e.target as HTMLElement).closest('input[type="checkbox"]')
     ) {
       return;
@@ -217,9 +233,11 @@ const ReportsPage: React.FC = () => {
       order.items.some((item) =>
         item.productName.toLowerCase().includes(searchTerm.toLowerCase())
       ) ||
-      (order.awbNumber && order.awbNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (order.awbNumber &&
+        order.awbNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
       order.mobile.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.courierName && order.courierName.toLowerCase().includes(searchTerm.toLowerCase()))
+      (order.courierName &&
+        order.courierName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -250,13 +268,16 @@ const ReportsPage: React.FC = () => {
   };
 
   const isAllPageSelected =
-    paginatedOrders.length > 0 && paginatedOrders.every((o) => selectedIds.has(o.id));
+    paginatedOrders.length > 0 &&
+    paginatedOrders.every((o) => selectedIds.has(o.id));
 
   const effectiveSelectedOrders = selectAllAcrossPages
     ? filteredOrders
     : filteredOrders.filter((o) => selectedIds.has(o.id));
 
-  const effectiveSelectedCount = selectAllAcrossPages ? filteredOrders.length : selectedIds.size;
+  const effectiveSelectedCount = selectAllAcrossPages
+    ? filteredOrders.length
+    : selectedIds.size;
 
   const isSomeSelected = effectiveSelectedCount > 0;
 
@@ -266,70 +287,72 @@ const ReportsPage: React.FC = () => {
   };
 
   function downloadCSV(ordersToDownload: Order[]) {
-    if (!orders.length) return;
+    if (!ordersToDownload.length) return;
 
     const headers = [
-      'Order Date',
-      'Order ID',
-      'AWB Number',
-      'Product Details',
-      'Payment',
-      'Order Value',
-      'Customer',
-      'Address',
-      'Pickup Location',
-      'Status',
-      'Label URL',
+      "Order Date",
+      "Order ID",
+      "AWB Number",
+      "Product Details",
+      "Payment",
+      "Order Value",
+      "Customer",
+      "Address",
+      "Pickup Location",
+      "Status",
+      "Label URL",
     ];
 
     const rows = ordersToDownload.map((order) => {
       const productDetails = order.items
         .map((item) => `${item.productName} (${item.quantity}x)`)
-        .join('; ');
+        .join("; ");
 
       const dims =
         order.length && order.breadth && order.height
           ? `Dims: ${order.length}x${order.breadth}x${order.height}cm`
-          : '';
+          : "";
 
-      const wt = order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : '';
+      const wt = order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : "";
       const fullProductDetails = `${productDetails}${
-        dims || wt ? ` | ${[dims, wt].filter(Boolean).join(' | ')}` : ''
+        dims || wt ? ` | ${[dims, wt].filter(Boolean).join(" | ")}` : ""
       }`;
       const totalValue = calculateTotalOrderValue(order.items);
 
       return [
         new Date(order.orderDate).toLocaleDateString(),
         order.orderId,
-        order.awbNumber || '-',
+        order.awbNumber || "-",
         fullProductDetails,
-        order.paymentMode || '-',
+        order.paymentMode || "-",
         totalValue.toFixed(2),
         `${order.customerName} (${order.mobile})`,
         order.address,
-        order.pickupLocation || '-',
+        order.pickupLocation || "-",
         order.status,
-        order.labelUrl || '-',
+        order.labelUrl || "-",
       ];
     });
 
     const csvContent = [
-      headers.join(','),
+      headers.join(","),
       ...rows.map((row) =>
-        row.map((field) => `"${(field ?? '').toString().replace(/"/g, '""')}"`).join(',')
+        row
+          .map((field) => `"${(field ?? "").toString().replace(/"/g, '""')}"`)
+          .join(",")
       ),
-    ].join('\n');
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
 
-    link.setAttribute('href', url);
+    link.setAttribute("href", url);
     link.setAttribute(
-      'download',
-      `${currentTabObj.label.toLowerCase().replace(/ /g, '-')}-report.csv`
+      "download",
+      `${currentTabObj.label.toLowerCase().replace(/ /g, "-")}-report.csv`
     );
-    link.style.visibility = 'hidden';
+    link.style.visibility = "hidden";
 
     document.body.appendChild(link);
     link.click();
@@ -344,13 +367,19 @@ const ReportsPage: React.FC = () => {
 
           <div className="flex gap-2">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-9 w-24 rounded-lg bg-gray-200 dark:bg-gray-800" />
+              <div
+                key={i}
+                className="h-9 w-24 rounded-lg bg-gray-200 dark:bg-gray-800"
+              />
             ))}
           </div>
 
           <div className="mt-4 space-y-2">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-14 rounded-lg bg-gray-100 dark:bg-gray-800" />
+              <div
+                key={i}
+                className="h-14 rounded-lg bg-gray-100 dark:bg-gray-800"
+              />
             ))}
           </div>
         </div>
@@ -403,10 +432,12 @@ const ReportsPage: React.FC = () => {
               onClick={() =>
                 downloadCSV(isSomeSelected ? effectiveSelectedOrders : filteredOrders)
               }
-              className="flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#0a0c37] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:opacity-90 cursor-pointer"
+              className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#0a0c37] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:opacity-90"
             >
               <Download className="h-4 w-4" />
-              {isSomeSelected ? `Download (${effectiveSelectedCount})` : 'Download'}
+              {isSomeSelected
+                ? `Download (${effectiveSelectedCount})`
+                : "Download"}
             </button>
           </div>
         </div>
@@ -422,8 +453,8 @@ const ReportsPage: React.FC = () => {
                 onClick={() => router.push(`/user/dashboard/reports?tab=${tab.key}`)}
                 className={`relative cursor-pointer whitespace-nowrap rounded-t-xl px-4 py-2.5 text-[11px] uppercase tracking-wider font-bold transition-all ${
                   isActive
-                    ? 'border border-b-0 border-gray-200 bg-white text-[#0a0c37] shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-indigo-400'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-300'
+                    ? "border border-b-0 border-gray-200 bg-white text-[#0a0c37] shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-indigo-400"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-300"
                 }`}
               >
                 {tab.label}
@@ -476,7 +507,7 @@ const ReportsPage: React.FC = () => {
                         Payment
                       </div>
                       <div className="font-medium text-gray-800 dark:text-gray-100">
-                        {order.paymentMode || 'Prepaid'}
+                        {order.paymentMode || "Prepaid"}
                       </div>
                     </div>
                   </div>
@@ -492,12 +523,14 @@ const ReportsPage: React.FC = () => {
                             <div
                               key={idx}
                               className={
-                                idx > 0 ? 'border-t border-gray-200 pt-1 dark:border-gray-600' : ''
+                                idx > 0
+                                  ? "border-t border-gray-200 pt-1 dark:border-gray-600"
+                                  : ""
                               }
                             >
                               <span className="font-medium text-gray-800 dark:text-gray-100">
                                 {item.productName}
-                              </span>{' '}
+                              </span>{" "}
                               ({item.quantity}x)
                               {item.hsn && (
                                 <span className="block text-[10px] text-gray-400">
@@ -519,7 +552,7 @@ const ReportsPage: React.FC = () => {
                         e.stopPropagation();
                         handleCloneOrder(order.id);
                       }}
-                      className="flex flex-1 justify-center cursor-pointer items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                      className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800 cursor-pointer"
                     >
                       <Copy className="h-3 w-3" />
                       Clone
@@ -531,10 +564,10 @@ const ReportsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="hidden lg:block relative border-t border-gray-200 dark:border-gray-800">
+        <div className="hidden relative border-t border-gray-200 dark:border-gray-800 lg:block">
           <div className="overflow-auto w-full max-h-[calc(100vh-250px)] custom-scrollbar">
             <table className="min-w-full text-left border-separate border-spacing-0 whitespace-nowrap">
-              <thead className="sticky top-0 z-20 shadow-sm">
+              <thead className="sticky top-0 z-40 shadow-sm">
                 <tr className="text-white">
                   <th className="bg-[#0a0c37] border-b border-gray-800 px-3 py-3 text-center w-10">
                     <input
@@ -571,7 +604,7 @@ const ReportsPage: React.FC = () => {
                   <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
                     Status
                   </th>
-                  <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                  <th className="sticky right-0 z-50 bg-[#0a0c37] backdrop-blur-md border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200 shadow-[-8px_0_12px_-6px_rgba(0,0,0,0.3)] w-[130px] min-w-[130px] border-l border-gray-700/50">
                     Action
                   </th>
                 </tr>
@@ -588,7 +621,7 @@ const ReportsPage: React.FC = () => {
                       >
                         <span className="text-gray-600 dark:text-gray-300">
                           All <strong>{paginatedOrders.length}</strong> on this page are selected.
-                        </span>{' '}
+                        </span>{" "}
                         <button
                           onClick={() => {
                             setSelectedIds(new Set(filteredOrders.map((o) => o.id)));
@@ -610,7 +643,7 @@ const ReportsPage: React.FC = () => {
                     >
                       <span className="font-semibold text-[#0a0c37] dark:text-indigo-400">
                         All {filteredOrders.length} reports are selected.
-                      </span>{' '}
+                      </span>{" "}
                       <button
                         onClick={() => {
                           setSelectedIds(new Set());
@@ -631,8 +664,10 @@ const ReportsPage: React.FC = () => {
                     <tr
                       key={order.id}
                       onClick={(e) => handleRowClick(order, e)}
-                      className={`group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer relative align-top ${
-                        selectedIds.has(order.id) ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''
+                      className={`group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer align-top ${
+                        selectedIds.has(order.id)
+                          ? "bg-indigo-50 dark:bg-indigo-900/30"
+                          : ""
                       }`}
                     >
                       <td
@@ -663,12 +698,14 @@ const ReportsPage: React.FC = () => {
                               <div
                                 key={idx}
                                 className={`text-[12px] text-gray-800 dark:text-gray-200 ${
-                                  idx > 0 ? 'pt-1 border-t border-gray-100 dark:border-gray-800' : ''
+                                  idx > 0
+                                    ? "pt-1 border-t border-gray-100 dark:border-gray-800"
+                                    : ""
                                 }`}
                               >
                                 <span className="font-semibold uppercase tracking-tight">
                                   {item.productName}
-                                </span>{' '}
+                                </span>{" "}
                                 <span className="text-gray-500">x{item.quantity}</span>
                                 {item.hsn && (
                                   <div className="text-[10px] text-gray-400 mt-0.5">
@@ -681,11 +718,14 @@ const ReportsPage: React.FC = () => {
                             <div className="text-[10px] text-gray-500 mt-1.5 pt-1 border-t border-dashed border-gray-200 dark:border-gray-700">
                               {order.length && order.breadth && order.height
                                 ? `Dims: ${order.length}x${order.breadth}x${order.height}cm `
-                                : ''}
-                              {order.length && order.breadth && order.height && order.physicalWeight
-                                ? '| '
-                                : ''}
-                              {order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : ''}
+                                : ""}
+                              {order.length &&
+                              order.breadth &&
+                              order.height &&
+                              order.physicalWeight
+                                ? "| "
+                                : ""}
+                              {order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : ""}
                             </div>
                           </div>
                         ) : (
@@ -695,11 +735,10 @@ const ReportsPage: React.FC = () => {
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
                         <div className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                          {'₹'}
-                          {totalValue.toFixed(0)}
+                          ₹{totalValue.toFixed(0)}
                         </div>
                         <div className="text-[10px] font-semibold text-gray-500 mt-0.5 uppercase tracking-wide">
-                          {order.paymentMode || 'PREPAID'}
+                          {order.paymentMode || "PREPAID"}
                         </div>
                       </td>
 
@@ -713,26 +752,26 @@ const ReportsPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center font-medium text-gray-600">
-                        {order.billableWeight || '—'}
+                        {order.billableWeight || "—"}
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center font-medium text-gray-600">
-                        {order.ageing || '0'}
+                        {order.ageing || "0"}
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center font-medium text-gray-600">
-                        {order.attempts || '0'}
+                        {order.attempts || "0"}
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
                         <div className="text-[12px] font-bold text-[#0a0c37] dark:text-indigo-400">
-                          {order.awbNumber || '—'}
+                          {order.awbNumber || "—"}
                         </div>
                         <div
                           className="text-[11px] font-medium text-gray-500 mt-0.5 max-w-[150px] truncate"
-                          title={order.courierName || order.shippingDetails || ''}
+                          title={order.courierName || order.shippingDetails || ""}
                         >
-                          {order.courierName || order.shippingDetails || '—'}
+                          {order.courierName || order.shippingDetails || "—"}
                         </div>
                       </td>
 
@@ -740,37 +779,49 @@ const ReportsPage: React.FC = () => {
                         <SBadge status={order.status} />
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center">
+                      <td className="sticky right-0 z-20 bg-white/95 dark:bg-[#111827]/95 backdrop-blur-md group-hover:bg-indigo-50 dark:group-hover:bg-[#1e293b] px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center transition-colors shadow-[-12px_0_20px_-10px_rgba(0,0,0,0.2)] dark:shadow-[-12px_0_20px_-10px_rgba(0,0,0,0.6)] w-[130px] min-w-[130px] border-l border-gray-100 dark:border-gray-800">
                         <div
-                          className="inline-flex justify-center -space-x-px rounded-xl shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 mx-auto"
+                          className="mx-auto inline-flex justify-center -space-x-px rounded-xl shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
                             onClick={() => handleCloneOrder(order.id)}
-                            className="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 dark:ring-gray-700 focus:z-10 rounded-l-xl cursor-pointer"
+                            className="relative cursor-pointer inline-flex items-center rounded-l-xl px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800"
                             title="Clone"
                           >
                             <Copy className="h-4 w-4" />
                           </button>
 
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-10 rounded-r-xl cursor-pointer">
-                                <span className="sr-only">More</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </button>
-                            </DropdownMenuTrigger>
+                          {order.status === "unshipped" ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="relative cursor-pointer inline-flex items-center rounded-r-xl px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800">
+                                  <span className="sr-only">More</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                              </DropdownMenuTrigger>
 
-                            <DropdownMenuContent align="end" className="w-48 p-1 z-[80]">
-                              <DropdownMenuItem
-                                onClick={() => toast.info('Delete managed from Orders natively')}
-                                className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer rounded-lg"
+                              <DropdownMenuContent
+                                align="end"
+                                className="z-[80] w-48 p-1"
                               >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteOrder(order.id)}
+                                  className="cursor-pointer rounded-lg text-red-600 focus:bg-red-50 focus:text-red-700"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <div
+                              className="relative inline-flex items-center rounded-r-xl px-3 py-2 text-sm font-semibold text-gray-400 ring-1 ring-inset ring-gray-300 dark:text-gray-600 dark:ring-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed"
+                              title="Status Locked"
+                            >
+                              <MoreHorizontal className="h-4 w-4 opacity-50" />
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -797,27 +848,30 @@ const ReportsPage: React.FC = () => {
 
         <div className="px-4 sm:px-6 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-            Showing{' '}
+            Showing{" "}
             <span className="font-bold text-gray-700 dark:text-gray-300">
               {filteredOrders.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
-            </span>{' '}
-            {'–'}{' '}
+            </span>{" "}
+            –{" "}
             <span className="font-bold text-gray-700 dark:text-gray-300">
               {Math.min(currentPage * itemsPerPage, filteredOrders.length)}
-            </span>{' '}
-            of{' '}
+            </span>{" "}
+            of{" "}
             <span className="font-bold text-gray-700 dark:text-gray-300">
               {filteredOrders.length}
-            </span>{' '}
+            </span>{" "}
             reports
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">Rows:</span>
             <select
-              value={itemsPerPage === filteredOrders.length ? 'all' : itemsPerPage}
+              value={itemsPerPage === filteredOrders.length ? "all" : itemsPerPage}
               onChange={(e) => {
-                const val = e.target.value === 'all' ? filteredOrders.length : Number(e.target.value);
+                const val =
+                  e.target.value === "all"
+                    ? filteredOrders.length
+                    : Number(e.target.value);
                 setItemsPerPage(val);
                 setCurrentPage(1);
                 setSelectedIds(new Set());
@@ -895,11 +949,11 @@ const ReportsPage: React.FC = () => {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onClone={handleCloneOrder}
-        onDelete={() => toast.info('Delete action is handled from main Orders terminal')}
-        onShip={() => toast.info('Shipment modifications run from main Orders')}
-        onCancel={() => toast.info('Cancellations disabled in static reports')}
-        onRefreshStatus={() => toast.info('Live refresh locked in reports scope')}
-        onDownloadLabel={() => toast.info('Please use the table row download')}
+        onDelete={handleDeleteOrder}
+        onShip={() => toast.info("Shipment modifications run from main Orders")}
+        onCancel={() => toast.info("Cancellations disabled in static reports")}
+        onRefreshStatus={() => toast.info("Live refresh locked in reports scope")}
+        onDownloadLabel={() => toast.info("Please use the table row download")}
         refreshingId={null}
         downloadingLabelId={null}
       />
