@@ -448,17 +448,6 @@ export default function Navbar({
                     {renderDropdownMenu(() => setIsProfileOpen(false))}
                   </div>
                 </div>
-
-                {/* Mobile Recharge Button */}
-                {userRole !== "admin" && (
-                  <button
-                    onClick={handleRechargeClick}
-                    className="flex items-center justify-center rounded-lg bg-[#0a0c37] p-2 text-white transition-colors hover:bg-[#0a0c37e1]"
-                    aria-label="Recharge wallet"
-                  >
-                    <BatteryPlus className="h-5 w-5" />
-                  </button>
-                )}
               </div>
             </div>
           </div>
