@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import {
   Copy,
   Download,
@@ -17,18 +17,17 @@ import {
   MoreHorizontal,
   CheckSquare,
   X,
-} from 'lucide-react';
-import { toast } from 'react-toastify';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+} from "lucide-react";
+import { toast } from "react-toastify";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import OrderDetailDrawer from '@/components/OrderDetailDrawer';
+} from "@/components/ui/dropdown-menu";
+import OrderDetailDrawer from "@/components/OrderDetailDrawer";
 
 interface OrderItem {
   id?: number;
@@ -70,85 +69,91 @@ interface Order {
   warehouse?: { warehouseName: string; warehouseCode: string } | null;
 }
 
-type TabKey = 'all' | 'unshipped' | 'shipped' | 'cancelled';
+type TabKey = "all" | "unshipped" | "shipped" | "cancelled";
 
 const TABS: { key: TabKey; label: string; statuses: string[] | null }[] = [
-  { key: 'all', label: 'All Orders', statuses: null },
-  { key: 'unshipped', label: 'Unshipped', statuses: ['unshipped'] },
+  { key: "all", label: "All Orders", statuses: null },
+  { key: "unshipped", label: "Unshipped", statuses: ["unshipped"] },
   {
-    key: 'shipped',
-    label: 'Shipped',
-    statuses: ['shipped', 'manifested', 'in_transit', 'out_for_delivery', 'undelivered'],
+    key: "shipped",
+    label: "Shipped",
+    statuses: [
+      "shipped",
+      "manifested",
+      "in_transit",
+      "out_for_delivery",
+      "undelivered",
+    ],
   },
-  { key: 'cancelled', label: 'Cancelled', statuses: ['cancelled'] },
+  { key: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
 ];
 
 const SS: Record<string, { bg: string; text: string; dot: string }> = {
   unshipped: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-700 dark:text-amber-400',
-    dot: 'bg-amber-500',
+    bg: "bg-amber-500/10",
+    text: "text-amber-700 dark:text-amber-400",
+    dot: "bg-amber-500",
   },
   shipped: {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-700 dark:text-blue-400',
-    dot: 'bg-blue-500',
+    bg: "bg-blue-500/10",
+    text: "text-blue-700 dark:text-blue-400",
+    dot: "bg-blue-500",
   },
   manifested: {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-700 dark:text-blue-400',
-    dot: 'bg-blue-500',
+    bg: "bg-blue-500/10",
+    text: "text-blue-700 dark:text-blue-400",
+    dot: "bg-blue-500",
   },
   in_transit: {
-    bg: 'bg-indigo-500/10',
-    text: 'text-indigo-700 dark:text-indigo-400',
-    dot: 'bg-indigo-500',
+    bg: "bg-indigo-500/10",
+    text: "text-indigo-700 dark:text-indigo-400",
+    dot: "bg-indigo-500",
   },
   out_for_delivery: {
-    bg: 'bg-cyan-500/10',
-    text: 'text-cyan-700 dark:text-cyan-400',
-    dot: 'bg-cyan-500',
+    bg: "bg-cyan-500/10",
+    text: "text-cyan-700 dark:text-cyan-400",
+    dot: "bg-cyan-500",
   },
   delivered: {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-700 dark:text-emerald-400',
-    dot: 'bg-emerald-500',
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-700 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
   cancelled: {
-    bg: 'bg-red-500/10',
-    text: 'text-red-700 dark:text-red-400',
-    dot: 'bg-red-500',
+    bg: "bg-red-500/10",
+    text: "text-red-700 dark:text-red-400",
+    dot: "bg-red-500",
   },
   undelivered: {
-    bg: 'bg-orange-500/10',
-    text: 'text-orange-700 dark:text-orange-400',
-    dot: 'bg-orange-500',
+    bg: "bg-orange-500/10",
+    text: "text-orange-700 dark:text-orange-400",
+    dot: "bg-orange-500",
   },
 };
 
 function gs(s: string) {
   return (
     SS[s.toLowerCase()] || {
-      bg: 'bg-gray-500/10',
-      text: 'text-gray-600 dark:text-gray-400',
-      dot: 'bg-gray-500',
+      bg: "bg-gray-500/10",
+      text: "text-gray-600 dark:text-gray-400",
+      dot: "bg-gray-500",
     }
   );
 }
 
 function RefundBadge({ order }: { order: Order }) {
-  if (order.refundStatus === 'processed') {
+  if (order.refundStatus === "processed") {
     return (
       <div className="mt-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-        {'✅'} {'₹'} {order.refundAmount} refunded
+        ✅ ₹{order.refundAmount} refunded
       </div>
     );
   }
 
-  if (order.refundStatus === 'pending' && order.refundDueDate) {
+  if (order.refundStatus === "pending" && order.refundDueDate) {
     return (
       <div className="mt-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-        {'🕐'} Refund by {new Date(order.refundDueDate).toLocaleDateString()}
+        🕐 Refund by {new Date(order.refundDueDate).toLocaleDateString()}
       </div>
     );
   }
@@ -164,7 +169,7 @@ function SBadge({ status }: { status: string }) {
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${st.bg} ${st.text}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
-      {status.replace(/_/g, ' ')}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }
@@ -175,7 +180,7 @@ const UnifiedOrdersPage: React.FC = () => {
 
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [downloadingLabelId, setDownloadingLabelId] = useState<string | null>(null);
@@ -183,13 +188,14 @@ const UnifiedOrdersPage: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectAllAcrossPages, setSelectAllAcrossPages] = useState(false);
-
   const [itemsPerPage, setItemsPerPage] = useState(15);
-  const activeTab = (searchParams.get('tab') as TabKey) || 'all';
+
+  const activeTab = (searchParams.get("tab") as TabKey) || "all";
 
   const setActiveTab = useCallback(
     (tab: TabKey) => {
-      const url = tab === 'all' ? '/user/dashboard/bulk' : `/user/dashboard/bulk?tab=${tab}`;
+      const url =
+        tab === "all" ? "/user/dashboard/bulk" : `/user/dashboard/bulk?tab=${tab}`;
       router.replace(url, { scroll: false });
       setCurrentPage(1);
     },
@@ -203,7 +209,7 @@ const UnifiedOrdersPage: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/api/user/orders/single-order');
+      const res = await axios.get("/api/user/orders/single-order");
       setAllOrders(
         res.data.orders.map((o: any) => ({
           ...o,
@@ -211,8 +217,8 @@ const UnifiedOrdersPage: React.FC = () => {
         }))
       );
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Failed to load orders.');
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to load orders.");
     } finally {
       setLoading(false);
     }
@@ -223,7 +229,9 @@ const UnifiedOrdersPage: React.FC = () => {
     let orders = allOrders;
 
     if (tabCfg.statuses) {
-      orders = orders.filter((o) => tabCfg.statuses!.includes(o.status.toLowerCase()));
+      orders = orders.filter((o) =>
+        tabCfg.statuses!.includes(o.status.toLowerCase())
+      );
     }
 
     if (searchTerm.trim()) {
@@ -269,13 +277,16 @@ const UnifiedOrdersPage: React.FC = () => {
   };
 
   const isAllPageSelected =
-    paginatedOrders.length > 0 && paginatedOrders.every((o) => selectedIds.has(o.id));
+    paginatedOrders.length > 0 &&
+    paginatedOrders.every((o) => selectedIds.has(o.id));
 
   const effectiveSelectedOrders = selectAllAcrossPages
     ? filteredOrders
     : filteredOrders.filter((o) => selectedIds.has(o.id));
 
-  const effectiveSelectedCount = selectAllAcrossPages ? filteredOrders.length : selectedIds.size;
+  const effectiveSelectedCount = selectAllAcrossPages
+    ? filteredOrders.length
+    : selectedIds.size;
 
   const isSomeSelected = effectiveSelectedCount > 0;
 
@@ -283,47 +294,47 @@ const UnifiedOrdersPage: React.FC = () => {
     if (!ordersToDownload.length) return;
 
     const headers = [
-      'Order Date',
-      'Order ID',
-      'AWB Number',
-      'Product Details',
-      'Payment',
-      'Order Value',
-      'Customer',
-      'Phone',
-      'Address',
-      'Pickup',
-      'Status',
-      'Courier',
+      "Order Date",
+      "Order ID",
+      "AWB Number",
+      "Product Details",
+      "Payment",
+      "Order Value",
+      "Customer",
+      "Phone",
+      "Address",
+      "Pickup",
+      "Status",
+      "Courier",
     ];
 
     const rows = ordersToDownload.map((o) => [
       new Date(o.orderDate).toLocaleDateString(),
       o.orderId,
-      o.awbNumber || '-',
-      o.items.map((i) => `${i.productName} (${i.quantity}x)`).join('; '),
-      o.paymentMode || '-',
+      o.awbNumber || "-",
+      o.items.map((i) => `${i.productName} (${i.quantity}x)`).join("; "),
+      o.paymentMode || "-",
       o.items.reduce((sum, i) => sum + i.orderValue, 0).toString(),
       o.customerName,
       o.mobile,
       o.address,
-      o.warehouse?.warehouseName || '-',
+      o.warehouse?.warehouseName || "-",
       o.status,
-      o.courierName || '-',
+      o.courierName || "-",
     ]);
 
     const csvContent = [
-      headers.join(','),
+      headers.join(","),
       ...rows.map((row) =>
-        row.map((f) => `"${(f ?? '').replace(/"/g, '""')}"`).join(',')
+        row.map((f) => `"${(f ?? "").replace(/"/g, '""')}"`).join(",")
       ),
-    ].join('\n');
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.setAttribute('href', URL.createObjectURL(blob));
-    link.setAttribute('download', `orders-${activeTab}.csv`);
-    link.style.visibility = 'hidden';
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", `orders-${activeTab}.csv`);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -342,13 +353,19 @@ const UnifiedOrdersPage: React.FC = () => {
     allOrders.forEach((o) => {
       const s = o.status.toLowerCase();
 
-      if (s === 'unshipped') {
+      if (s === "unshipped") {
         c.unshipped++;
       } else if (
-        ['shipped', 'manifested', 'in_transit', 'out_for_delivery', 'undelivered'].includes(s)
+        [
+          "shipped",
+          "manifested",
+          "in_transit",
+          "out_for_delivery",
+          "undelivered",
+        ].includes(s)
       ) {
         c.shipped++;
-      } else if (s === 'cancelled') {
+      } else if (s === "cancelled") {
         c.cancelled++;
       }
     });
@@ -365,53 +382,58 @@ const UnifiedOrdersPage: React.FC = () => {
   };
 
   const handleDeleteOrder = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this order?')) return;
+    const orderToDelete = allOrders.find((o) => o.id === id);
+    if (orderToDelete && orderToDelete.status.toLowerCase() !== "unshipped") {
+      return toast.error("Only unshipped orders can be deleted.");
+    }
+
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
 
     try {
       await axios.delete(`/api/user/orders/single-order/${id}`);
       setAllOrders((prev) => prev.filter((o) => o.id !== id));
-      toast.success('Order deleted');
+      toast.success("Order deleted");
 
       if (drawerOrder?.id === id) {
         setIsDrawerOpen(false);
         setDrawerOrder(null);
       }
     } catch {
-      toast.error('Failed to delete order.');
+      toast.error("Failed to delete order.");
     }
   };
 
   const handleCancelOrder = async (id: string) => {
-    if (!window.confirm('Cancel this order?')) return;
+    if (!window.confirm("Cancel this order?")) return;
 
-    const tid = toast.loading('Requesting cancellation...');
+    const tid = toast.loading("Requesting cancellation...");
 
     try {
-      const res = await axios.post('/api/user/orders/cancel', { orderId: id });
+      const res = await axios.post("/api/user/orders/cancel", { orderId: id });
 
       if (res.data.success) {
         toast.update(tid, {
-          render: 'Cancelled successfully.',
-          type: 'success',
+          render: "Cancelled successfully.",
+          type: "success",
           isLoading: false,
           autoClose: 5000,
         });
 
         setAllOrders((prev) =>
-          prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o))
+          prev.map((o) => (o.id === id ? { ...o, status: "cancelled" } : o))
         );
       } else {
         toast.update(tid, {
           render: `Failed: ${res.data.error}`,
-          type: 'error',
+          type: "error",
           isLoading: false,
           autoClose: 5000,
         });
       }
     } catch (e: any) {
       toast.update(tid, {
-        render: `Failed: ${e.response?.data?.error || 'Unknown error'}`,
-        type: 'error',
+        render: `Failed: ${e.response?.data?.error || "Unknown error"}`,
+        type: "error",
         isLoading: false,
         autoClose: 5000,
       });
@@ -420,13 +442,13 @@ const UnifiedOrdersPage: React.FC = () => {
 
   const handleRefreshStatus = async (order: Order) => {
     if (!order.awbNumber || !order.courierName) {
-      return toast.error('No AWB/courier found.');
+      return toast.error("No AWB/courier found.");
     }
 
     setRefreshingId(order.id);
 
     try {
-      const res = await axios.post('/api/user/orders/tracking', {
+      const res = await axios.post("/api/user/orders/tracking", {
         awbNumber: order.awbNumber,
         courierName: order.courierName,
       });
@@ -440,7 +462,7 @@ const UnifiedOrdersPage: React.FC = () => {
         toast.success(`Status: ${res.data.normalizedStatus}`);
       }
     } catch {
-      toast.error('Failed to refresh.');
+      toast.error("Failed to refresh.");
     } finally {
       setRefreshingId(null);
     }
@@ -448,25 +470,25 @@ const UnifiedOrdersPage: React.FC = () => {
 
   const handleDownloadLabel = async (order: Order) => {
     if (!order.awbNumber || !order.courierName) {
-      return toast.error('No AWB/courier found.');
+      return toast.error("No AWB/courier found.");
     }
 
     setDownloadingLabelId(order.id);
 
     try {
-      const res = await axios.post('/api/user/shipment/generate-label', {
+      const res = await axios.post("/api/user/shipment/generate-label", {
         orderId: Number(order.id),
         awbNumber: order.awbNumber,
         courierName: order.courierName,
       });
 
       if (res.data.success && res.data.labelUrl) {
-        window.open(res.data.labelUrl, '_blank');
+        window.open(res.data.labelUrl, "_blank");
       } else {
-        toast.error(res.data.error || 'Failed to get label.');
+        toast.error(res.data.error || "Failed to get label.");
       }
     } catch {
-      toast.error('Failed to download label.');
+      toast.error("Failed to download label.");
     } finally {
       setDownloadingLabelId(null);
     }
@@ -478,14 +500,24 @@ const UnifiedOrdersPage: React.FC = () => {
   };
 
   const shippedStatuses = [
-    'shipped',
-    'manifested',
-    'in_transit',
-    'out_for_delivery',
-    'undelivered',
+    "shipped",
+    "manifested",
+    "in_transit",
+    "out_for_delivery",
+    "undelivered",
   ];
-  const labelStatuses = ['manifested', 'shipped', 'in_transit', 'out_for_delivery'];
-  const refreshStatuses = ['manifested', 'in_transit', 'out_for_delivery', 'undelivered'];
+  const labelStatuses = [
+    "manifested",
+    "shipped",
+    "in_transit",
+    "out_for_delivery",
+  ];
+  const refreshStatuses = [
+    "manifested",
+    "in_transit",
+    "out_for_delivery",
+    "undelivered",
+  ];
 
   if (loading) {
     return (
@@ -525,7 +557,9 @@ const UnifiedOrdersPage: React.FC = () => {
                 Dashboard
               </Link>
               <ChevronRight className="mx-0.5 h-3 w-3" />
-              <span className="font-medium text-gray-700 dark:text-gray-300">Orders</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Orders
+              </span>
             </div>
           </div>
 
@@ -545,11 +579,17 @@ const UnifiedOrdersPage: React.FC = () => {
             </div>
 
             <button
-              onClick={() => downloadCSV(isSomeSelected ? effectiveSelectedOrders : filteredOrders)}
-              className="flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#0a0c37] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:opacity-90 cursor-pointer"
+              onClick={() =>
+                downloadCSV(
+                  isSomeSelected ? effectiveSelectedOrders : filteredOrders
+                )
+              }
+              className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#0a0c37] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:opacity-90"
             >
               <Download className="h-4 w-4" />
-              {isSomeSelected ? `Download (${effectiveSelectedCount})` : 'Download'}
+              {isSomeSelected
+                ? `Download (${effectiveSelectedCount})`
+                : "Download"}
             </button>
 
             <Link
@@ -562,7 +602,7 @@ const UnifiedOrdersPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex gap-1 overflow-x-auto pb-0 -mb-px">
+        <div className="flex -mb-px gap-1 overflow-x-auto pb-0">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             const count = tabCounts[tab.key];
@@ -574,8 +614,8 @@ const UnifiedOrdersPage: React.FC = () => {
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative cursor-pointer whitespace-nowrap rounded-t-xl px-4 py-2.5 text-sm font-semibold transition-all ${
                   isActive
-                    ? 'border border-b-0 border-gray-200 bg-white text-indigo-700 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-indigo-400'
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-300'
+                    ? "border border-b-0 border-gray-200 bg-white text-indigo-700 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-indigo-400"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800/50 dark:hover:text-gray-300"
                 }`}
               >
                 {tab.label}
@@ -583,8 +623,8 @@ const UnifiedOrdersPage: React.FC = () => {
                   <span
                     className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                       isActive
-                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                        : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
                     }`}
                   >
                     {count}
@@ -651,7 +691,7 @@ const UnifiedOrdersPage: React.FC = () => {
                           Pickup
                         </div>
                         <div className="text-xs text-gray-700 dark:text-gray-300">
-                          {order.warehouse?.warehouseName || 'N/A'}
+                          {order.warehouse?.warehouseName || "N/A"}
                         </div>
                       </div>
 
@@ -677,13 +717,13 @@ const UnifiedOrdersPage: React.FC = () => {
                                 key={idx}
                                 className={
                                   idx > 0
-                                    ? 'border-t border-gray-200 pt-1 dark:border-gray-600'
-                                    : ''
+                                    ? "border-t border-gray-200 pt-1 dark:border-gray-600"
+                                    : ""
                                 }
                               >
                                 <span className="font-medium text-gray-800 dark:text-gray-100">
                                   {item.productName}
-                                </span>{' '}
+                                </span>{" "}
                                 ({item.quantity}x)
                                 {item.hsn && (
                                   <span className="block text-[10px] text-gray-400">
@@ -699,7 +739,7 @@ const UnifiedOrdersPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {order.status === 'cancelled' && <RefundBadge order={order} />}
+                    {order.status === "cancelled" && <RefundBadge order={order} />}
 
                     <div className="flex flex-wrap justify-center gap-2 border-t border-gray-200 pt-3 dark:border-gray-600">
                       <button
@@ -713,7 +753,7 @@ const UnifiedOrdersPage: React.FC = () => {
                         Clone
                       </button>
 
-                      {order.status === 'unshipped' && (
+                      {order.status === "unshipped" && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -750,23 +790,25 @@ const UnifiedOrdersPage: React.FC = () => {
                         >
                           <Download
                             className={`h-3 w-3 ${
-                              downloadingLabelId === order.id ? 'animate-spin' : ''
+                              downloadingLabelId === order.id ? "animate-spin" : ""
                             }`}
                           />
                           Label
                         </button>
                       )}
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteOrder(order.id);
-                        }}
-                        className="flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                        Delete
-                      </button>
+                      {order.status === "unshipped" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOrder(order.id);
+                          }}
+                          className="flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -786,55 +828,57 @@ const UnifiedOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden lg:block relative border-t border-gray-200 dark:border-gray-800">
-            <div className="overflow-auto w-full max-h-[calc(100vh-250px)] custom-scrollbar">
-              <table className="min-w-full text-left border-separate border-spacing-0 whitespace-nowrap">
+          <div className="hidden border-t border-gray-200 dark:border-gray-800 lg:block relative">
+            <div className="custom-scrollbar w-full max-h-[calc(100vh-250px)] overflow-auto">
+              <table className="min-w-full border-separate border-spacing-0 whitespace-nowrap text-left">
                 <thead className="sticky top-0 z-20 shadow-sm">
                   <tr className="text-white">
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-3 py-3 text-center w-10">
+                    <th className="w-10 border-b border-gray-800 bg-[#0a0c37] px-3 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={isAllPageSelected}
                         onChange={toggleSelectAll}
-                        className="h-3.5 w-3.5 rounded border-gray-400 text-[#0a0c37] focus:ring-[#0a0c37] cursor-pointer accent-white"
+                        className="h-3.5 w-3.5 cursor-pointer rounded border-gray-400 text-[#0a0c37] accent-white focus:ring-[#0a0c37]"
                       />
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Date
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Order ID
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200 min-w-[200px]">
+                    <th className="min-w-[200px] border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Products
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Payment
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Customer
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200 max-w-[150px]">
+                    <th className="max-w-[150px] border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Address
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Pickup
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Status
                     </th>
-                    {activeTab === 'cancelled' && (
-                      <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
+
+                    {activeTab === "cancelled" && (
+                      <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
                         Refund
                       </th>
                     )}
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
+
+                    <th className="border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Courier &amp; AWB
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200 shrink-0">
+                    <th className="shrink-0 border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
                       Label
                     </th>
-                    <th className="bg-[#0a0c37] border-b border-gray-800 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200">
+                    <th className="sticky right-0 z-30 border-b border-gray-800 bg-[#0a0c37] px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-gray-200 shadow-[-4px_0_10px_-4px_rgba(0,0,0,0.3)]">
                       Actions
                     </th>
                   </tr>
@@ -845,59 +889,67 @@ const UnifiedOrdersPage: React.FC = () => {
                     <tr
                       key={order.id}
                       onClick={() => openDrawer(order)}
-                      className={`group hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer relative align-top ${
-                        selectedIds.has(order.id) ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''
+                      className={`group relative cursor-pointer align-top transition-colors hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 ${
+                        selectedIds.has(order.id)
+                          ? "bg-indigo-50 dark:bg-indigo-900/30"
+                          : ""
                       }`}
                     >
                       <td
-                        className="px-3 py-4 border-b border-gray-200 dark:border-gray-800 text-center"
+                        className="border-b border-gray-200 px-3 py-4 text-center dark:border-gray-800"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <input
                           type="checkbox"
                           checked={selectedIds.has(order.id)}
                           onChange={() => toggleSelectOne(order.id)}
-                          className="h-3.5 w-3.5 rounded border-gray-300 text-[#0a0c37] focus:ring-[#0a0c37] cursor-pointer"
+                          className="h-3.5 w-3.5 cursor-pointer rounded border-gray-300 text-[#0a0c37] focus:ring-[#0a0c37]"
                         />
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-xs font-medium text-gray-600 dark:text-gray-400">
+                      <td className="border-b border-gray-200 px-4 py-4 text-xs font-medium text-gray-600 dark:border-gray-800 dark:text-gray-400">
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-                        <span className="font-bold text-indigo-700 dark:text-indigo-400 text-sm block">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
+                        <span className="block text-sm font-bold text-indigo-700 dark:text-indigo-400">
                           {order.orderId}
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 whitespace-normal min-w-[200px]">
+                      <td className="min-w-[200px] whitespace-normal border-b border-gray-200 px-4 py-4 dark:border-gray-800">
                         {order.items && order.items.length > 0 ? (
                           <div className="space-y-1">
                             {order.items.map((item, idx) => (
                               <div
                                 key={idx}
                                 className={`text-xs text-gray-800 dark:text-gray-200 ${
-                                  idx > 0 ? 'pt-1 border-t border-gray-100 dark:border-gray-800' : ''
+                                  idx > 0
+                                    ? "border-t border-gray-100 pt-1 dark:border-gray-800"
+                                    : ""
                                 }`}
                               >
-                                <span className="font-semibold">{item.productName}</span>{' '}
+                                <span className="font-semibold">{item.productName}</span>{" "}
                                 <span className="text-gray-500">x{item.quantity}</span>
                                 {item.hsn && (
-                                  <div className="text-[10px] text-gray-400 mt-0.5">
+                                  <div className="mt-0.5 text-[10px] text-gray-400">
                                     HSN: {item.hsn}
                                   </div>
                                 )}
                               </div>
                             ))}
-                            <div className="text-[10px] text-gray-500 mt-1.5 pt-1 border-t border-dashed border-gray-200 dark:border-gray-700">
+
+                            <div className="mt-1.5 border-t border-dashed border-gray-200 pt-1 text-[10px] text-gray-500 dark:border-gray-700">
                               {order.length && order.breadth && order.height
                                 ? `Dims: ${order.length}x${order.breadth}x${order.height}cm `
-                                : ''}
-                              {order.length && order.breadth && order.height && order.physicalWeight
-                                ? '| '
-                                : ''}
-                              {order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : ''}
+                                : ""}
+                              {order.length &&
+                              order.breadth &&
+                              order.height &&
+                              order.physicalWeight
+                                ? "| "
+                                : ""}
+                              {order.physicalWeight ? `Wt: ${order.physicalWeight}Kg` : ""}
                             </div>
                           </div>
                         ) : (
@@ -905,63 +957,66 @@ const UnifiedOrdersPage: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
                         <div className="text-xs font-bold text-gray-800 dark:text-gray-200">
                           {order.paymentMode}
                         </div>
                         {order.items && order.items.length > 0 && (
-                          <div className="text-[11px] text-gray-500 mt-0.5">
-                            {'₹'}
-                            {order.items.reduce((sum, item) => sum + item.orderValue, 0)}
+                          <div className="mt-0.5 text-[11px] text-gray-500">
+                            ₹
+                            {order.items.reduce(
+                              (sum, item) => sum + item.orderValue,
+                              0
+                            )}
                           </div>
                         )}
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
                         <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                           {order.customerName}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                           {order.mobile}
                         </div>
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
                         <div
-                          className="text-xs text-gray-600 dark:text-gray-400 max-w-[150px] truncate"
+                          className="max-w-[150px] truncate text-xs text-gray-600 dark:text-gray-400"
                           title={order.address}
                         >
                           {order.address}
                         </div>
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
                         <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                          {order.warehouse?.warehouseName || '-'}
+                          {order.warehouse?.warehouseName || "-"}
                         </div>
                         {order.warehouse?.warehouseCode && (
-                          <div className="text-[10px] text-gray-500 mt-0.5">
+                          <div className="mt-0.5 text-[10px] text-gray-500">
                             ({order.warehouse.warehouseCode})
                           </div>
                         )}
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center">
+                      <td className="border-b border-gray-200 px-4 py-4 text-center dark:border-gray-800">
                         <SBadge status={order.status} />
                       </td>
 
-                      {activeTab === 'cancelled' && (
-                        <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center">
+                      {activeTab === "cancelled" && (
+                        <td className="border-b border-gray-200 px-4 py-4 text-center dark:border-gray-800">
                           <RefundBadge order={order} />
                         </td>
                       )}
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                          {order.courierName || '-'}
+                          {order.courierName || "-"}
                         </div>
-                        <div className="text-[11px] font-mono text-gray-500 mt-0.5">
-                          {order.awbNumber || ''}
+                        <div className="mt-0.5 text-[11px] font-mono text-gray-500">
+                          {order.awbNumber || ""}
                         </div>
 
                         {refreshStatuses.includes(order.status) && order.awbNumber && (
@@ -971,11 +1026,11 @@ const UnifiedOrdersPage: React.FC = () => {
                               handleRefreshStatus(order);
                             }}
                             disabled={refreshingId === order.id}
-                            className="mt-1.5 flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50 cursor-pointer transition-colors"
+                            className="mt-1.5 flex cursor-pointer items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600 transition-colors hover:text-indigo-800 disabled:opacity-50 dark:text-indigo-400 dark:hover:text-indigo-300"
                           >
                             <RefreshCw
                               className={`h-3 w-3 ${
-                                refreshingId === order.id ? 'animate-spin' : ''
+                                refreshingId === order.id ? "animate-spin" : ""
                               }`}
                             />
                             Refresh
@@ -983,7 +1038,7 @@ const UnifiedOrdersPage: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center">
+                      <td className="border-b border-gray-200 px-4 py-4 text-center dark:border-gray-800">
                         {labelStatuses.includes(order.status) && order.awbNumber && (
                           <button
                             onClick={(e) => {
@@ -991,69 +1046,68 @@ const UnifiedOrdersPage: React.FC = () => {
                               handleDownloadLabel(order);
                             }}
                             disabled={downloadingLabelId === order.id}
-                            className="inline-flex items-center justify-center p-2 rounded-xl text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900 cursor-pointer disabled:opacity-50 group-hover:shadow-sm"
+                            className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-indigo-50 p-2 text-indigo-600 transition hover:bg-indigo-100 disabled:opacity-50 dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900 group-hover:shadow-sm"
                             title="Download Label"
                           >
                             <Download
                               className={`h-4 w-4 ${
-                                downloadingLabelId === order.id ? 'animate-spin' : ''
+                                downloadingLabelId === order.id ? "animate-spin" : ""
                               }`}
                             />
                           </button>
                         )}
                       </td>
 
-                      <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800 text-center">
+                      <td className="sticky right-0 z-10 border-b border-gray-200 bg-white px-4 py-4 text-center shadow-[-4px_0_10px_-4px_rgba(0,0,0,0.1)] transition-colors group-hover:bg-indigo-50 dark:border-gray-800 dark:bg-[#111827] dark:group-hover:bg-indigo-900/20">
                         <div
-                          className="inline-flex justify-center -space-x-px rounded-xl shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 mx-auto"
+                          className="mx-auto inline-flex justify-center -space-x-px rounded-xl shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
                             onClick={() => handleCloneOrder(order.id)}
-                            className="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 dark:ring-gray-700 focus:z-10 rounded-l-xl cursor-pointer"
+                            className="relative inline-flex items-center rounded-l-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 focus:z-10 dark:border-gray-700 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800 cursor-pointer"
                             title="Clone"
                           >
                             <Copy className="h-4 w-4" />
                           </button>
 
-                          {order.status === 'unshipped' && (
-                            <button
-                              onClick={() => handleShipOrder(order.id)}
-                              className="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-400 ring-1 ring-inset ring-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 dark:ring-gray-700 focus:z-10 cursor-pointer"
-                              title="Ship"
-                            >
-                              <Truck className="h-4 w-4" />
-                            </button>
-                          )}
-
-                          {shippedStatuses.includes(order.status) && (
-                            <button
-                              onClick={() => handleCancelOrder(order.id)}
-                              className="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-orange-700 dark:text-orange-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 focus:z-10 cursor-pointer"
-                              title="Cancel"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </button>
-                          )}
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="relative inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 focus:z-10 rounded-r-xl cursor-pointer">
-                                <span className="sr-only">More</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent align="end" className="w-48 p-1 z-[80]">
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteOrder(order.id)}
-                                className="text-red-600 dark:text-red-400 focus:bg-red-50 focus:text-red-700 dark:focus:bg-red-900/20 cursor-pointer rounded-lg"
+                          {order.status === "unshipped" ? (
+                            <>
+                              <button
+                                onClick={() => handleShipOrder(order.id)}
+                                className="relative inline-flex items-center border border-gray-300 px-3 py-2 text-sm font-semibold text-green-700 ring-1 ring-inset ring-gray-300 transition hover:bg-green-50 focus:z-10 dark:border-gray-700 dark:text-green-400 dark:ring-gray-700 dark:hover:bg-green-900/20 cursor-pointer"
+                                title="Ship"
                               >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Order
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                <Truck className="h-4 w-4" />
+                              </button>
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="relative inline-flex items-center rounded-r-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 focus:z-10 dark:border-gray-700 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800 cursor-pointer">
+                                    <span className="sr-only">More</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent align="end" className="z-[80] w-48 p-1">
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteOrder(order.id)}
+                                    className="cursor-pointer rounded-lg text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-900/20"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete Order
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </>
+                          ) : (
+                            <div
+                              className="relative inline-flex cursor-not-allowed items-center rounded-r-xl bg-gray-50/50 px-3 py-2 text-sm font-semibold text-gray-400 ring-1 ring-inset ring-gray-300 dark:bg-gray-800/20 dark:text-gray-600 dark:ring-gray-700"
+                              title="Actions restricted"
+                            >
+                              <MoreHorizontal className="h-4 w-4 opacity-50" />
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1063,10 +1117,10 @@ const UnifiedOrdersPage: React.FC = () => {
                     <tr>
                       <td
                         colSpan={13}
-                        className="py-16 text-center border-b border-gray-200 dark:border-gray-800"
+                        className="border-b border-gray-200 py-16 text-center dark:border-gray-800"
                       >
-                        <Package className="h-12 w-12 mb-3 text-gray-300 dark:text-gray-600 mx-auto" />
-                        <h3 className="text-base font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                        <Package className="mx-auto mb-3 h-12 w-12 text-gray-300 dark:text-gray-600" />
+                        <h3 className="mb-1 text-base font-semibold text-gray-500 dark:text-gray-400">
                           No orders found
                         </h3>
                         <p className="text-sm text-gray-400 dark:text-gray-500">
@@ -1081,36 +1135,38 @@ const UnifiedOrdersPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="px-4 sm:px-6 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 border-x border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col items-center justify-between gap-3 border-x border-b border-gray-200 bg-gray-50/50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/50 sm:flex-row sm:px-6">
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            Showing{' '}
+            Showing{" "}
             <span className="font-bold text-gray-700 dark:text-gray-300">
               {filteredOrders.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
-            </span>{' '}
-            –{' '}
+            </span>{" "}
+            –{" "}
             <span className="font-bold text-gray-700 dark:text-gray-300">
               {Math.min(currentPage * itemsPerPage, filteredOrders.length)}
-            </span>{' '}
-            of{' '}
+            </span>{" "}
+            of{" "}
             <span className="font-bold text-gray-700 dark:text-gray-300">
               {filteredOrders.length}
-            </span>{' '}
+            </span>{" "}
             orders
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">Rows:</span>
             <select
-              value={itemsPerPage === filteredOrders.length ? 'all' : itemsPerPage}
+              value={itemsPerPage === filteredOrders.length ? "all" : itemsPerPage}
               onChange={(e) => {
                 const val =
-                  e.target.value === 'all' ? filteredOrders.length : Number(e.target.value);
+                  e.target.value === "all"
+                    ? filteredOrders.length
+                    : Number(e.target.value);
                 setItemsPerPage(val);
                 setCurrentPage(1);
                 setSelectedIds(new Set());
                 setSelectAllAcrossPages(false);
               }}
-              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-300 px-2 py-1.5 cursor-pointer focus:ring-2 focus:ring-indigo-500/40 outline-none"
+              className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
             >
               <option value={15}>15</option>
               <option value={25}>25</option>
@@ -1123,19 +1179,19 @@ const UnifiedOrdersPage: React.FC = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
             >
               Previous
             </button>
 
-            <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white min-w-[60px] text-center">
+            <span className="min-w-[60px] rounded-lg bg-indigo-600 px-3 py-1.5 text-center text-xs font-bold text-white">
               {currentPage} / {totalPages || 1}
             </span>
 
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
             >
               Next
             </button>
@@ -1156,7 +1212,7 @@ const UnifiedOrdersPage: React.FC = () => {
 
               <button
                 onClick={() => downloadCSV(effectiveSelectedOrders)}
-                className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-white/20 cursor-pointer"
+                className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-white/20"
               >
                 <Download className="h-3.5 w-3.5" />
                 Download Selected
@@ -1167,7 +1223,7 @@ const UnifiedOrdersPage: React.FC = () => {
                   setSelectedIds(new Set());
                   setSelectAllAcrossPages(false);
                 }}
-                className="flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white/70 transition-colors hover:bg-white/20 hover:text-white cursor-pointer"
+                className="flex cursor-pointer items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white/70 transition-colors hover:bg-white/20 hover:text-white"
               >
                 <X className="h-3.5 w-3.5" />
                 Clear

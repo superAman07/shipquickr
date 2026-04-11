@@ -37,6 +37,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
+    if (order.status.toLowerCase() !== "unshipped") {
+      return NextResponse.json({ error: "Only unshipped orders can be deleted" }, { status: 400 });
+    }
+
     await prisma.order.delete({
       where: { id: parseInt(id) },
     });

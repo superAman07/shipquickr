@@ -77,14 +77,46 @@ interface DrawerProps {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
-  unshipped: { bg: 'bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
-  shipped: { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-  manifested: { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-  in_transit: { bg: 'bg-indigo-500/10', text: 'text-indigo-700 dark:text-indigo-400', dot: 'bg-indigo-500' },
-  out_for_delivery: { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', dot: 'bg-cyan-500' },
-  delivered: { bg: 'bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
-  cancelled: { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
-  undelivered: { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+  unshipped: {
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-700 dark:text-amber-400',
+    dot: 'bg-amber-500',
+  },
+  shipped: {
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-700 dark:text-blue-400',
+    dot: 'bg-blue-500',
+  },
+  manifested: {
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-700 dark:text-blue-400',
+    dot: 'bg-blue-500',
+  },
+  in_transit: {
+    bg: 'bg-indigo-500/10',
+    text: 'text-indigo-700 dark:text-indigo-400',
+    dot: 'bg-indigo-500',
+  },
+  out_for_delivery: {
+    bg: 'bg-cyan-500/10',
+    text: 'text-cyan-700 dark:text-cyan-400',
+    dot: 'bg-cyan-500',
+  },
+  delivered: {
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-700 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
+  },
+  cancelled: {
+    bg: 'bg-red-500/10',
+    text: 'text-red-700 dark:text-red-400',
+    dot: 'bg-red-500',
+  },
+  undelivered: {
+    bg: 'bg-orange-500/10',
+    text: 'text-orange-700 dark:text-orange-400',
+    dot: 'bg-orange-500',
+  },
 };
 
 function InfoRow({
@@ -106,7 +138,7 @@ function InfoRow({
         </div>
 
         <div className="break-words text-sm font-medium text-gray-800 dark:text-gray-200">
-          {value || '\u2014'}
+          {value || '—'}
         </div>
       </div>
     </div>
@@ -183,15 +215,13 @@ export default function OrderDetailDrawer({
 
                     {order.refundStatus === 'processed' && (
                       <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        {'\u2705'} {'\u20B9'}
-                        {order.refundAmount} refunded
+                        ✅ ₹{order.refundAmount} refunded
                       </span>
                     )}
 
                     {order.refundStatus === 'pending' && order.refundDueDate && (
                       <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                        {'\uD83D\uDD50'} Refund by{' '}
-                        {new Date(order.refundDueDate).toLocaleDateString()}
+                        🕐 Refund by {new Date(order.refundDueDate).toLocaleDateString()}
                       </span>
                     )}
                   </div>
@@ -256,7 +286,103 @@ export default function OrderDetailDrawer({
                 </div>
               )}
 
-              {/* (rest already clean enough, left unchanged structurally) */}
+              <InfoRow
+                icon={<Calendar className="h-4 w-4" />}
+                label="Order Date"
+                value={new Date(order.orderDate).toLocaleDateString()}
+              />
+              <InfoRow
+                icon={<Phone className="h-4 w-4" />}
+                label="Mobile"
+                value={order.mobile}
+              />
+              <InfoRow
+                icon={<Mail className="h-4 w-4" />}
+                label="Email"
+                value={order.email}
+              />
+              <InfoRow
+                icon={<Hash className="h-4 w-4" />}
+                label="Order ID"
+                value={order.orderId}
+              />
+              <InfoRow
+                icon={<Package className="h-4 w-4" />}
+                label="Pickup Location"
+                value={order.pickupLocation}
+              />
+              <InfoRow
+                icon={<CreditCard className="h-4 w-4" />}
+                label="Payment Mode"
+                value={order.paymentMode}
+              />
+              <InfoRow
+                icon={<Box className="h-4 w-4" />}
+                label="Address"
+                value={order.address}
+              />
+              <InfoRow
+                icon={<Weight className="h-4 w-4" />}
+                label="Weight"
+                value={order.physicalWeight ? `${order.physicalWeight} KG` : undefined}
+              />
+
+              <div>
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">
+                  Items
+                </div>
+
+                <div className="space-y-3">
+                  {order.items?.length ? (
+                    order.items.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900/50"
+                      >
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {item.productName}
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Qty: {item.quantity} · Value: ₹{item.orderValue}
+                          {item.hsn ? ` · HSN: ${item.hsn}` : ''}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-400 dark:border-gray-800">
+                      No items
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {refreshStatuses.includes(order.status.toLowerCase()) && order.awbNumber && (
+                <button
+                  onClick={() => onRefreshStatus(order)}
+                  disabled={refreshingId === order.id}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-300 dark:hover:bg-indigo-950/50"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${refreshingId === order.id ? 'animate-spin' : ''}`}
+                  />
+                  Refresh Status
+                </button>
+              )}
+
+              {labelStatuses.includes(order.status.toLowerCase()) && order.awbNumber && (
+                <button
+                  onClick={() => onDownloadLabel(order)}
+                  disabled={downloadingLabelId === order.id}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-semibold text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-purple-900/60 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-950/50"
+                >
+                  <Download
+                    className={`h-4 w-4 ${
+                      downloadingLabelId === order.id ? 'animate-spin' : ''
+                    }`}
+                  />
+                  Download Label
+                </button>
+              )}
             </div>
 
             {/* Footer */}
@@ -264,19 +390,40 @@ export default function OrderDetailDrawer({
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => onClone(order.id)}
-                  className="flex min-w-[100px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                  className="flex min-w-[100px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100 hover:shadow-sm dark:bg-indigo-900/40 dark:text-indigo-300 dark:hover:bg-indigo-800 cursor-pointer"
+                  title="Clone this order"
                 >
-                  <Copy className="h-3.5 w-3.5" />
+                  <Copy className="h-4 w-4" />
                   Clone
                 </button>
 
-                <button
-                  onClick={() => onDelete(order.id)}
-                  className="flex min-w-[100px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete
-                </button>
+                {order.status.toLowerCase() === 'unshipped' && (
+                  <>
+                    <button
+                      onClick={() => onShip(order.id)}
+                      className="flex min-w-[100px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 hover:shadow-sm dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-800 cursor-pointer"
+                      title="Ready to Ship"
+                    >
+                      <Truck className="h-4 w-4" />
+                      Ship
+                    </button>
+
+                    <button
+                      onClick={() => onDelete(order.id)}
+                      className="flex min-w-[44px] items-center justify-center rounded-xl bg-red-50 p-2 text-red-600 transition hover:bg-red-100 hover:shadow-sm dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-800 cursor-pointer"
+                      title="Delete Order"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+
+                {order.status.toLowerCase() !== 'unshipped' && (
+                  <div className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl bg-gray-100 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:bg-gray-800 dark:text-gray-500">
+                    <XCircle className="h-3.5 w-3.5" />
+                    Status Locked
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
