@@ -683,11 +683,11 @@ const ReportsPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-                        <span className="font-bold text-[#0a0c37] dark:text-indigo-400 text-[13px] block">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/40 text-[#0a0c37] dark:text-indigo-300 text-[11px] font-black mb-1.5 uppercase tracking-tighter">
                           {order.orderId}
                         </span>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                          {new Date(order.orderDate).toLocaleDateString()}
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 block ml-0.5 uppercase tracking-wider">
+                          {new Date(order.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </span>
                       </td>
 
@@ -734,12 +734,16 @@ const ReportsPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-                        <div className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                          ₹{totalValue.toFixed(0)}
+                        <div className="text-[15px] font-black text-emerald-600 dark:text-emerald-400 leading-none">
+                          ₹{Number(totalValue).toLocaleString('en-IN')}
                         </div>
-                        <div className="text-[10px] font-semibold text-gray-500 mt-0.5 uppercase tracking-wide">
-                          {order.paymentMode || "PREPAID"}
-                        </div>
+                        <span className={`inline-flex items-center mt-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest shadow-sm ${
+                          order.paymentMode === 'COD' 
+                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' 
+                          : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}>
+                          {order.paymentMode || 'PREPAID'}
+                        </span>
                       </td>
 
                       <td className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">

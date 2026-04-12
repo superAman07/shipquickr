@@ -911,8 +911,8 @@ const UnifiedOrdersPage: React.FC = () => {
                         {new Date(order.orderDate).toLocaleDateString()}
                       </td>
 
-                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
-                        <span className="block text-sm font-bold text-indigo-700 dark:text-indigo-400">
+                      <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800 text-center">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[12px] font-black shadow-sm ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800">
                           {order.orderId}
                         </span>
                       </td>
@@ -1012,11 +1012,11 @@ const UnifiedOrdersPage: React.FC = () => {
                       )}
 
                       <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
-                        <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                          {order.courierName || "-"}
+                        <div className="inline-block font-mono text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20 px-1.5 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-800/50 mb-1">
+                          {order.awbNumber || "PENDING"}
                         </div>
-                        <div className="mt-0.5 text-[11px] font-mono text-gray-500">
-                          {order.awbNumber || ""}
+                        <div className="text-[9px] font-black text-gray-400 uppercase tracking-[0.1em] ml-0.5">
+                          {order.courierName || "ASSIGNING..."}
                         </div>
 
                         {refreshStatuses.includes(order.status) && order.awbNumber && (
