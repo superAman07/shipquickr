@@ -8,19 +8,19 @@ datasource db {
 }
 
 model User {
-  id                    Int                @id @default(autoincrement())
+  id                    Int                     @id @default(autoincrement())
   firstName             String
   lastName              String
-  email                 String             @unique
+  email                 String                  @unique
   password              String?
   hashedOtp             String?
   otpExpires            DateTime?
-  status                Boolean            @default(true)
-  role                  Role               @default(user)
-  merchantApiKey        String?            @unique
+  status                Boolean                 @default(true)
+  role                  Role                    @default(user)
+  merchantApiKey        String?                 @unique
   webhookUrl            String?
-  createdAt             DateTime           @default(now())
-  kycStatus             KycStatus          @default(pending)
+  createdAt             DateTime                @default(now())
+  kycStatus             KycStatus               @default(pending)
   kycDetail             KycDetail?
   orders                Order[]
   remittances           Remittance[]
@@ -127,6 +127,9 @@ model Order {
   trackingHistory OrderTracking[]
   ageing          Int?
   attempts        Int?
+  ndrReason       String?
+  ndrAction       String? // "re-attempt" | "rto"
+  ndrActionRemarks String?
   ewaybill        String?
   billableWeight  Float?
   remarks         String?
