@@ -1,464 +1,275 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { Download, Search, Calendar, Home, ChevronRight, Package } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
-import axios from 'axios';
-import Loading from '@/app/loading';
+"use client";
 
-const PAGE_SIZE = 10;
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { format } from "date-fns";
+import {
+  Wallet,
+  Calendar,
+  CheckCircle2,
+  FileText,
+  Loader2,
+  ChevronRight,
+  TrendingDown,
+  Clock,
+  ArrowDownToLine,
+} from "lucide-react";
+import Link from "next/link";
 
-const RemittancePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'remittance' | 'netoff'>('remittance');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState('');
-  const [remittances, setRemittances] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+interface RemittanceRecord {
+  id: number;
+  remittanceDate: string;
+  utrReference: string;
+  collectableValue: number;
+  netOffAmount: number;
+  codPaid: number;
+  _count: { orders: number };
+}
+
+interface Stats {
+  pendingCod: number;
+  pendingFreight: number;
+  pendingPayable: number;
+  pendingCount: number;
+  totalRemitted: number;
+}
+
+export default function UserRemittancePage() {
+  const [historyData, setHistoryData] = useState<RemittanceRecord[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    pendingCod: 0,
+    pendingFreight: 0,
+    pendingPayable: 0,
+    pendingCount: 0,
+    totalRemitted: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+
       try {
-        const params = {
-          tab: activeTab,
-          search: searchTerm,
-          daterange: dateRange,
-          page,
-          pageSize: PAGE_SIZE,
-        };
-        const res = await axios.get('/api/user/remittance', { params });
-        setRemittances(res.data.remittances || []);
-        setSummary(res.data.summary || {});
-        setTotal(res.data.total || 0);
-      } catch (err) {
-        setRemittances([]);
-        setSummary({});
-        setTotal(0);
+        const res = await axios.get("/api/user/remittance");
+        if (res.data.success) {
+          setHistoryData(res.data.data.history || []);
+          setStats(res.data.data.stats);
+        }
+      } catch (error) {
+        console.error("Error fetching user remittance data:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     fetchData();
-  }, [activeTab, searchTerm, dateRange, page]);
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setPage(1);
-  };
-
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDateRange(event.target.value);
-    setPage(1);
-  };
-
-  const handleTabChange = (tab: 'remittance' | 'netoff') => {
-    setActiveTab(tab);
-    setPage(1);
-  };
-
-  const downloadCSV = () => {
-    const csvContent = `data:text/csv;charset=utf-8,${remittances.map((rem) => [
-      rem.remittanceDate,
-      rem.utrReference,
-      rem.collectableValue,
-      rem.netOffAmount,
-      rem.earlyCodCharge,
-      rem.codPaid,
-      rem.remarks,
-    ].join(',')).join('\n')}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'remittance_data.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#10162A] dark:text-gray-100">
-      <main className="p-6">
-        <div className="max-w-full mx-auto">
-          <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <Link href="/user/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400">
-              <Home className="h-4 w-4" />
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span>Remittance</span>
-          </div>
+    <div className="relative min-h-screen bg-gray-50/50 p-4 dark:bg-[#0a0c1a] lg:p-8">
+      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-emerald-500/5 blur-3xl dark:bg-emerald-500/10" />
 
-          <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Remittance</h1>
+      <div className="relative z-10 mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h2 className="text-2xl font-black uppercase tracking-tight text-[#0a0c37] drop-shadow-sm dark:text-white">
+              COD Remittance Ledger
+            </h2>
 
-          <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-              <button
-                type='button'
-                onClick={() => handleTabChange('remittance')}
-                className={cn(
-                  'whitespace-nowrap cursor-pointer py-3 px-1 border-b-2 font-medium text-sm',
-                  activeTab === 'remittance'
-                    ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
-                )}
+            <div className="mt-1 flex items-center gap-1 text-[13px] font-bold uppercase tracking-wider text-gray-400">
+              <Link
+                href="/user/dashboard"
+                className="cursor-pointer transition-colors hover:text-[#0a0c37] dark:hover:text-white"
               >
+                Dashboard
+              </Link>
+              <ChevronRight className="h-3 w-3" />
+              <span className="text-[#0a0c37] dark:text-emerald-500">
                 Remittance
-              </button>
-              <button
-                type='button'
-                onClick={() => handleTabChange('netoff')}
-                className={cn(
-                  'whitespace-nowrap cursor-pointer py-3 px-1 border-b-2 font-medium text-sm',
-                  activeTab === 'netoff'
-                    ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
-                )}
-              >
-                Net Off
-              </button>
-            </nav>
-          </div>
-
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="MM/DD/YYYY - MM/DD/YYYY"
-                  value={dateRange}
-                  onChange={handleDateChange}
-                  className="pl-10 pr-4 py-2 w-64 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-                />
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search by AWB, UTR/Reference No."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="pl-10 pr-4 py-2 w-64 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              </div>
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={downloadCSV}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg shadow bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
-              title="Download CSV"
-            >
-              <Download className="h-5 w-5" />
-              Download
-            </button>
           </div>
+        </div>
 
-          {/* Mobile Card Layout */}
-          <div className="block lg:hidden">
-            <div className="space-y-4">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loading />
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative overflow-hidden rounded-md border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  Total Remitted
+                </p>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-[#0a0c37] dark:text-white">
+                    ₹{stats.totalRemitted.toFixed(2)}
+                  </span>
                 </div>
-              ) : remittances.length > 0 ? remittances.map((rem, idx) => (
-                activeTab === "remittance" ? (
-                  <div key={rem.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <div>
-                        <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">
-                          {rem.utrReference || "-"}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(rem.remittanceDate).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                        Remittance
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-xs mb-2">
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Collectable Value</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.collectableValue?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Net Off</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.netOffAmount?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Early COD</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.earlyCodCharge?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">COD Paid</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.codPaid?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Deduction</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{(rem.netOffAmount + rem.earlyCodCharge + (rem.otherDeductions || 0)).toFixed(2)}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Remark</div>
-                        <div className="text-gray-800 dark:text-gray-100">{rem.remarks || "-"}</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-end pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
-                      <button className="text-blue-600 hover:underline text-xs">Download</button>
-                    </div>
-                  </div>
-                ) : (
-                  // Net Off Card
-                  <div key={rem.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                      <div>
-                        <div className="font-semibold text-blue-700 dark:text-blue-300 text-sm">
-                          {rem.utrReference || "-"}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(rem.remittanceDate).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                        Net Off
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-xs mb-2">
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Collectable Value</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.collectableValue?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Net Off</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.netOffAmount?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Early COD</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.earlyCodCharge?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">COD Paid</div>
-                        <div className="font-semibold text-gray-800 dark:text-gray-100">₹{rem.codPaid?.toFixed(2) ?? "0.00"}</div>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-500 dark:text-gray-400">Remark</div>
-                        <div className="text-gray-800 dark:text-gray-100">{rem.remarks || "-"}</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-end pt-2 mt-2 border-t border-gray-200 dark:border-gray-600">
-                      <button className="text-blue-600 hover:underline text-xs">Download</button>
-                    </div>
-                  </div>
-                )
-              )) : (
-                <div className="py-12 text-center flex flex-col items-center">
-                  <Package className="h-12 w-12 mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
-                    No {activeTab === "remittance" ? "remittance" : "net off"} found
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Try adjusting your search or filters.
-                  </p>
-                </div>
-              )}
-              {/* Mobile Pagination */}
-              <div className="px-4 py-3 border-t bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="text-sm text-gray-700 dark:text-gray-400">
-                    Showing <span className="font-bold">{remittances.length}</span> of <span className="font-bold">{total}</span> entries
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                      disabled={page === 1}
-                    >
-                      Previous
-                    </button>
-                    <span className="px-3 py-1 rounded-md shadow border-blue-300 bg-blue-100 text-blue-700 text-sm font-bold dark:border-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                      {page}/{totalPages || 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      className="px-3 py-1 rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                      disabled={page === totalPages || totalPages === 0}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-emerald-50 dark:bg-emerald-900/30">
+                <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl hidden lg:block overflow-hidden shadow-lg bg-white dark:bg-gray-900">
-            {activeTab === 'remittance' && (
+          <div className="relative overflow-hidden rounded-md border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
+            <div className="flex items-center justify-between">
               <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-gray-200 dark:border-gray-800">
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
-                    <div className="text-sm font-medium mb-1">Total COD</div>
-                    <div className="text-2xl font-bold">
-                      ₹{summary ? (summary.totalCOD || 0).toFixed(2) : "0.00"}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
-                    <div className="text-sm font-medium mb-1">COD Available</div>
-                    <div className="text-2xl font-bold">
-                      ₹{summary ? (summary.codAvailable || 0).toFixed(2) : "0.00"}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-green-500 to-lime-500 text-white">
-                    <div className="text-sm font-medium mb-1">Deduction</div>
-                    <div className="text-2xl font-bold">
-                      ₹{summary ? (summary.deduction || 0).toFixed(2) : "0.00"}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 text-white">
-                    <div className="text-sm font-medium mb-1">COD Paid</div>
-                    <div className="text-2xl font-bold">
-                      ₹{summary ? (summary.codPaid || 0).toFixed(2) : "0.00"}
-                    </div>
-                  </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  Pending COD Total
+                </p>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-[#0a0c37] dark:text-white">
+                    ₹{stats.pendingCod.toFixed(2)}
+                  </span>
                 </div>
-
-                <div className="overflow-x-auto p-4">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">S.No.</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remittance Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">UTR/Reference</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Collectable Value</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net Off</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Early COD</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">COD Paid</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deduction</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remark</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                      {loading ? (
-                        <tr>
-                          <td colSpan={10} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            <Loading />
-                          </td>
-                        </tr>
-                      ) : remittances.length === 0 ? (
-                        <tr>
-                          <td colSpan={10} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            No data available in table
-                          </td>
-                        </tr>
-                      ) : (
-                        remittances.map((rem, idx) => (
-                          <tr key={rem.id}>
-                            <td className="px-4 py-3">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                            <td className="px-4 py-3">{new Date(rem.remittanceDate).toLocaleDateString()}</td>
-                            <td className="px-4 py-3">{rem.utrReference || "-"}</td>
-                            <td className="px-4 py-3">₹{rem.collectableValue.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{rem.netOffAmount.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{rem.earlyCodCharge.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{rem.codPaid.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{(rem.netOffAmount + rem.earlyCodCharge + (rem.otherDeductions || 0)).toFixed(2)}</td>
-                            <td className="px-4 py-3">{rem.remarks || "-"}</td>
-                            <td className="px-4 py-3">
-                              <button type='button' className="text-blue-600 cursor-pointer hover:underline text-xs">Download</button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                <p className="mt-1 text-[11px] font-medium text-gray-500">
+                  From {stats.pendingCount} delivered orders
+                </p>
               </div>
-            )}
 
-            {activeTab === 'netoff' && (
+              <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-blue-50 dark:bg-blue-900/30">
+                <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-md border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
+            <div className="flex items-center justify-between">
               <div>
-                <div className="overflow-x-auto p-4">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">S.No.</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net Off Settlement Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">UTR/Reference</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Collectable Value</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net Off</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Early COD</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">COD Paid</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Remarks</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Download</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                      {loading ? (
-                        <tr>
-                          <td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            <Loading />
-                          </td>
-                        </tr>
-                      ) : remittances.length === 0 ? (
-                        <tr>
-                          <td colSpan={9} className="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                            No data available in table
-                          </td>
-                        </tr>
-                      ) : (
-                        remittances.map((rem, idx) => (
-                          <tr key={rem.id}>
-                            <td className="px-4 py-3">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                            <td className="px-4 py-3">{new Date(rem.remittanceDate).toLocaleDateString()}</td>
-                            <td className="px-4 py-3">{rem.utrReference || "-"}</td>
-                            <td className="px-4 py-3">₹{rem.collectableValue.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{rem.netOffAmount.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{rem.earlyCodCharge.toFixed(2)}</td>
-                            <td className="px-4 py-3">₹{rem.codPaid.toFixed(2)}</td>
-                            <td className="px-4 py-3">{rem.remarks || "-"}</td>
-                            <td className="px-4 py-3">
-                              <button className="text-blue-600 hover:underline text-xs">Download</button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  Net Off Amount
+                </p>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-rose-500">
+                    - ₹{stats.pendingFreight.toFixed(2)}
+                  </span>
                 </div>
               </div>
-            )}
 
-            <div className="px-6 py-4 flex items-center justify-between border-t bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800">
-              <div className="text-sm text-gray-700 dark:text-gray-400">
-                Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, total)} of {total} entries
+              <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-rose-50 dark:bg-rose-900/30">
+                <TrendingDown className="h-6 w-6 text-rose-600 dark:text-rose-400" />
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1 cursor-pointer rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={page === 1}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-3 py-1 cursor-pointer rounded-md shadow border-gray-300 bg-white text-gray-700 text-sm hover:bg-opacity-80 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                  disabled={page === totalPages || totalPages === 0}
-                >
-                  Next
-                </button>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-md border border-emerald-200 bg-emerald-50 p-5 shadow-sm dark:border-emerald-900/30 dark:bg-emerald-900/10">
+            <div className="pointer-events-none absolute right-[-10%] top-[-10%] h-[120%] w-[120%] bg-gradient-to-br from-emerald-400/10 to-transparent" />
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                  Net Pending Payable
+                </p>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-emerald-700 dark:text-white">
+                    ₹{stats.pendingPayable.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-emerald-100 dark:bg-emerald-800/50">
+                <Wallet className="h-6 w-6 text-emerald-700 dark:text-emerald-300" />
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <div className="rounded-md border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-800 dark:bg-[#111827]">
+          <div className="flex items-center justify-between rounded-t-sm border-b border-gray-100 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+            <h3 className="flex items-center gap-2 text-[13px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              Settlement History
+            </h3>
+            <span className="text-[11px] font-medium text-gray-500">
+              Showing {historyData.length} records
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#0a0c37] text-[10px] font-black uppercase tracking-widest text-white">
+                  <tr>
+                    <th className="px-6 py-4 text-center">Date</th>
+                    <th className="px-6 py-4">UTR Reference</th>
+                    <th className="px-6 py-4">Orders</th>
+                    <th className="px-6 py-4">Total COD</th>
+                    <th className="px-6 py-4">Net Off</th>
+                    <th className="px-6 py-4 text-right">Amount Credited</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
+                  {historyData.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-16 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-400">
+                          <Wallet className="mb-3 h-12 w-12 text-gray-300 dark:text-gray-600" />
+                          <p className="text-[13px] font-bold text-gray-600 dark:text-gray-400">
+                            No Remittance History
+                          </p>
+                          <p className="text-[11px]">
+                            Your settlements will appear here once processed by the admin.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    historyData.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/20"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="font-bold text-gray-700 dark:text-gray-200">
+                              {format(new Date(item.remittanceDate), "dd MMM yyyy")}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-emerald-600" />
+                            <span className="font-mono font-bold uppercase text-[#0a0c37] dark:text-gray-200">
+                              {item.utrReference}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="rounded-sm bg-blue-50 px-2 py-1 text-[12px] font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                            {item._count.orders} Orders
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-[13px] font-bold text-gray-600 dark:text-gray-300">
+                          ₹{item.collectableValue.toFixed(2)}
+                        </td>
+
+                        <td className="px-6 py-4 text-[13px] font-bold text-rose-500">
+                          - ₹{item.netOffAmount.toFixed(2)}
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1 text-[15px] font-black tracking-tight text-emerald-600 dark:text-emerald-400">
+                            <ArrowDownToLine className="h-4 w-4" />
+                            ₹{item.codPaid.toFixed(2)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
-};
-
-export default RemittancePage;
+}

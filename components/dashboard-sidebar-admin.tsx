@@ -1,13 +1,34 @@
 "use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Truck, Info, Calculator, ChevronRight, Ticket, Users, UserCheck, Plus, ListFilter, User, Newspaper, LogOut, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  Calculator,
+  ChevronRight,
+  Info,
+  LogOut,
+  Newspaper,
+  Package,
+  Ticket,
+  Truck,
+  UserCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import React, { useEffect, useState } from "react";
 import LogoutButton from "./logout";
 
-function NavItem({ icon, label, href, active = false, collapsed }: {
+function NavItem({
+  icon,
+  label,
+  href,
+  active = false,
+  collapsed,
+}: {
   icon: React.ReactNode;
   label: string;
   href: string;
@@ -23,21 +44,32 @@ function NavItem({ icon, label, href, active = false, collapsed }: {
         collapsed ? "justify-center" : ""
       )}
     >
-      <div className={cn("flex font-bold items-center w-full", collapsed ? "justify-center" : "")}>
-        <div className={cn("shrink-0", active ? "text-[#252525]" : "text-[#f9fafb]")}>
+      <div
+        className={cn(
+          "flex font-bold items-center w-full",
+          collapsed ? "justify-center" : ""
+        )}
+      >
+        <div
+          className={cn(
+            "shrink-0",
+            active ? "text-[#252525]" : "text-[#f9fafb]"
+          )}
+        >
           {React.isValidElement(icon)
             ? React.cloneElement(
-              icon as React.ReactElement<{ className?: string }>,
-              {
-                className: cn(
-                  (icon.props as { className?: string }).className,
-                  "h-5 w-5",
-                  active ? "text-[#252525]" : "text-[#f9fafb]"
-                )
-              }
-            )
+                icon as React.ReactElement<{ className?: string }>,
+                {
+                  className: cn(
+                    (icon.props as { className?: string }).className,
+                    "h-5 w-5",
+                    active ? "text-[#252525]" : "text-[#f9fafb]"
+                  ),
+                }
+              )
             : icon}
         </div>
+
         <span
           className={cn(
             "ml-3 whitespace-nowrap transition-all duration-300 w-full",
@@ -64,14 +96,17 @@ export default function DashboardSidebarAdmin() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
+
+  const toggleSidebar = () => setSidebarCollapsed((prev) => !prev);
+
   return (
     <aside
       className={cn(
         "bg-[#0a0c37] text-[#f9fafb] h-full transition-all duration-300 ease-in-out flex flex-col",
-        sidebarCollapsed ? "w-16" : "w-50",
+        sidebarCollapsed ? "w-16" : "w-50"
       )}
     >
       <Button
@@ -89,7 +124,8 @@ export default function DashboardSidebarAdmin() {
       >
         <ChevronRight className="h-5 w-5" />
       </Button>
-      <nav className="flex-1 pt-3 overflow-y-auto hide-scrollbar">
+
+      <nav className="flex-1 overflow-y-auto pt-3 hide-scrollbar">
         <NavItem
           icon={<Package className="h-5 w-5" />}
           label="Dashboard"
@@ -97,6 +133,7 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<Users className="h-5 w-5" />}
           label="Users"
@@ -104,6 +141,7 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/users"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<UserCheck className="h-5 w-5" />}
           label="Kyc"
@@ -111,11 +149,20 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/kyc"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<Truck className="h-5 w-5" />}
           label="Orders"
           href="/admin/dashboard/all-orders"
           active={pathname === "/admin/dashboard/all-orders"}
+          collapsed={sidebarCollapsed}
+        />
+
+        <NavItem
+          icon={<Wallet className="h-5 w-5" />}
+          label="COD Remittance"
+          href="/admin/dashboard/remittance"
+          active={pathname === "/admin/dashboard/remittance"}
           collapsed={sidebarCollapsed}
         />
 
@@ -134,6 +181,7 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/rate-calculator"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<Ticket className="h-5 w-5" />}
           label="Coupon"
@@ -141,6 +189,7 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/coupon"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<Truck className="h-5 w-5" />}
           label="Shipping Rates"
@@ -148,6 +197,7 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/shipping-rates"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<Newspaper className="h-5 w-5" />}
           label="News"
@@ -155,6 +205,7 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/news"}
           collapsed={sidebarCollapsed}
         />
+
         <NavItem
           icon={<AlertCircle className="h-5 w-5" />}
           label="Global Banner"
@@ -162,18 +213,26 @@ export default function DashboardSidebarAdmin() {
           active={pathname === "/admin/dashboard/banner"}
           collapsed={sidebarCollapsed}
         />
+
         <div
           className={cn(
             "flex items-center px-4 py-1 mt-2 cursor-pointer rounded-l-full transition-colors hover:bg-indigo-900",
-            sidebarCollapsed ? "justify-center" : "",
+            sidebarCollapsed ? "justify-center" : ""
           )}
         >
-          <div className={cn("flex font-bold items-center w-full", sidebarCollapsed ? "justify-center" : "")}>
+          <div
+            className={cn(
+              "flex font-bold items-center w-full",
+              sidebarCollapsed ? "justify-center" : ""
+            )}
+          >
             <LogOut className="h-5 w-5 shrink-0 cursor-pointer" />
             <div
               className={cn(
                 "ml-3 whitespace-nowrap transition-all duration-300 w-full",
-                sidebarCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-xs",
+                sidebarCollapsed
+                  ? "opacity-0 max-w-0 overflow-hidden"
+                  : "opacity-100 max-w-xs"
               )}
             >
               <LogoutButton
@@ -184,14 +243,20 @@ export default function DashboardSidebarAdmin() {
           </div>
         </div>
       </nav>
-      <div className="p-4 border-t border-indigo-900">
+
+      <div className="border-t border-indigo-900 p-4">
         <Button
           variant="ghost"
           size="sm"
           className="w-full cursor-pointer justify-center text-[#f9fafb] hover:bg-indigo-900"
           onClick={toggleSidebar}
         >
-          <ChevronRight className={cn("h-5 w-5 transition-transform", sidebarCollapsed ? "rotate-180" : "")} />
+          <ChevronRight
+            className={cn(
+              "h-5 w-5 transition-transform",
+              sidebarCollapsed ? "rotate-180" : ""
+            )}
+          />
           {!sidebarCollapsed && <span className="ml-2">Collapse</span>}
         </Button>
       </div>

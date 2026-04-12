@@ -1,79 +1,77 @@
-import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 interface TokenDetailsType {
-  userId: number;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  iat: number;
   exp: number;
 }
 
-export async function GET(req: NextRequest): Promise<Response> {
+export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("userToken")?.value;
+
     if (!token) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const decoded = jwtDecode<TokenDetailsType>(token);
-    if (decoded.exp * 1000 < Date.now()) {
-      return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
-    }
+    const userId = parseInt(decoded.userId);
 
-    const userId = decoded.userId;
- 
-    const url = new URL(req.url);
-    const page = parseInt(url.searchParams.get("page") || "1");
-    const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
- 
-    const [total, remittances] = await Promise.all([
-      prisma.remittance.count({ where: { userId } }),
-      prisma.remittance.findMany({
-        where: { userId },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { remittanceDate: "desc" },
-        include: { orders: true },
-      }),
-    ]);
-
-    const summary = await prisma.remittance.aggregate({
-      _sum: {
-        collectableValue: true,
-        codPaid: true,
-        netOffAmount: true,
-        earlyCodCharge: true,
-        otherDeductions: true,
-      },
+    // Fetch Completed Remittances
+    const history = await prisma.remittance.findMany({
       where: { userId },
+      include: {
+        _count: { select: { orders: true } },
+      },
+      orderBy: { createdAt: "desc" },
     });
 
-    return new Response(
-      JSON.stringify({
-        total,
-        page,
-        pageSize,
-        remittances,
-        summary: {
-          totalCOD: summary._sum.collectableValue || 0,
-          codPaid: summary._sum.codPaid || 0,
-          deduction:
-            (summary._sum.netOffAmount || 0) +
-            (summary._sum.earlyCodCharge || 0) +
-            (summary._sum.otherDeductions || 0),
-          codAvailable:
-            (summary._sum.collectableValue || 0) -
-            ((summary._sum.netOffAmount || 0) +
-              (summary._sum.earlyCodCharge || 0) +
-              (summary._sum.otherDeductions || 0) +
-              (summary._sum.codPaid || 0)),
+    // Calculate pending stats
+    const pendingOrders = await prisma.order.findMany({
+      where: {
+        userId,
+        paymentMode: { equals: "COD", mode: "insensitive" },
+        status: "delivered",
+        remittanceId: null,
+      },
+      select: {
+        codAmount: true,
+        shippingCost: true,
+      },
+    });
+
+    let pendingCod = 0;
+    let pendingFreight = 0;
+    pendingOrders.forEach((o) => {
+      pendingCod += o.codAmount || 0;
+      pendingFreight += o.shippingCost || 0;
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        history,
+        stats: {
+          pendingCod,
+          pendingFreight,
+          pendingPayable: pendingCod - pendingFreight,
+          pendingCount: pendingOrders.length,
+          totalRemitted: history.reduce((sum, item) => sum + item.codPaid, 0),
         },
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error("Error fetching remittance data:", error);
-    return new Response(JSON.stringify({ error: "Failed to fetch remittance data" }), { status: 500 });
+      },
+    }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error fetching user remittance:", error);
+    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 }
