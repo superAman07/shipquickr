@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// GET all completed remittances
+// GET all completed remittances (with linked order details for expandable rows)
 export async function GET(req: NextRequest) {
     try {
         const remittances = await prisma.remittance.findMany({
@@ -14,6 +14,17 @@ export async function GET(req: NextRequest) {
                         firstName: true,
                         lastName: true,
                         email: true,
+                    },
+                },
+                orders: {
+                    select: {
+                        id: true,
+                        orderId: true,
+                        awbNumber: true,
+                        codAmount: true,
+                        shippingCost: true,
+                        courierName: true,
+                        customerName: true,
                     },
                 },
                 _count: {
@@ -35,7 +46,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-// POST process a new remittance for a user
+// POST — process a new remittance for a user
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
@@ -56,16 +67,14 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Run within a transaction to ensure atomic execution
         const newRemittance = await prisma.$transaction(async (tx) => {
-            // 1. Fetch and validate the orders
             const orders = await tx.order.findMany({
                 where: {
                     id: { in: orderIds },
                     userId: userId,
                     paymentMode: { equals: "COD", mode: "insensitive" },
                     status: "delivered",
-                    remittanceId: null, // Ensure not already remitted
+                    remittanceId: null,
                 },
             });
 
@@ -73,9 +82,8 @@ export async function POST(req: NextRequest) {
                 throw new Error("One or more orders are invalid or already remitted.");
             }
 
-            // 2. Calculate values
             let collectableValue = 0;
-            let netOffAmount = 0; // Freight/Shipping costs deducted
+            let netOffAmount = 0;
 
             orders.forEach((order) => {
                 collectableValue += order.codAmount || 0;
@@ -84,7 +92,6 @@ export async function POST(req: NextRequest) {
 
             const codPaid = collectableValue - netOffAmount - earlyCodCharge - otherDeductions;
 
-            // 3. Create the Remittance record
             const remittance = await tx.remittance.create({
                 data: {
                     userId,
@@ -110,6 +117,82 @@ export async function POST(req: NextRequest) {
         console.error("Error processing remittance:", error);
         return NextResponse.json(
             { success: false, error: error.message || "Failed to process remittance" },
+            { status: 500 }
+        );
+    }
+}
+
+// PUT — edit an existing remittance (UTR, date, remarks)
+export async function PUT(req: NextRequest) {
+    try {
+        const body = await req.json();
+        const { remittanceId, utrReference, remittanceDate, remarks } = body;
+
+        if (!remittanceId) {
+            return NextResponse.json(
+                { success: false, error: "Missing remittanceId." },
+                { status: 400 }
+            );
+        }
+
+        const existing = await prisma.remittance.findUnique({ where: { id: remittanceId } });
+        if (!existing) {
+            return NextResponse.json(
+                { success: false, error: "Remittance record not found." },
+                { status: 404 }
+            );
+        }
+
+        const updated = await prisma.remittance.update({
+            where: { id: remittanceId },
+            data: {
+                ...(utrReference && { utrReference }),
+                ...(remittanceDate && { remittanceDate: new Date(remittanceDate) }),
+                ...(remarks !== undefined && { remarks }),
+            },
+        });
+
+        return NextResponse.json({ success: true, data: updated }, { status: 200 });
+    } catch (error: any) {
+        console.error("Error updating remittance:", error);
+        return NextResponse.json(
+            { success: false, error: error.message || "Failed to update remittance" },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE — reverse a remittance (unlink orders, delete record)
+export async function DELETE(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const remittanceId = parseInt(searchParams.get("id") || "0");
+
+        if (!remittanceId) {
+            return NextResponse.json(
+                { success: false, error: "Missing remittance id." },
+                { status: 400 }
+            );
+        }
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Unlink all orders from this remittance
+            await tx.order.updateMany({
+                where: { remittanceId },
+                data: { remittanceId: null },
+            });
+
+            // 2. Delete the remittance record itself
+            await tx.remittance.delete({
+                where: { id: remittanceId },
+            });
+        });
+
+        return NextResponse.json({ success: true, message: "Remittance reversed successfully." }, { status: 200 });
+    } catch (error: any) {
+        console.error("Error reversing remittance:", error);
+        return NextResponse.json(
+            { success: false, error: error.message || "Failed to reverse remittance" },
             { status: 500 }
         );
     }
