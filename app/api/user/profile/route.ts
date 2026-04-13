@@ -42,6 +42,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // --- AUTO-FIX LOGIC FOR STUCK KYC STATUS ---
+    if (user.kycStatus === "pending" && !user.kycDetail) {
+      await prisma.user.update({
+        where: { id: decoded.userId },
+        data: { kycStatus: "none" }
+      });
+      user.kycStatus = "none";
+    }
+
     return NextResponse.json({ profile: user }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
