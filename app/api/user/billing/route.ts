@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from '@prisma/client'; 
+import { Prisma } from '@prisma/client';
 
 interface TokenDetailsType {
   userId: string;
@@ -35,63 +35,63 @@ export async function GET(req: NextRequest) {
     let addDateFilter = false;
 
     if (startDateStr) {
-        try {
-            createdAtFilter.gte = new Date(startDateStr);
-            addDateFilter = true;
-        } catch (e) { /* Ignore invalid date */ }
+      try {
+        createdAtFilter.gte = new Date(startDateStr);
+        addDateFilter = true;
+      } catch (e) { /* Ignore invalid date */ }
     }
     if (endDateStr) {
-        try {
-            const endDate = new Date(endDateStr);
-            endDate.setHours(23, 59, 59, 999);  
-            createdAtFilter.lte = endDate;
-            addDateFilter = true;
-        } catch (e) { /* Ignore invalid date */ }
+      try {
+        const endDate = new Date(endDateStr);
+        endDate.setHours(23, 59, 59, 999);
+        createdAtFilter.lte = endDate;
+        addDateFilter = true;
+      } catch (e) { /* Ignore invalid date */ }
     }
 
     if (addDateFilter) {
-        where.createdAt = createdAtFilter;
+      where.createdAt = createdAtFilter;
     }
     // --- End Fixed Date Filtering ---
 
 
     if (search) {
-      where.OR = [ 
+      where.OR = [
         { merchantTransactionId: { contains: search, mode: 'insensitive' } },
         { providerReferenceId: { contains: search, mode: 'insensitive' } },
         { order: { awbNumber: { contains: search, mode: 'insensitive' } } },
       ];
-       const searchAsInt = parseInt(search);
-       if (!isNaN(searchAsInt)) {
-           where.OR.push({ id: searchAsInt });
-       }
+      const searchAsInt = parseInt(search);
+      if (!isNaN(searchAsInt)) {
+        where.OR.push({ id: searchAsInt });
+      }
     }
 
     const [transactions, totalCount, wallet] = await Promise.all([
-        prisma.transaction.findMany({
-            where: where,
-            orderBy: { createdAt: "desc" },
-            skip: (page - 1) * pageSize,
-            take: pageSize,
-            include: {
-                order: {
-                    select: {
-                        awbNumber: true,
-                        courierName: true,
-                        billableWeight: true,
-                        status: true,
-                        remarks: true,
-                        orderId: true,
-                        paymentMode: true,
-                    },
-                },
+      prisma.transaction.findMany({
+        where: where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: {
+          order: {
+            select: {
+              awbNumber: true,
+              courierName: true,
+              billableWeight: true,
+              status: true,
+              remarks: true,
+              orderId: true,
+              paymentMode: true,
             },
-        }),
-        prisma.transaction.count({ where: where }),
-        prisma.wallet.findUnique({
-            where: { userId: userId },
-            select: { balance: true },
-        })
+          },
+        },
+      }),
+      prisma.transaction.count({ where: where }),
+      prisma.wallet.findUnique({
+        where: { userId: userId },
+        select: { balance: true },
+      })
     ]);
 
 
@@ -100,11 +100,12 @@ export async function GET(req: NextRequest) {
       .map((tx) => ({
         id: tx.id,
         date: tx.createdAt,
-        amount: tx.amount, 
+        amount: tx.amount,
         transactionId: tx.merchantTransactionId,
         bankTransactionId: tx.providerReferenceId,
         type: tx.type,
         status: tx.status ?? "Unknown",
+        receiptUrl: tx.receiptUrl,
       }));
 
     const shippingCharges = transactions
@@ -120,7 +121,7 @@ export async function GET(req: NextRequest) {
         paymentType: tx.order?.paymentMode ?? "N/A",
         type: tx.type,
         weight: tx.order?.billableWeight ?? "N/A",
-        zone: "N/A", 
+        zone: "N/A",
         status: tx.status ?? tx.order?.status ?? "Processed",
         remarks: tx.order?.remarks ?? "-",
       }));
@@ -138,7 +139,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("Error fetching billing data:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        return NextResponse.json({ error: "Database error occurred." }, { status: 500 });
+      return NextResponse.json({ error: "Database error occurred." }, { status: 500 });
     }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }

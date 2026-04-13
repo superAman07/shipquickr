@@ -2,16 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
-// Ensure accurate environment variables
-const s3 = new S3Client({
-  region: process.env.AWS_REGION as string,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-  },
-});
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 interface TokenDetailsType {
   userId: string;
@@ -44,24 +36,26 @@ export async function POST(req: NextRequest) {
     const amount = Number(amountStr);
     let receiptUrl = null;
 
-    // Handle Optional File Upload to S3
+    // Handle Optional File Upload to Local Storage (Hostinger Compatible)
     if (file && file.size > 0) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const fileName = `manual-recharge-${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+      const ext = path.extname(file.name);
+      const fileName = `manual-recharge-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
 
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: process.env.S3_UPLOAD_BUCKET_NAME as string,
-          Key: fileName,
-          Body: buffer,
-          ContentType: file.type,
-          // ACL: "public-read", // Uncomment depending on your bucket permissions
-        })
-      );
+      const isProd = process.env.NODE_ENV === "production";
+      const uploadDir = isProd
+        ? path.join(process.cwd(), "..", "storage", "uploads", "recharge")
+        : path.join(process.cwd(), "storage", "uploads", "recharge");
 
-      // Build the S3 Object URL
-      receiptUrl = `https://${process.env.S3_UPLOAD_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+      // Ensure the directory exists
+      await mkdir(uploadDir, { recursive: true });
+
+      // Save the file
+      const filePath = path.join(uploadDir, fileName);
+      await writeFile(filePath, buffer);
+
+      receiptUrl = `/api/uploads/recharge/${fileName}`;
     }
 
     // Process DB changes atomically
