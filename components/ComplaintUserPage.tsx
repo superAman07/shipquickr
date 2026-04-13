@@ -193,7 +193,6 @@ export default function ComplaintUserPage() {
               >
                 Clear
               </Button>
-
               <Button
                 type="submit"
                 size="sm"
