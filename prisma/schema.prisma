@@ -20,7 +20,7 @@ model User {
   merchantApiKey        String?                 @unique
   webhookUrl            String?
   createdAt             DateTime                @default(now())
-  kycStatus             KycStatus               @default(pending)
+  kycStatus             KycStatus               @default(none)
   kycDetail             KycDetail?
   orders                Order[]
   remittances           Remittance[]
