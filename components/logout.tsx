@@ -18,6 +18,8 @@ export default function LogoutButton({propUser,propStyle, className}:{ propUser:
     try {
       const res = await axios.post("/api/auth/logout",{ userType: propUser })
       if (res.status === 200) {
+        localStorage.clear();
+        sessionStorage.clear();
         router.push(`/${propUser}/auth/login`)
       }
     } catch (err) {
