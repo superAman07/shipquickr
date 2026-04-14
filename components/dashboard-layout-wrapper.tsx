@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import Navbar from "./NavBar";
 import DashboardSidebarUser from "./dashboard-sidebar-user";
 import DashboardSidebarAdmin from "./dashboard-sidebar-admin";
-import WhatsAppChat from "./WhatsAppChat";
 
 interface DashboardLayoutWrapperProps {
   userRole: string;
@@ -61,8 +60,6 @@ export default function DashboardLayoutWrapper({
           </div>
         </div>
       </div>
-
-      <WhatsAppChat />
     </>
   );
 }

@@ -1,30 +1,31 @@
-import React from "react"
+import React from "react";
 import {
-  Package,
-  Truck,
-  Info,
-  Calculator,
-  TrendingUp,
   AlertCircle,
-} from "lucide-react"
-import Link from "next/link"
-import { cookies } from "next/headers"
-import { jwtDecode } from "jwt-decode"
+  Calculator,
+  Info,
+  Package,
+  TrendingUp,
+  Truck,
+} from "lucide-react";
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { jwtDecode } from "jwt-decode";
 
-import DashboardWelcome from "@/components/DashboardWelcome"
-import DashboardHorizontalNavUser from "@/components/DashboardHorizontalNav-user"
-import NewsSection from "@/components/NewsSectionUser"
-import { prisma } from "@/lib/prisma"
-import ShipmentChart from "@/components/ShipmentChart"
-import { KycAlertBanner } from "@/components/ui/kyc-alert-banner"
+import DashboardHorizontalNavUser from "@/components/DashboardHorizontalNav-user";
+import DashboardWelcome from "@/components/DashboardWelcome";
+import NewsSection from "@/components/NewsSectionUser";
+import ShipmentChart from "@/components/ShipmentChart";
+import { KycAlertBanner } from "@/components/ui/kyc-alert-banner";
+import WhatsAppChat from "@/components/WhatsAppChat";
+import { prisma } from "@/lib/prisma";
 
 interface ShipmentCardProps {
-  title: string
-  value: string
-  info: string
-  color: string
-  icon: React.ReactNode
-  link: string
+  title: string;
+  value: string;
+  info: string;
+  color: string;
+  icon: React.ReactNode;
+  link: string;
 }
 
 function ShipmentCard({
@@ -54,37 +55,37 @@ function ShipmentCard({
 
       <p className="mt-2 text-xs opacity-90 sm:mt-4 sm:text-sm">{info}</p>
     </div>
-  )
+  );
 }
 
 interface StatusCardProps {
-  count: string
-  percentage: string
-  status: string
-  color: string
+  count: string;
+  percentage: string;
+  status: string;
+  color: string;
 }
 
 const getProgressBarColor = (status: string): string => {
-  const lowerStatus = status.toLowerCase()
+  const lowerStatus = status.toLowerCase();
 
-  if (lowerStatus.includes("unshipped")) return "bg-slate-400 dark:bg-slate-500"
-  if (lowerStatus.includes("pickup scheduled")) return "bg-rose-500"
+  if (lowerStatus.includes("unshipped")) return "bg-slate-400 dark:bg-slate-500";
+  if (lowerStatus.includes("pickup scheduled")) return "bg-rose-500";
   if (lowerStatus.includes("in-transit") && !lowerStatus.includes("rto"))
-    return "bg-amber-500"
+    return "bg-amber-500";
   if (lowerStatus.includes("delivered") && !lowerStatus.includes("rto"))
-    return "bg-green-500"
-  if (lowerStatus.includes("un-delivered")) return "bg-sky-500"
-  if (lowerStatus.includes("ofd")) return "bg-red-600"
-  if (lowerStatus.includes("rto in-transit")) return "bg-orange-500"
-  if (lowerStatus.includes("rto delivered")) return "bg-lime-500"
-  if (lowerStatus.includes("lost")) return "bg-neutral-500"
+    return "bg-green-500";
+  if (lowerStatus.includes("un-delivered")) return "bg-sky-500";
+  if (lowerStatus.includes("ofd")) return "bg-red-600";
+  if (lowerStatus.includes("rto in-transit")) return "bg-orange-500";
+  if (lowerStatus.includes("rto delivered")) return "bg-lime-500";
+  if (lowerStatus.includes("lost")) return "bg-neutral-500";
 
-  return "bg-indigo-500"
-}
+  return "bg-indigo-500";
+};
 
 function StatusCard({ count, percentage, status, color }: StatusCardProps) {
-  const progressBarColor = getProgressBarColor(status)
-  const displayCount = `${count}(${percentage})`
+  const progressBarColor = getProgressBarColor(status);
+  const displayCount = `${count}(${percentage})`;
 
   return (
     <div
@@ -107,54 +108,54 @@ function StatusCard({ count, percentage, status, color }: StatusCardProps) {
         />
       </div>
     </div>
-  )
+  );
 }
 
 interface TokenDetailsType {
-  userId: string
-  firstName: string
-  email: string
-  role: string
+  userId: string;
+  firstName: string;
+  email: string;
+  role: string;
 }
 
 export default async function Dashboard() {
   const activeBanner = await prisma.globalBanner.findFirst({
     where: { isActive: true },
     orderBy: { updatedAt: "desc" },
-  })
+  });
 
-  const cookieStore = await cookies()
-  const token = cookieStore.get("userToken")?.value
+  const cookieStore = await cookies();
+  const token = cookieStore.get("userToken")?.value;
 
-  let firstName = "User"
-  let userId = ""
+  let firstName = "User";
+  let userId = "";
 
   if (token) {
     try {
-      const decoded = jwtDecode<TokenDetailsType>(token)
-      firstName = decoded.firstName
-      userId = decoded.userId
+      const decoded = jwtDecode<TokenDetailsType>(token);
+      firstName = decoded.firstName;
+      userId = decoded.userId;
     } catch (error) {
-      console.error("Failed to decode token:", error)
+      console.error("Failed to decode token:", error);
     }
   }
 
-  let statusCounts: { [key: string]: number } = {}
-  let totalShipments = 0
-  let todayShipments = 0
-  let yesterdayShipments = 0
-  let totalLoad = 0
-  let avgShipmentCost = 0
+  let statusCounts: Record<string, number> = {};
+  let totalShipments = 0;
+  let todayShipments = 0;
+  let yesterdayShipments = 0;
+  let totalLoad = 0;
+  let avgShipmentCost = 0;
 
   if (userId) {
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
     const orderStats = await prisma.order.findMany({
       where: {
@@ -167,31 +168,31 @@ export default async function Dashboard() {
         physicalWeight: true,
         shippingCost: true,
       },
-    })
+    });
 
-    totalShipments = orderStats.length
-    let shippedOrdersCount = 0
+    totalShipments = orderStats.length;
+    let shippedOrdersCount = 0;
 
     orderStats.forEach((order) => {
-      statusCounts[order.status] = (statusCounts[order.status] || 0) + 1
+      statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
 
-      const orderDate = new Date(order.createdAt)
+      const orderDate = new Date(order.createdAt);
       if (orderDate >= today) {
-        todayShipments++
+        todayShipments++;
       } else if (orderDate >= yesterday && orderDate < today) {
-        yesterdayShipments++
+        yesterdayShipments++;
       }
 
-      totalLoad += Number(order.physicalWeight || 0)
+      totalLoad += Number(order.physicalWeight || 0);
 
       if (order.shippingCost !== null && order.shippingCost > 0) {
-        avgShipmentCost += Number(order.shippingCost)
-        shippedOrdersCount++
+        avgShipmentCost += Number(order.shippingCost);
+        shippedOrdersCount++;
       }
-    })
+    });
 
     if (shippedOrdersCount > 0) {
-      avgShipmentCost /= shippedOrdersCount
+      avgShipmentCost /= shippedOrdersCount;
     }
   }
 
@@ -236,17 +237,17 @@ export default async function Dashboard() {
       icon: <Calculator className="h-6 w-6 text-white" />,
       link: "#",
     },
-  ]
+  ];
 
   const getStatusCount = (statuses: string[]) => {
-    return statuses.reduce((acc, status) => acc + (statusCounts[status] || 0), 0)
-  }
+    return statuses.reduce((acc, status) => acc + (statusCounts[status] || 0), 0);
+  };
 
   const calculatePercentage = (count: number) => {
     return totalShipments > 0
       ? `${((count / totalShipments) * 100).toFixed(0)}%`
-      : "0%"
-  }
+      : "0%";
+  };
 
   const statusCardData = [
     {
@@ -294,37 +295,37 @@ export default async function Dashboard() {
       dbStatuses: ["lost_shipment"],
       color: "bg-white dark:bg-gray-800",
     },
-  ]
+  ];
 
   const statusCards = statusCardData.map((card) => {
-    const count = getStatusCount(card.dbStatuses)
+    const count = getStatusCount(card.dbStatuses);
 
     return {
       count: count.toString(),
       percentage: calculatePercentage(count),
       status: card.status,
       color: card.color,
-    }
-  })
+    };
+  });
 
   const chartData = statusCards
     .filter((card) => Number(card.count) > 0)
     .map((card) => {
-      let hexColor = "#818cf8"
+      let hexColor = "#818cf8";
 
-      if (card.color.includes("gray")) hexColor = "#9ca3af"
-      if (card.color.includes("red")) hexColor = "#f43f5e"
-      if (card.color.includes("yellow")) hexColor = "#f59e0b"
-      if (card.color.includes("green")) hexColor = "#10b981"
-      if (card.color.includes("blue")) hexColor = "#0ea5e9"
-      if (card.color.includes("purple")) hexColor = "#a855f7"
+      if (card.color.includes("gray")) hexColor = "#9ca3af";
+      if (card.color.includes("red")) hexColor = "#f43f5e";
+      if (card.color.includes("yellow")) hexColor = "#f59e0b";
+      if (card.color.includes("green")) hexColor = "#10b981";
+      if (card.color.includes("blue")) hexColor = "#0ea5e9";
+      if (card.color.includes("purple")) hexColor = "#a855f7";
 
       return {
         name: card.status,
         value: Number(card.count),
         color: hexColor,
-      }
-    })
+      };
+    });
 
   return (
     <main className="px-4 pb-8 md:px-8">
@@ -354,7 +355,7 @@ export default async function Dashboard() {
           <div className="flex flex-col gap-6 lg:w-2/3">
             <KycAlertBanner />
 
-            <div className="border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900 rounded-lg">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-[#495057] dark:text-gray-100">
                   Shipment Details
@@ -372,7 +373,7 @@ export default async function Dashboard() {
             </div>
 
             {totalShipments > 0 && (
-              <div className="border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900 rounded-lg">
+              <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
                 <h2 className="mb-6 text-xl font-bold text-[#495057] dark:text-gray-100">
                   Shipment Analytics
                 </h2>
@@ -389,6 +390,8 @@ export default async function Dashboard() {
           </div>
         </div>
       </div>
+
+      <WhatsAppChat />
     </main>
-  )
+  );
 }
