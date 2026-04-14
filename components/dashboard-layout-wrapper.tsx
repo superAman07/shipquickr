@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "./NavBar";
 import DashboardSidebarUser from "./dashboard-sidebar-user";
 import DashboardSidebarAdmin from "./dashboard-sidebar-admin";
+import WhatsAppChat from "./WhatsAppChat";
 
 interface DashboardLayoutWrapperProps {
   userRole: string;
@@ -34,7 +35,7 @@ export default function DashboardLayoutWrapper({
       />
 
       {/* REMOVED overflow-x-hidden here to restore sticky behaviour */}
-      <div className="flex bg-gray-50 dark:bg-[#10162A] pt-16">
+      <div className="flex bg-gray-50 pt-16 dark:bg-[#10162A]">
         <div className="pointer-events-none absolute left-0 top-0 z-0 h-[180px] w-full bg-linear-to-r from-[#0a0c37] to-[#0a0c37] sm:hidden" />
 
         {pathname === "/user/dashboard" && (
@@ -60,6 +61,8 @@ export default function DashboardLayoutWrapper({
           </div>
         </div>
       </div>
+
+      <WhatsAppChat />
     </>
   );
 }
