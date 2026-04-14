@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   CheckSquare,
   X,
+  Info,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
@@ -647,166 +648,158 @@ const UnifiedOrdersPage: React.FC = () => {
                 {paginatedOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm transition-transform active:scale-[0.99] dark:border-gray-700 dark:bg-gray-800"
+                    className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800"
                     onClick={() => openDrawer(order)}
                   >
-                    <div className="mb-3 flex items-start justify-between">
+                    {/* Header: ID, Date and Status */}
+                    <div className="mb-4 flex items-start justify-between">
                       <div className="min-w-0 flex-1">
-                        <div className="mb-0.5 break-all text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                          {order.orderId}
+                        <div className="flex items-center gap-2">
+                          <div className="break-all text-[13px] font-black tracking-tight text-indigo-700 dark:text-indigo-400">
+                            {order.orderId}
+                          </div>
                         </div>
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                          {new Date(order.orderDate).toLocaleDateString()}
+                        <div className="mt-0.5 text-[10px] font-medium text-gray-400 dark:text-gray-500">
+                          {new Date(order.orderDate).toLocaleDateString(undefined, {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
                         </div>
                       </div>
                       <SBadge status={order.status} />
                     </div>
 
-                    <div className="mb-3 grid grid-cols-2 gap-3 text-sm">
+                    {/* Params Grid: Customer & Payment */}
+                    <div className="mb-4 grid grid-cols-2 gap-4 border-b border-gray-50 pb-4 dark:border-gray-700/50">
                       <div>
-                        <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                        <div className="mb-1 text-[9px] font-black uppercase tracking-[0.1em] text-gray-400">
                           Customer
                         </div>
-                        <div className="font-medium text-gray-800 dark:text-gray-100">
+                        <div className="text-[12px] font-bold text-gray-800 dark:text-gray-100">
                           {order.customerName}
                         </div>
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                        <div className="text-[11px] font-medium text-gray-500">
                           {order.mobile}
                         </div>
                       </div>
 
                       <div>
-                        <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                          Payment
+                        <div className="mb-1 text-[9px] font-black uppercase tracking-[0.1em] text-gray-400">
+                          Payment & Value
                         </div>
-                        <div className="font-medium text-gray-800 dark:text-gray-100">
+                        <div className="text-[12px] font-bold text-gray-800 dark:text-gray-100">
                           {order.paymentMode}
+                        </div>
+                        <div className="text-[12px] font-black text-indigo-600 dark:text-indigo-400">
+                          ₹{order.items?.reduce((sum, i) => sum + i.orderValue, 0).toLocaleString() || "0"}
                         </div>
                       </div>
                     </div>
 
-                    <div className="mb-3 grid grid-cols-2 gap-3 text-sm">
+                    {/* Params Grid: Pickup & Address */}
+                    <div className="mb-4 grid grid-cols-2 gap-4">
                       <div>
-                        <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                          Pickup
+                        <div className="mb-1 text-[9px] font-black uppercase tracking-[0.1em] text-gray-400">
+                          Pickup Location
                         </div>
-                        <div className="text-xs text-gray-700 dark:text-gray-300">
+                        <div className="text-[11px] font-bold text-gray-700 dark:text-gray-300">
                           {order.warehouse?.warehouseName || "N/A"}
                         </div>
                       </div>
 
                       <div>
-                        <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                          Address
+                        <div className="mb-1 text-[9px] font-black uppercase tracking-[0.1em] text-gray-400">
+                          Shipping Address
                         </div>
-                        <div className="line-clamp-2 text-xs text-gray-700 dark:text-gray-300">
+                        <div className="line-clamp-1 text-[11px] font-medium text-gray-600 dark:text-gray-400" title={order.address}>
                           {order.address}
                         </div>
                       </div>
                     </div>
 
-                    <div className="mb-3">
-                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                        Products
+                    {/* New Parameter: Courier & AWB (Visible if assigned) */}
+                    {(order.courierName || order.awbNumber) && (
+                      <div className="mb-4 rounded-lg bg-indigo-50/50 p-2.5 dark:bg-indigo-900/20 ring-1 ring-inset ring-indigo-100/50 dark:ring-indigo-800/30">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-[8px] font-black uppercase tracking-widest text-indigo-400">Courier</div>
+                            <div className="text-[10px] font-black text-indigo-700 dark:text-indigo-300">{order.courierName || "Assigning..."}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-indigo-400">AWB Number</div>
+                            <div className="text-[10px] font-mono font-black text-indigo-700 dark:text-indigo-300">{order.awbNumber || "Pending"}</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="rounded-lg border border-gray-100 bg-white p-2 dark:border-gray-600 dark:bg-gray-700/50">
+                    )}
+
+                    {/* Products Section */}
+                    <div className="mb-4">
+                      <div className="mb-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-gray-400">
+                        Ordered Products
+                      </div>
+                      <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-2.5 dark:border-gray-700/50 dark:bg-gray-900/30">
                         {order.items.length > 0 ? (
-                          <div className="space-y-1 text-xs">
+                          <div className="space-y-1.5">
                             {order.items.map((item, idx) => (
-                              <div
-                                key={idx}
-                                className={
-                                  idx > 0
-                                    ? "border-t border-gray-200 pt-1 dark:border-gray-600"
-                                    : ""
-                                }
-                              >
-                                <span className="font-medium text-gray-800 dark:text-gray-100">
-                                  {item.productName}
-                                </span>{" "}
-                                ({item.quantity}x)
-                                {item.hsn && (
-                                  <span className="block text-[10px] text-gray-400">
-                                    HSN: {item.hsn}
-                                  </span>
-                                )}
+                              <div key={idx} className={`flex items-center justify-between text-[11px] ${idx > 0 ? "border-t border-gray-100 pt-1.5 dark:border-gray-800" : ""}`}>
+                                <span className="font-bold text-gray-700 dark:text-gray-200 line-clamp-1 flex-1 mr-2">{item.productName}</span>
+                                <span className="font-black text-gray-400">x{item.quantity}</span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">No items</span>
+                          <span className="text-[11px] italic text-gray-400">No products listed</span>
                         )}
                       </div>
                     </div>
 
                     {order.status === "cancelled" && <RefundBadge order={order} />}
 
-                    <div className="flex flex-wrap justify-center gap-2 border-t border-gray-200 pt-3 dark:border-gray-600">
+                    {/* Actions: Re-aligned and consistent */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 border-t border-gray-100 pt-4 dark:border-gray-700">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCloneOrder(order.id);
-                        }}
-                        className="flex cursor-pointer items-center gap-1 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                        onClick={(e) => { e.stopPropagation(); handleCloneOrder(order.id); }}
+                        className="flex h-9 items-center gap-1.5 rounded-xl bg-indigo-50 px-4 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
                       >
-                        <Copy className="h-3 w-3" />
-                        Clone
+                        <Copy className="h-3.5 w-3.5" /> Clone
                       </button>
 
                       {order.status === "unshipped" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShipOrder(order.id);
-                          }}
-                          className="flex cursor-pointer items-center gap-1 rounded-lg bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 transition hover:bg-green-100 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
-                        >
-                          <Truck className="h-3 w-3" />
-                          Ship
-                        </button>
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleShipOrder(order.id); }}
+                            className="flex h-9 items-center gap-1.5 rounded-xl bg-emerald-500 px-4 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-600 active:scale-95"
+                          >
+                            <Truck className="h-3.5 w-3.5" /> Ship Now
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteOrder(order.id); }}
+                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
                       )}
 
                       {shippedStatuses.includes(order.status) && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCancelOrder(order.id);
-                          }}
-                          className="flex cursor-pointer items-center gap-1 rounded-lg bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 transition hover:bg-orange-100 dark:bg-orange-900 dark:text-orange-300 dark:hover:bg-orange-800"
+                          onClick={(e) => { e.stopPropagation(); handleCancelOrder(order.id); }}
+                          className="flex h-9 items-center gap-1.5 rounded-xl bg-orange-50 px-4 text-xs font-bold text-orange-700 transition hover:bg-orange-100 dark:bg-orange-900/40 dark:text-orange-300 dark:hover:bg-orange-900/60"
                         >
-                          <XCircle className="h-3 w-3" />
-                          Cancel
+                          <XCircle className="h-3.5 w-3.5" /> Cancel
                         </button>
                       )}
 
                       {labelStatuses.includes(order.status) && order.awbNumber && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownloadLabel(order);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); handleDownloadLabel(order); }}
                           disabled={downloadingLabelId === order.id}
-                          className="flex cursor-pointer items-center gap-1 rounded-lg bg-purple-50 px-3 py-1.5 text-xs font-medium text-purple-700 transition hover:bg-purple-100 disabled:opacity-50 dark:bg-purple-900 dark:text-purple-300 dark:hover:bg-purple-800"
+                          className="flex h-9 items-center gap-1.5 rounded-xl bg-purple-600 px-4 text-xs font-bold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700 disabled:opacity-50"
                         >
-                          <Download
-                            className={`h-3 w-3 ${
-                              downloadingLabelId === order.id ? "animate-spin" : ""
-                            }`}
-                          />
+                          <Download className={`h-3.5 w-3.5 ${downloadingLabelId === order.id ? "animate-spin" : ""}`} />
                           Label
-                        </button>
-                      )}
-
-                      {order.status === "unshipped" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteOrder(order.id);
-                          }}
-                          className="flex cursor-pointer items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          Delete
                         </button>
                       )}
                     </div>
@@ -982,11 +975,53 @@ const UnifiedOrdersPage: React.FC = () => {
                       </td>
 
                       <td className="border-b border-gray-200 px-4 py-4 dark:border-gray-800">
-                        <div
-                          className="max-w-[150px] truncate text-xs text-gray-600 dark:text-gray-400"
-                          title={order.address}
-                        >
-                          {order.address}
+                        <div className="flex items-center gap-1.5 min-w-[150px]">
+                          
+                          <div className="max-w-[120px] truncate text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {order.address}
+                          </div>
+
+                          <div className="group/address relative">
+                            <div className="cursor-help p-1 text-indigo-500 transition-colors hover:text-indigo-700">
+                              <Info className="h-3.5 w-3.5" />
+                            </div>
+
+                            <div className="invisible absolute top-full left-0 z-[150] mt-1 w-80 -translate-x-4 scale-95 opacity-0 transition-all duration-200 group-hover/address:visible group-hover/address:scale-100 group-hover/address:opacity-100">
+                              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-2xl ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-800 dark:ring-white/10">
+                                <div className="space-y-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="rounded-md bg-indigo-50 p-1.5 dark:bg-indigo-900/30">
+                                      <Info className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                    </div>
+                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">
+                                      Full Shipping Address
+                                    </div>
+                                  </div>
+
+                                  <p className="whitespace-normal break-words text-[13px] font-bold leading-relaxed text-gray-700 dark:text-gray-200">
+                                    {order.address}
+                                  </p>
+
+                                  <div className="flex gap-6 border-t border-gray-50 pt-3 dark:border-gray-700/50">
+                                    <div>
+                                      <div className="text-[8px] font-black uppercase tracking-tighter text-gray-400">City</div>
+                                      <div className="text-[11px] font-black text-gray-800 dark:text-gray-100">{order.city || "N/A"}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-[8px] font-black uppercase tracking-tighter text-gray-400">Pincode</div>
+                                      <div className="text-[11px] font-black text-gray-800 dark:text-gray-100">{order.pincode || "N/A"}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-[8px] font-black uppercase tracking-tighter text-gray-400">State</div>
+                                      <div className="text-[11px] font-black text-gray-800 dark:text-gray-100">{order.state || "N/A"}</div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="absolute bottom-full left-6 -mb-1.5 h-3 w-3 rotate-45 border-l border-t border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </td>
 
@@ -1071,6 +1106,7 @@ const UnifiedOrdersPage: React.FC = () => {
                             <Copy className="h-4 w-4" />
                           </button>
 
+                          {/* Desktop Actions Logic */}
                           {order.status === "unshipped" ? (
                             <>
                               <button
@@ -1084,11 +1120,9 @@ const UnifiedOrdersPage: React.FC = () => {
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button className="relative inline-flex items-center rounded-r-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 focus:z-10 dark:border-gray-700 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800 cursor-pointer">
-                                    <span className="sr-only">More</span>
                                     <MoreHorizontal className="h-4 w-4" />
                                   </button>
                                 </DropdownMenuTrigger>
-
                                 <DropdownMenuContent align="end" className="z-[80] w-48 p-1">
                                   <DropdownMenuItem
                                     onClick={() => handleDeleteOrder(order.id)}
@@ -1100,10 +1134,27 @@ const UnifiedOrdersPage: React.FC = () => {
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </>
+                          ) : shippedStatuses.includes(order.status) ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="relative inline-flex items-center rounded-r-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 focus:z-10 dark:border-gray-700 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-800 cursor-pointer">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="z-[80] w-48 p-1">
+                                <DropdownMenuItem
+                                  onClick={() => handleCancelOrder(order.id)}
+                                  className="cursor-pointer rounded-lg text-orange-600 focus:bg-orange-50 focus:text-orange-700 dark:text-orange-400 dark:focus:bg-orange-900/20"
+                                >
+                                  <XCircle className="mr-2 h-4 w-4" />
+                                  Cancel Order
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           ) : (
                             <div
                               className="relative inline-flex cursor-not-allowed items-center rounded-r-xl bg-gray-50/50 px-3 py-2 text-sm font-semibold text-gray-400 ring-1 ring-inset ring-gray-300 dark:bg-gray-800/20 dark:text-gray-600 dark:ring-gray-700"
-                              title="Actions restricted"
+                              title="No further actions available for this status"
                             >
                               <MoreHorizontal className="h-4 w-4 opacity-50" />
                             </div>
