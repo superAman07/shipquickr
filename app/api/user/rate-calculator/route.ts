@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
                 if (decoded && decoded.userId) {
                     const assignments = await prisma.userCourierAssignment.findMany({
                         where: { userId: decoded.userId, isActive: true },
-                        select: { courier: true }
+                        select: { courier: true, dashboardPriority: true }
                     });
 
                     if (assignments.length > 0) {
@@ -155,6 +155,35 @@ export async function POST(req: NextRequest) {
                 totalPrice: Math.round(finalTotalPrice * 100) / 100,
             };
         });
+
+        // 4. Sort by User Dashboard Priority
+        try {
+            const cookieStore = await cookies();
+            const token = cookieStore.get("userToken")?.value;
+            if (token) {
+                const decoded: any = jwtDecode(token);
+                const assignments = await prisma.userCourierAssignment.findMany({
+                    where: { userId: decoded.userId, isActive: true },
+                    select: { courier: true, dashboardPriority: true }
+                });
+
+                finalRates.sort((a, b) => {
+                    const getPriority = (name: string) => {
+                        const match = assignments.find(as =>
+                            name.toLowerCase().includes(as.courier.toLowerCase()) ||
+                            as.courier.toLowerCase().includes(name.toLowerCase())
+                        );
+                        return match?.dashboardPriority ?? 99; // Default low priority
+                    };
+                    const pA = getPriority(a.courierName);
+                    const pB = getPriority(b.courierName);
+                    if (pA !== pB) return pA - pB;
+                    return a.totalPrice - b.totalPrice; // Secondary sort by price
+                });
+            }
+        } catch (e) {
+            console.error("Sorting error:", e);
+        }
 
         return NextResponse.json({ rates: finalRates });
 

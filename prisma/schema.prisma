@@ -99,54 +99,54 @@ model Transaction {
 }
 
 model Order {
-  id              Int              @id @default(autoincrement())
-  userId          Int
-  orderId         String           @unique
-  orderDate       DateTime
-  paymentMode     String
-  items           OrderItem[]
-  physicalWeight  Float
-  length          Float
-  breadth         Float
-  height          Float
-  pickupLocation  String?
-  address         String
-  pincode         String
-  state           String
-  city            String
-  createdAt       DateTime         @default(now())
-  codAmount       Float?
-  customerName    String
-  email           String?
-  landmark        String?
-  mobile          String
-  awbNumber       String?
-  labelUrl        String?
-  shippingId      String?
-  status          OrderStatus      @default(unshipped)
-  trackingHistory OrderTracking[]
-  ageing          Int?
-  attempts        Int?
-  ndrReason       String?
-  ndrAction       String? // "re-attempt" | "rto"
+  id               Int              @id @default(autoincrement())
+  userId           Int
+  orderId          String           @unique
+  orderDate        DateTime
+  paymentMode      String
+  items            OrderItem[]
+  physicalWeight   Float
+  length           Float
+  breadth          Float
+  height           Float
+  pickupLocation   String?
+  address          String
+  pincode          String
+  state            String
+  city             String
+  createdAt        DateTime         @default(now())
+  codAmount        Float?
+  customerName     String
+  email            String?
+  landmark         String?
+  mobile           String
+  awbNumber        String?
+  labelUrl         String?
+  shippingId       String?
+  status           OrderStatus      @default(unshipped)
+  trackingHistory  OrderTracking[]
+  ageing           Int?
+  attempts         Int?
+  ndrReason        String?
+  ndrAction        String? // "re-attempt" | "rto"
   ndrActionRemarks String?
-  ewaybill        String?
-  billableWeight  Float?
-  remarks         String?
-  shippingDetails String?
-  shippingCost    Float?
-  updatedAt       DateTime         @updatedAt
-  courierName     String?
-  refundStatus    String?          @default("none")
-  refundAmount    Float?
-  refundDueDate   DateTime?
-  remittanceId    Int?
-  remittance      Remittance?      @relation(fields: [remittanceId], references: [id])
-  user            User             @relation(fields: [userId], references: [id])
-  transactions    Transaction[]
-  warehouseId     Int?
-  warehouse       Warehouse?       @relation(fields: [warehouseId], references: [id])
-  courierPayables CourierPayable[]
+  ewaybill         String?
+  billableWeight   Float?
+  remarks          String?
+  shippingDetails  String?
+  shippingCost     Float?
+  updatedAt        DateTime         @updatedAt
+  courierName      String?
+  refundStatus     String?          @default("none")
+  refundAmount     Float?
+  refundDueDate    DateTime?
+  remittanceId     Int?
+  remittance       Remittance?      @relation(fields: [remittanceId], references: [id])
+  user             User             @relation(fields: [userId], references: [id])
+  transactions     Transaction[]
+  warehouseId      Int?
+  warehouse        Warehouse?       @relation(fields: [warehouseId], references: [id])
+  courierPayables  CourierPayable[]
 
   @@index([remittanceId])
   @@index([userId])
@@ -330,13 +330,15 @@ model News {
 }
 
 model UserCourierAssignment {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courier   String   @db.VarChar(50)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courier           String   @db.VarChar(50)
+  isActive          Boolean  @default(true)
+  dashboardPriority Int      @default(0)
+  apiPriority       Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@unique([userId, courier])
   @@index([userId])

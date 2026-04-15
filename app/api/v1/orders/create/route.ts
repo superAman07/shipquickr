@@ -124,19 +124,16 @@ export async function POST(req: NextRequest) {
         try {
             const assignments = await prisma.userCourierAssignment.findMany({
                 where: { userId: user.id, isActive: true },
-                select: { courier: true }
+                orderBy: { apiPriority: 'asc' }
             });
 
-            const assignedCourierNames = assignments.map(a => a.courier);
+            if (assignments.length > 0) {
+                // Pick the first one (highest priority)
+                const topPriorityAssignment = assignments[0];
+                const selectedCourierName = topPriorityAssignment.courier;
 
-            if (assignedCourierNames.length > 0) {
-                let selectedMode: "Express" | "Surface" = "Surface";
-                let selectedCourierName = "Delhivery Surface";
-
-                if (assignedCourierNames.includes("Delhivery Express")) {
-                    selectedMode = "Express";
-                    selectedCourierName = "Delhivery Express";
-                }
+                // Determine mode based on courier name string (common pattern in this project)
+                const selectedMode: "Express" | "Surface" = selectedCourierName.toLowerCase().includes("express") ? "Express" : "Surface";
 
                 const rateCalc = await delhiveryClient.fetchRate(
                     targetWarehouse.pincode,
