@@ -94,15 +94,18 @@ export async function POST(req: NextRequest) {
                 const decoded: any = jwtDecode(token);
                 if (decoded && decoded.userId) {
                     const assignments = await prisma.userCourierAssignment.findMany({
-                        where: { userId: decoded.userId, isActive: true },
-                        select: { courier: true, dashboardPriority: true }
+                        where: { userId: decoded.userId },
+                        select: { courier: true, dashboardPriority: true, isActive: true }
                     });
 
                     if (assignments.length > 0) {
-                        const assignedCourierNames = assignments.map(a => a.courier.toLowerCase());
+                        const activeAssignments = assignments.filter(a => a.isActive);
+                        // If user has NO assignments, we consider all as ACTIVE by default
+                        // If user HAS assignments, we respect the 'isActive' flag
+                        const assignedCourierNames = activeAssignments.map(a => a.courier.toLowerCase());
+
                         combinedRates = combinedRates.filter(rate => {
                             const rateName = rate.courierName.toLowerCase();
-                            // Catch misspelling permutations: Xpressbees vs Expressbees, ecom vs ecom express
                             if (rateName.includes("xpressbees") && assignedCourierNames.some(c => c.includes("xpress") || c.includes("express"))) return true;
                             if (rateName.includes("delhivery") && assignedCourierNames.some(c => c.includes("delhivery"))) return true;
                             if (rateName.includes("shadowfax") && assignedCourierNames.some(c => c.includes("shadowfax") || c.includes("shadow fax"))) return true;

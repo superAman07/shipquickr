@@ -123,16 +123,22 @@ export async function POST(req: NextRequest) {
         // --- 2. ATTEMPT AUTO-DISPATCH GRACEFULLY ---
         try {
             const assignments = await prisma.userCourierAssignment.findMany({
-                where: { userId: user.id, isActive: true },
+                where: { userId: user.id },
                 orderBy: { apiPriority: 'asc' }
             });
 
-            if (assignments.length > 0) {
+            // If user has NO assignments (hasn't set priorities yet), we consider all ACTIVE by default
+            // If user HAS assignments, we respect the 'isActive' flag
+            const activeAssignments = assignments.length === 0
+                ? [{ courier: "Delhivery Express", apiPriority: 1 }] // Safe default for auto-dispatch
+                : assignments.filter(a => a.isActive);
+
+            if (activeAssignments.length > 0) {
                 // Pick the first one (highest priority)
-                const topPriorityAssignment = assignments[0];
+                const topPriorityAssignment = activeAssignments[0];
                 const selectedCourierName = topPriorityAssignment.courier;
 
-                // Determine mode based on courier name string (common pattern in this project)
+                // Determine mode based on courier name string
                 const selectedMode: "Express" | "Surface" = selectedCourierName.toLowerCase().includes("express") ? "Express" : "Surface";
 
                 const rateCalc = await delhiveryClient.fetchRate(
