@@ -209,7 +209,7 @@ export default function CourierPriorityPage() {
                   "h-2 w-full",
                   !item.isActive
                     ? "bg-gray-200"
-                    : "bg-gradient-to-r from-indigo-600 to-sky-400"
+                    : "bg-linear-to-r from-indigo-600 to-sky-400"
                 )}
               />
 
@@ -389,7 +389,7 @@ export default function CourierPriorityPage() {
 
       <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="group flex items-center gap-6 rounded-[2.5rem] border-2 border-dashed border-gray-200 bg-white p-8 shadow-sm transition-all hover:border-indigo-600 hover:bg-indigo-50/10">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-indigo-600 text-white shadow-xl shadow-indigo-100 transition-transform group-hover:rotate-12">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-100 transition-transform group-hover:rotate-12">
             <Info className="h-7 w-7" />
           </div>
           <div className="space-y-2">
@@ -404,7 +404,7 @@ export default function CourierPriorityPage() {
         </div>
 
         <div className="group flex items-center gap-6 rounded-[2.5rem] border-2 border-dashed border-gray-200 bg-white p-8 shadow-sm transition-all hover:border-amber-600 hover:bg-amber-50/10">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-amber-500 text-white shadow-xl shadow-amber-100 transition-transform group-hover:-rotate-12">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-amber-500 text-white shadow-xl shadow-amber-100 transition-transform group-hover:-rotate-12">
             <Zap className="h-7 w-7" />
           </div>
           <div className="space-y-2">
