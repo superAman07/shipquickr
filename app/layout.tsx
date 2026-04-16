@@ -37,6 +37,38 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('error', function(event) {
+                var errorMsg = event.message || (event.error && event.error.message) || '';
+                var errorName = (event.error && event.error.name) || '';
+                if (errorName === 'ChunkLoadError' || errorMsg.includes('ChunkLoadError') || errorMsg.includes('Loading chunk') || errorMsg.includes('dynamically imported module')) {
+                  var isReloading = sessionStorage.getItem('chunk_reload');
+                  if (!isReloading) {
+                    sessionStorage.setItem('chunk_reload', 'true');
+                    setTimeout(function() { sessionStorage.removeItem('chunk_reload'); }, 10000);
+                    window.location.reload();
+                  }
+                }
+              }, true);
+              window.addEventListener('unhandledrejection', function(event) {
+                var errorMsg = (event.reason && event.reason.message) || '';
+                var errorName = (event.reason && event.reason.name) || '';
+                if (errorName === 'ChunkLoadError' || errorMsg.includes('ChunkLoadError') || errorMsg.includes('Loading chunk') || errorMsg.includes('dynamically imported module')) {
+                  var isReloading = sessionStorage.getItem('chunk_reload');
+                  if (!isReloading) {
+                    sessionStorage.setItem('chunk_reload', 'true');
+                    setTimeout(function() { sessionStorage.removeItem('chunk_reload'); }, 10000);
+                    window.location.reload();
+                  }
+                }
+              }, true);
+            `
+          }}
+        />
+      </head>
       <body className="overflow-x-hidden">
         {children}
         <ToastContainer position="top-right" autoClose={3000} />
