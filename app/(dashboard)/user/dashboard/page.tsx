@@ -63,6 +63,7 @@ interface StatusCardProps {
   percentage: string;
   status: string;
   color: string;
+  dbStatuses: string[];
 }
 
 const getProgressBarColor = (status: string): string => {
@@ -83,31 +84,48 @@ const getProgressBarColor = (status: string): string => {
   return "bg-indigo-500";
 };
 
-function StatusCard({ count, percentage, status, color }: StatusCardProps) {
+function StatusCard({
+  count,
+  percentage,
+  status,
+  color,
+  dbStatuses,
+}: StatusCardProps) {
   const progressBarColor = getProgressBarColor(status);
   const displayCount = `${count}(${percentage})`;
 
+  // Only create comma-separated list of exact statuses for the url filtering
+  const statusQuery = dbStatuses.join(",");
+
+  // Conditionally set the destination link based on the status
+  const isUnshipped = status.toLowerCase().includes("unshipped");
+  const destinationLink = isUnshipped
+    ? `/user/dashboard/bulk?tab=unshipped`
+    : `/user/dashboard/reports?status=${statusQuery}`;
+
   return (
-    <div
-      className={`${color} flex h-full flex-col items-center rounded-lg p-5 text-center transition-all hover:shadow-md`}
-    >
-      <div className="mb-1.5">
-        <h4 className="text-lg font-bold text-gray-800 dark:text-white">
-          {displayCount}
-        </h4>
-      </div>
+    <Link href={destinationLink} className="block h-full">
+      <div
+        className={`${color} flex h-full cursor-pointer flex-col items-center rounded-lg p-5 text-center transition-transform hover:scale-105 hover:shadow-md`}
+      >
+        <div className="mb-1.5">
+          <h4 className="text-lg font-bold text-gray-800 dark:text-white">
+            {displayCount}
+          </h4>
+        </div>
 
-      <p className="mb-3 flex-grow text-sm font-medium capitalize text-gray-600 dark:text-gray-400">
-        {status}
-      </p>
+        <p className="mb-3 flex-grow text-sm font-medium capitalize text-gray-600 dark:text-gray-400">
+          {status}
+        </p>
 
-      <div className="mt-auto h-2 w-full rounded-full bg-gray-200 dark:bg-gray-600">
-        <div
-          className={`${progressBarColor} h-2 rounded-full`}
-          style={{ width: percentage }}
-        />
+        <div className="mt-auto h-2 w-full rounded-full bg-gray-200 dark:bg-gray-600">
+          <div
+            className={`${progressBarColor} h-2 rounded-full`}
+            style={{ width: percentage }}
+          />
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -196,6 +214,35 @@ export default async function Dashboard() {
     }
   }
 
+  let userWalletBalance = 0;
+  if (userId) {
+    const dbWallet = await prisma.wallet.findUnique({
+      where: { userId: Number(userId) },
+      select: { balance: true },
+    });
+    userWalletBalance = dbWallet?.balance ?? 0;
+  }
+
+  const actionableAlerts: string[] = [];
+  const ndrCount = statusCounts["undelivered"] || 0;
+  const failedPickupCount = statusCounts["manifest_failed"] || 0;
+
+  if (ndrCount > 0) {
+    actionableAlerts.push(
+      `${ndrCount} order${ndrCount > 1 ? "s" : ""} stuck in NDR`
+    );
+  }
+
+  if (failedPickupCount > 0) {
+    actionableAlerts.push(
+      `${failedPickupCount} pickup${failedPickupCount > 1 ? "s" : ""} failed`
+    );
+  }
+
+  if (userWalletBalance < 500) {
+    actionableAlerts.push(`Wallet low (₹${userWalletBalance.toFixed(2)})`);
+  }
+
   const shipmentCards = [
     {
       title: "Total Shipment",
@@ -240,7 +287,10 @@ export default async function Dashboard() {
   ];
 
   const getStatusCount = (statuses: string[]) => {
-    return statuses.reduce((acc, status) => acc + (statusCounts[status] || 0), 0);
+    return statuses.reduce(
+      (acc, status) => acc + (statusCounts[status] || 0),
+      0
+    );
   };
 
   const calculatePercentage = (count: number) => {
@@ -305,6 +355,7 @@ export default async function Dashboard() {
       percentage: calculatePercentage(count),
       status: card.status,
       color: card.color,
+      dbStatuses: card.dbStatuses,
     };
   });
 
@@ -331,7 +382,7 @@ export default async function Dashboard() {
     <main className="px-4 pb-8 md:px-8">
       {activeBanner && (
         <div
-          className={`${activeBanner.backgroundColor} mt-4 mb-2 flex w-full cursor-pointer items-center justify-start gap-3 rounded-xl px-4 py-3 text-[13px] text-white shadow-md transition-all hover:shadow-lg sm:text-sm`}
+          className={`${activeBanner.backgroundColor} mb-2 mt-4 flex w-full cursor-pointer items-center justify-start gap-3 rounded-xl px-4 py-3 text-[13px] text-white shadow-md transition-all hover:shadow-lg sm:text-sm`}
         >
           <AlertCircle className="h-5 w-5 shrink-0 animate-pulse" />
           <div
@@ -353,6 +404,28 @@ export default async function Dashboard() {
 
         <div className="mb-8 flex flex-col gap-6 lg:flex-row">
           <div className="flex flex-col gap-6 lg:w-2/3">
+            {actionableAlerts.length > 0 && (
+              <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4 shadow-sm dark:bg-amber-950/30">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <span className="text-xl">⚠️</span>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-bold text-amber-800 dark:text-amber-400">
+                      Action Required
+                    </h3>
+                    <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                      <ul className="list-inside list-disc space-y-1">
+                        {actionableAlerts.map((alert, index) => (
+                          <li key={index}>{alert}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <KycAlertBanner />
 
             <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">

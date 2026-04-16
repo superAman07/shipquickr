@@ -852,7 +852,7 @@ export default function SingleOrderPage() {
                   onClick={() => setShowWarehouseModal(true)}
                   className="w-max cursor-pointer rounded-md bg-[#0a0c37] px-4 py-2 font-semibold text-white shadow-sm transition-colors duration-200 hover:opacity-90 md:ml-auto md:w-auto"
                 >
-                  + Add Warehouse
+                  + Add New Pickup Location
                 </button>
               </div>
 
