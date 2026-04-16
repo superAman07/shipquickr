@@ -6,7 +6,8 @@ import { jwtDecode } from "jwt-decode";
 
 export const metadata: Metadata = {
   title: "ShipQuickr - Seamless Shipping Solutions",
-  description: "ShipQuickr is your reliable partner for logistics and e-commerce shipping solutions across India.",
+  description:
+    "ShipQuickr is your reliable partner for logistics and e-commerce shipping solutions across India.",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -44,7 +45,13 @@ export default function RootLayout({
               window.addEventListener('error', function(event) {
                 var errorMsg = event.message || (event.error && event.error.message) || '';
                 var errorName = (event.error && event.error.name) || '';
-                if (errorName === 'ChunkLoadError' || errorMsg.includes('ChunkLoadError') || errorMsg.includes('Loading chunk') || errorMsg.includes('dynamically imported module')) {
+                var isChunkError = errorName === 'ChunkLoadError' || errorMsg.includes('ChunkLoadError') || errorMsg.includes('Loading chunk') || errorMsg.includes('dynamically imported module');
+                
+                var target = event.target || event.srcElement;
+                var targetSrc = (target && (target.src || target.href)) || '';
+                var isResourceError = target && (target.tagName === 'LINK' || target.tagName === 'SCRIPT') && targetSrc.indexOf('_next') !== -1;
+
+                if (isChunkError || isResourceError) {
                   var isReloading = sessionStorage.getItem('chunk_reload');
                   if (!isReloading) {
                     sessionStorage.setItem('chunk_reload', 'true');
@@ -65,10 +72,11 @@ export default function RootLayout({
                   }
                 }
               }, true);
-            `
+            `,
           }}
         />
       </head>
+
       <body className="overflow-x-hidden">
         {children}
         <ToastContainer position="top-right" autoClose={3000} />
