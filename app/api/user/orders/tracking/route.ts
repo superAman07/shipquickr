@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
         trackingData = {
           status: result.currentStatus,
           description: result.scans?.[0]?.remark || `Status: ${result.currentStatus}`,
+          history: result.scans
         };
         normalizedStatus = mapDelhiveryStatusToStandard(result.currentStatus);
       }
@@ -73,45 +74,66 @@ export async function POST(req: NextRequest) {
       where: { awbNumber: awbNumber },
       include: { user: true }
     });
-     
-    if (normalizedStatus && order && normalizedStatus !== order.status) {
-      await prisma.$transaction([
-        prisma.order.update({
-          where: { id: order.id },
-          data: {
-            status: normalizedStatus as any,
-            shippingDetails: trackingData?.description || `Updated from ${order.status} to ${normalizedStatus}`
-          }
-        }),
 
-        prisma.orderTracking.create({
-          data: {
-            orderId: order.id,
-            status: trackingData?.status || "unknown",
-            normalizedStatus: normalizedStatus,
-            description: trackingData?.description || "",
-            courier: courierName || "Unknown",
-            timestamp: new Date()
-          }
-        })
-      ]);
+    if (normalizedStatus && order && normalizedStatus !== order.status) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: normalizedStatus as any,
+          shippingDetails: trackingData?.description || `Updated from ${order.status} to ${normalizedStatus}`
+        }
+      });
       console.log(`Status updated for AWB ${awbNumber}: ${order.status} → ${normalizedStatus}`);
 
       if (order.user?.webhookUrl) {
-          await forwardWebhookToMerchant(order.user.webhookUrl, {
-              event: "order_status_update",
-              orderId: order.orderId,
-              awb: awbNumber,
-              status: normalizedStatus,
-              rawStatus: trackingData?.status || "Unknown",
-              location: trackingData?.description || "",
-              timestamp: new Date().toISOString()
-          });
+        await forwardWebhookToMerchant(order.user.webhookUrl, {
+          event: "order_status_update",
+          orderId: order.orderId,
+          awb: awbNumber,
+          status: normalizedStatus,
+          rawStatus: trackingData?.status || "Unknown",
+          location: trackingData?.description || "",
+          timestamp: new Date().toISOString()
+        });
       }
     } else if (order) {
       console.log(`No status change needed for AWB ${awbNumber}: ${order.status}`);
     } else {
       console.log(`No order found with AWB: ${awbNumber}`);
+    }
+
+    // Sync all historical scan events to the database (wipe and replace approach for parity)
+    if (order && trackingData?.history && trackingData.history.length > 0) {
+      await prisma.orderTracking.deleteMany({
+        where: { orderId: order.id }
+      });
+
+      const trackingRecords = trackingData.history.map((evt: any) => ({
+        orderId: order.id,
+        status: evt.status || "update",
+        normalizedStatus: normalizedStatus || "unknown",
+        description: evt.remark || evt.description || evt.status || "",
+        courier: courierName,
+        timestamp: evt.timestamp || evt.date ? new Date(evt.timestamp || evt.date) : new Date(),
+      }));
+
+      await prisma.orderTracking.createMany({
+        data: trackingRecords,
+        skipDuplicates: true
+      });
+      console.log(`Synced ${trackingRecords.length} tracking checkpoints for AWB ${awbNumber}`);
+    } else if (order && trackingData) {
+      // Fallback to inserting the current known status if no history array is available
+      await prisma.orderTracking.create({
+        data: {
+          orderId: order.id,
+          status: trackingData.status || "unknown",
+          normalizedStatus: normalizedStatus || "unknown",
+          description: trackingData.description || "",
+          courier: courierName || "Unknown",
+          timestamp: new Date()
+        }
+      });
     }
 
     return NextResponse.json({
