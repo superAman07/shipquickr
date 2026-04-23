@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
-import { cookies } from "next/headers";
-import { jwtDecode } from "jwt-decode";
+import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
   title: "ShipQuickr - Seamless Shipping Solutions",
@@ -20,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "ShipQuickr",
     images: [
       {
-        url: "/og-image.png", // If you have an OpenGraph image for link previews, put it in the public folder
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "ShipQuickr Logo",
@@ -60,6 +59,7 @@ export default function RootLayout({
                   }
                 }
               }, true);
+
               window.addEventListener('unhandledrejection', function(event) {
                 var errorMsg = (event.reason && event.reason.message) || '';
                 var errorName = (event.reason && event.reason.name) || '';
