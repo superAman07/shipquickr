@@ -3,6 +3,7 @@ import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
 import { xpressbeesClient } from "@/lib/services/xpressbees";
 import { shadowfaxClient } from "@/lib/services/shadowfax";
+import { ekartClient } from "@/lib/services/ekart";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     // Call the new Aggregator Service
     // Call both Aggregator and Delhivery, Xpressbees, Shadowfax
-    const [rawRatesResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult] = await Promise.allSettled([
+    const [rawRatesResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, ekartResult] = await Promise.allSettled([
       shippingAggregatorClient.fetchRatesStandard(
         body.pickupPincode,
         body.destinationPincode,
@@ -58,12 +59,10 @@ export async function POST(req: NextRequest) {
         cw,
         { l: dimensions.length, w: dimensions.width, h: dimensions.height }
       ),
-      shadowfaxClient.getShadowfaxOptions(
-        body.pickupPincode,
-        body.destinationPincode,
+      ekartClient.getEkartOptions(
+        { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
         cw,
-        body.paymentMode,
-        codAmount
+        { l: dimensions.length, w: dimensions.width, h: dimensions.height }
       )
     ]);
 
@@ -71,7 +70,9 @@ export async function POST(req: NextRequest) {
     if (delhiverySurfaceResult.status === "fulfilled" && delhiverySurfaceResult.value) combinedRates.push(delhiverySurfaceResult.value);
     if (delhiveryExpressResult.status === "fulfilled" && delhiveryExpressResult.value) combinedRates.push(delhiveryExpressResult.value);
     if (xpressbeesResult.status === "fulfilled" && xpressbeesResult.value) combinedRates.push(...xpressbeesResult.value);
-    if (shadowfaxResult.status === "fulfilled" && shadowfaxResult.value) combinedRates.push(...shadowfaxResult.value);
+    if (ekartResult.status === "fulfilled" && ekartResult.value) {
+      combinedRates.push(ekartResult.value);
+    }
 
     if (combinedRates.length === 0) {
       return NextResponse.json({ error: "No shipping rates found for the given details." }, { status: 404 });

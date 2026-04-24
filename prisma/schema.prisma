@@ -183,7 +183,7 @@ model OrderItem {
 }
 
 model Warehouse {
-  id            Int      @id @default(autoincrement())
+  id            Int                    @id @default(autoincrement())
   userId        Int
   warehouseCode String   @unique
   warehouseName String
@@ -195,11 +195,27 @@ model Warehouse {
   city          String
   contactName   String
   mobile        String
-  createdAt     DateTime @default(now())
-  isPrimary     Boolean? @default(false)
-  status        Boolean? @default(true)
-  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime               @default(now())
+  isPrimary     Boolean?               @default(false)
+  status        Boolean?               @default(true)
+  user          User                   @relation(fields: [userId], references: [id])
   orders        Order[]
+  syncStatuses  WarehouseCourierSync[]
+}
+
+model WarehouseCourierSync {
+  id           Int        @id @default(autoincrement())
+  warehouseId  Int
+  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  courier      String // e.g., "DELHIVERY", "EKART", "XPRESSBEES"
+  status       SyncStatus @default(PENDING)
+  externalId   String? // The ID or alias returned by the courier
+  errorMessage String?    @db.Text
+  lastSyncAt   DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([warehouseId, courier])
+  @@index([warehouseId])
 }
 
 model ShippingRates {
@@ -390,4 +406,10 @@ enum ComplaintStatus {
   open
   pending
   closed
+}
+
+enum SyncStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }

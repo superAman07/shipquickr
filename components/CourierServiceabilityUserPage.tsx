@@ -47,6 +47,12 @@ const COURIER_META: Record<
     bgColor: "bg-white",
     darkBgColor: "dark:bg-gray-800",
   },
+  ekart: {
+    logo: "/ekart.png",
+    color: "text-blue-600",
+    bgColor: "bg-white",
+    darkBgColor: "dark:bg-gray-800",
+  },
 };
 
 function getCourierMeta(name: string) {

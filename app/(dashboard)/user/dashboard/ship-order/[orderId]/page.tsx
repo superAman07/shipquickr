@@ -117,6 +117,8 @@ export default function ShipOrderPage() {
     if (nameLower.includes("ecom express")) return "/ecom-express.png";
     if (nameLower.includes("xpressbees")) return "/xpressbees.png";
     if (nameLower.includes("shadowfax")) return "/shadowfax.png";
+    if (nameLower.includes("delhivery")) return "/delhivery.png";
+    if (nameLower.includes("ekart")) return "/ekart.png";
 
     return undefined;
   };

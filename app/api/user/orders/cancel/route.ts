@@ -8,6 +8,7 @@ import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
 import { forwardWebhookToMerchant } from "@/lib/webhook";
 import { shadowfaxClient } from "@/lib/services/shadowfax";
+import { ekartClient } from "@/lib/services/ekart";
 
 interface TokenDetailsType {
     userId: number;
@@ -71,6 +72,13 @@ export async function POST(req: NextRequest) {
             cancellationResult = await shadowfaxClient.cancelShipment(order.awbNumber);
             if (!cancellationResult.success) {
                 cancellationResult.message = `Shadowfax: ${cancellationResult.message}`;
+            }
+        }
+        else if (courierLower.includes("ekart")) {
+            console.log("Cancelling EKart Order:", order.awbNumber);
+            cancellationResult = await ekartClient.cancelShipment(order.awbNumber);
+            if (!cancellationResult.success) {
+                cancellationResult.message = `EKart: ${cancellationResult.message}`;
             }
         } else {
             console.log("Cancelling via Aggregator for:", order.courierName, order.awbNumber);

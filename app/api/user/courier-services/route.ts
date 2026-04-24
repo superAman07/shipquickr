@@ -6,6 +6,7 @@ import { xpressbeesClient } from "@/lib/services/xpressbees";
 import { shadowfaxClient } from "@/lib/services/shadowfax";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
+import { ekartClient } from "@/lib/services/ekart";
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
     const adminCodType = adminRates?.codChargesType ?? "fixed";
 
     // 2. Fetch Rates from Aggregator AND Direct Integrations
-    const [aggregatorResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult] = await Promise.allSettled([
+    const [aggregatorResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult, ekartResult ] = await Promise.allSettled([
       shippingAggregatorClient.fetchRatesStandard(body.pickupPincode, body.destinationPincode, cw, dimensions, body.paymentMode, declaredValue, codAmount),
       delhiveryClient.fetchRate(String(body.pickupPincode), String(body.destinationPincode), cw, "Surface", body.paymentMode, declaredValue),
       delhiveryClient.fetchRate(String(body.pickupPincode), String(body.destinationPincode), cw, "Express", body.paymentMode, declaredValue),
@@ -76,7 +77,12 @@ export async function POST(req: NextRequest) {
         cw,
         { l: dimensions.length, w: dimensions.width, h: dimensions.height }
       ),
-      shadowfaxClient.getShadowfaxOptions(body.pickupPincode, body.destinationPincode, cw, body.paymentMode, codAmount)
+      shadowfaxClient.getShadowfaxOptions(body.pickupPincode, body.destinationPincode, cw, body.paymentMode, codAmount),
+      ekartClient.getEkartOptions(
+        { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
+        cw,
+        { l: dimensions.length, w: dimensions.width, h: dimensions.height }
+      )
     ]);
 
     // Extract successful results
@@ -103,6 +109,10 @@ export async function POST(req: NextRequest) {
       rawRates.push(...sfRates);
     }
 
+    if (ekartResult.status === "fulfilled" && ekartResult.value) {
+      rawRates.push(ekartResult.value);
+    }
+
     // --- FILTER BASED ON ADMIN ASSIGNMENTS ---
     try {
       const cookieStore = await cookies();
@@ -124,6 +134,7 @@ export async function POST(req: NextRequest) {
               if (rateName.includes("delhivery") && assignedCourierNames.some(c => c.includes("delhivery"))) return true;
               if (rateName.includes("shadowfax") && assignedCourierNames.some(c => c.includes("shadowfax") || c.includes("shadow fax"))) return true;
               if (rateName.includes("ecom") && assignedCourierNames.some(c => c.includes("ecom"))) return true;
+              if (rateName.includes("ekart") && assignedCourierNames.some(c => c.includes("ekart"))) return true;
 
               return assignedCourierNames.includes(rateName) || assignedCourierNames.some(c => rateName.includes(c));
             });

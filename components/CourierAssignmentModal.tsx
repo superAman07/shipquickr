@@ -8,7 +8,6 @@ import { Package, Loader2 } from "lucide-react"
 import axios from "axios"
 import { toast } from "react-toastify"
 
-// Add or remove couriers from this master list as your business grows
 const AVAILABLE_COURIERS = [
   {
     id: "Delhivery Surface",
@@ -19,6 +18,26 @@ const AVAILABLE_COURIERS = [
     id: "Delhivery Express",
     name: "Delhivery Express",
     description: "Fast, premium air shipping"
+  },
+  {
+    id: "XpressBees",
+    name: "XpressBees",
+    description: "Reliable e-commerce logistics"
+  },
+  {
+    id: "Shadowfax",
+    name: "Shadowfax",
+    description: "Fast last-mile delivery"
+  },
+  {
+    id: "Ecom Express",
+    name: "Ecom Express",
+    description: "Wide reach across India"
+  },
+  {
+    id: "EKart",
+    name: "EKart",
+    description: "Fast and reliable Flipkart logistics"
   }
 ]
 

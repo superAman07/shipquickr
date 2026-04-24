@@ -1,0 +1,74 @@
+[
+    {
+        "range": "0-0.5",
+        "type": "base",
+        "local": 28.0,
+        "zonal": 30.0,
+        "metro": 38.0,
+        "roi": 42.0,
+        "ne_jk": 50.0
+    },
+    {
+        "range": "0.5-1.5",
+        "type": "add_per_500g",
+        "local": 10.0,
+        "zonal": 15.0,
+        "metro": 29.0,
+        "roi": 37.0,
+        "ne_jk": 46.0
+    },
+    {
+        "range": "1.5-2.0",
+        "type": "fixed",
+        "local": 52.0,
+        "zonal": 66.0,
+        "metro": 90.0,
+        "roi": 115.0,
+        "ne_jk": 150.0
+    },
+    {
+        "range": "2.0-4.0",
+        "type": "add_per_1kg",
+        "local": 16.0,
+        "zonal": 21.0,
+        "metro": 26.0,
+        "roi": 30.0,
+        "ne_jk": 40.0
+    },
+    {
+        "range": "4.0-5.0",
+        "type": "fixed",
+        "local": 95.0,
+        "zonal": 120.0,
+        "metro": 160.0,
+        "roi": 200.0,
+        "ne_jk": 250.0
+    },
+    {
+        "range": "5.0-9.0",
+        "type": "add_per_1kg",
+        "local": 15.0,
+        "zonal": 15.0,
+        "metro": 19.0,
+        "roi": 27.0,
+        "ne_jk": 28.0
+    },
+    {
+        "range": "9.0-10.0",
+        "type": "fixed",
+        "local": 145.0,
+        "zonal": 155.0,
+        "metro": 200.0,
+        "roi": 250.0,
+        "ne_jk": 315.0
+    },
+    {
+        "range": ">10.0",
+        "type": "add_per_1kg",
+        "local": 14.0,
+        "zonal": 14.0,
+        "metro": 17.0,
+        "roi": 20.0,
+        "ne_jk": 22.0
+    }
+]

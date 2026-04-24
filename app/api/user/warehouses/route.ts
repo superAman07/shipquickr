@@ -8,13 +8,13 @@ interface TokenDetailsType {
     userId: number;
     exp: number;
 }
-export async function POST(req: NextRequest){
-    try{
+export async function POST(req: NextRequest) {
+    try {
         const cookieStore = await cookies();
         const token = cookieStore.get('userToken')?.value;
-        if(!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
         const decoded = jwtDecode<TokenDetailsType>(token);
-        if(decoded.exp * 1000 < Date.now()) return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
+        if (decoded.exp * 1000 < Date.now()) return new Response(JSON.stringify({ error: "Token expired" }), { status: 401 });
         const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
         if (!user || user.kycStatus !== "approved") {
             return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
@@ -29,43 +29,16 @@ export async function POST(req: NextRequest){
                 id: undefined
             }
         })
-        // Register under ALL Delhivery tokens (surface 500g, 2kg, 5kg, express)
-        const allTokens = [
-            process.env.DELHIVERY_TOKEN_SURFACE_500G,
-            process.env.DELHIVERY_TOKEN_SURFACE_2KG,
-            process.env.DELHIVERY_TOKEN_SURFACE_5KG,
-            process.env.DELHIVERY_TOKEN_EXPRESS_500G,
-        ].filter(Boolean);
 
-        for (const token of allTokens) {
-            try {
-                const res = await axios.post(
-                    'https://track.delhivery.com/api/backend/clientwarehouse/create/',
-                    {
-                        name: data.warehouseName,
-                        phone: data.mobile,
-                        address: `${data.address1}${data.address2 ? ', ' + data.address2 : ''}`,
-                        city: data.city,
-                        pin: data.pincode,
-                        state: data.state,
-                        country: 'India',
-                        registered_name: data.warehouseName,
-                        return_address: `${data.address1}${data.address2 ? ', ' + data.address2 : ''}`,
-                        return_pin: data.pincode,
-                        return_city: data.city,
-                        return_state: data.state,
-                        return_country: 'India'
-                    },
-                    { headers: { 'Authorization': `Token ${token}`, 'Accept': 'application/json', 'Content-Type': 'application/json' } }
-                );
-                console.log(`Delhivery warehouse registered (${token!.slice(0,8)}...):`, res.data?.success);
-            } catch (e: any) {
-                console.error(`Delhivery register failed (${token!.slice(0,8)}...):`, e.response?.data || e.message);
-            }
-        }
-        return NextResponse.json({ message: "Warehouse added successfully", warehouse }, { status: 201 });
-    }catch (error){
-        return NextResponse.json({ error: "Failed to create warehouse" }, { status: 500 });  
+        // Centralized Synchronization with all active Couriers (Delhivery, EKart, etc.)
+        // This is safe to run as fire-and-forget or awaited. 
+        // We await here to ensure entries are created before returning response.
+        const { WarehouseSyncService } = await import("@/lib/services/warehouse-sync");
+        await WarehouseSyncService.syncWithAllCouriers(warehouse.id);
+
+        return NextResponse.json({ message: "Warehouse added and synchronized successfully", warehouse }, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to create warehouse" }, { status: 500 });
     }
 }
 
@@ -79,7 +52,7 @@ export async function GET(req: NextRequest) {
 
         const search = req.nextUrl.searchParams.get("search")?.toLowerCase() || "";
         const userId = decoded.userId;
-        
+
         const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
         if (!user || user.kycStatus !== "approved") {
             return NextResponse.json({ error: "KYC not verified" }, { status: 403 });
@@ -97,6 +70,9 @@ export async function GET(req: NextRequest) {
                     ]
                     : undefined,
             },
+            include: {
+                syncStatuses: true
+            },
             orderBy: { createdAt: "desc" },
         });
 
@@ -105,7 +81,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Failed to fetch warehouses" }, { status: 500 });
     }
 }
- 
+
 
 async function generateUniqueWarehouseCode(userId: number): Promise<string> {
     const timestampSuffix = Date.now().toString().slice(-6);

@@ -14,6 +14,7 @@ const SYSTEM_COURIERS = [
     "Shadowfax",
     "XpressBees",
     "Ecom Express",
+    "EKart",
 ];
 
 export async function GET(req: NextRequest) {

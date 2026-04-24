@@ -96,6 +96,8 @@ export default function RateCalculator() {
     if (nameLower.includes("xpressbees")) {
       return "/xpressbees.png";
     }
+    if (nameLower.includes("delhivery")) return "/delhivery.png";
+    if (nameLower.includes("ekart")) return "/ekart.png";
     return null;
   };
 

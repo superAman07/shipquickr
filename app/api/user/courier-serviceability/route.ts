@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { ekartClient } from "@/lib/services/ekart";
 
 interface SimpleServiceInfo {
   courierName: string;
@@ -29,12 +30,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Check all couriers in parallel for faster response
-    const [shadowfaxResult, ecomResult, xpressbeesResult, delhiveryResult] =
+    const [shadowfaxResult, ecomResult, xpressbeesResult, delhiveryResult, ekartResult] =
       await Promise.allSettled([
         isShadowfaxServiceable(String(pickupPincode), String(destinationPincode)),
         getEcomExpressServiceInfo(String(pickupPincode), String(destinationPincode)),
         getXpressbeesServiceInfo(String(pickupPincode), String(destinationPincode)),
         isDelhiveryServiceable(String(pickupPincode), String(destinationPincode)),
+        ekartClient.checkServiceability(destinationPincode)
       ]);
 
     const availableCouriers: SimpleServiceInfo[] = [];
@@ -51,7 +53,9 @@ export async function POST(req: NextRequest) {
     if (delhiveryResult.status === "fulfilled" && delhiveryResult.value) {
       availableCouriers.push({ courierName: "Delhivery" });
     }
-
+    if (ekartResult.status === "fulfilled" && ekartResult.value && ekartResult.value.status === true) {
+      availableCouriers.push({ courierName: "EKart" });
+    }
     if (availableCouriers.length === 0) {
       return NextResponse.json(
         {

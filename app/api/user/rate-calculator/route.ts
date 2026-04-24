@@ -4,6 +4,7 @@ import { shippingAggregatorClient } from "@/lib/services/shipping-aggregator";
 import { delhiveryClient } from "@/lib/services/delhivery";
 import { xpressbeesClient } from "@/lib/services/xpressbees";
 import { shadowfaxClient } from "@/lib/services/shadowfax";
+import { ekartClient } from "@/lib/services/ekart";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
 
         // 2. Fetch Raw Rates from Aggregator
         // 2. Fetch Rates from Aggregator AND Delhivery, Xpressbees, Shadowfax
-        const [rawRatesResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, shadowfaxResult] = await Promise.allSettled([
+        const [rawRatesResult, delhiverySurfaceResult, delhiveryExpressResult, xpressbeesResult, ekartResult] = await Promise.allSettled([
             shippingAggregatorClient.fetchRatesStandard(
                 body.pickupPincode,
                 body.destinationPincode,
@@ -71,12 +72,10 @@ export async function POST(req: NextRequest) {
                 cw,
                 { l: dimensions.length, w: dimensions.width, h: dimensions.height }
             ),
-            shadowfaxClient.getShadowfaxOptions(
-                body.pickupPincode,
-                body.destinationPincode,
+            ekartClient.getEkartOptions(
+                { originPincode: body.pickupPincode, destinationPincode: body.destinationPincode, productType: body.paymentMode === "COD" ? "cod" : "ppd", codAmount, declaredValue },
                 cw,
-                body.paymentMode,
-                codAmount
+                { l: dimensions.length, w: dimensions.width, h: dimensions.height }
             )
         ]);
 
@@ -84,41 +83,12 @@ export async function POST(req: NextRequest) {
         if (delhiverySurfaceResult.status === "fulfilled" && delhiverySurfaceResult.value) combinedRates.push(delhiverySurfaceResult.value);
         if (delhiveryExpressResult.status === "fulfilled" && delhiveryExpressResult.value) combinedRates.push(delhiveryExpressResult.value);
         if (xpressbeesResult.status === "fulfilled" && xpressbeesResult.value) combinedRates.push(...xpressbeesResult.value);
-        if (shadowfaxResult.status === "fulfilled" && shadowfaxResult.value) combinedRates.push(...shadowfaxResult.value);
-
-        try {
-            const cookieStore = await cookies();
-            const token = cookieStore.get("userToken")?.value;
-
-            if (token) {
-                const decoded: any = jwtDecode(token);
-                if (decoded && decoded.userId) {
-                    const assignments = await prisma.userCourierAssignment.findMany({
-                        where: { userId: decoded.userId },
-                        select: { courier: true, dashboardPriority: true, isActive: true }
-                    });
-
-                    if (assignments.length > 0) {
-                        const activeAssignments = assignments.filter(a => a.isActive);
-                        // If user has NO assignments, we consider all as ACTIVE by default
-                        // If user HAS assignments, we respect the 'isActive' flag
-                        const assignedCourierNames = activeAssignments.map(a => a.courier.toLowerCase());
-
-                        combinedRates = combinedRates.filter(rate => {
-                            const rateName = rate.courierName.toLowerCase();
-                            if (rateName.includes("xpressbees") && assignedCourierNames.some(c => c.includes("xpress") || c.includes("express"))) return true;
-                            if (rateName.includes("delhivery") && assignedCourierNames.some(c => c.includes("delhivery"))) return true;
-                            if (rateName.includes("shadowfax") && assignedCourierNames.some(c => c.includes("shadowfax") || c.includes("shadow fax"))) return true;
-                            if (rateName.includes("ecom") && assignedCourierNames.some(c => c.includes("ecom"))) return true;
-
-                            return assignedCourierNames.includes(rateName) || assignedCourierNames.some(c => rateName.includes(c));
-                        });
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Error checking courier assignments:", e);
+        if (ekartResult.status === "fulfilled" && ekartResult.value) {
+            combinedRates.push(ekartResult.value);
         }
+
+        // Note: Filter removed as per user request to show all couriers in Rate Calculator
+        // Admin assignments will still be respected in the actual Shipment Confirmation process.
         if (combinedRates.length === 0) {
             return NextResponse.json({ error: "No available shipping rates found for the given details." }, { status: 404 });
         }
