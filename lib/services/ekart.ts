@@ -343,6 +343,39 @@ export class EkartClient {
             };
         }
     }
+        // ---- 9. WEBHOOK REGISTRATION ----
+    async registerWebhook(webhookUrl: string, secret: string = "shipquickr_secret_777"): Promise<any> {
+        const token = await this.getAccessToken();
+        if (!token) return { success: false, message: "EKart Authentication failed" };
+
+        try {
+            const payload = {
+                url: webhookUrl,
+                secret: secret,
+                topics: ["track_updated"],
+                active: true
+            };
+
+            const response = await axios.post(`${this.baseUrl}/api/v2/webhook`, payload, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            return {
+                success: true,
+                message: "Webhook registered successfully",
+                data: response.data
+            };
+        } catch (error: any) {
+            console.error("EKart Webhook Registration Error:", error.response?.data || error.message);
+            return {
+                success: false,
+                message: error.response?.data?.remark || "API request to EKart webhook failed"
+            };
+        }
+    }
 }
 
 export const ekartClient = new EkartClient();

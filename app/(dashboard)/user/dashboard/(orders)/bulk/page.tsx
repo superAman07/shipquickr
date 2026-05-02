@@ -184,6 +184,7 @@ const UnifiedOrdersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  const [bulkRefreshing, setBulkRefreshing] = useState(false);
   const [downloadingLabelId, setDownloadingLabelId] = useState<string | null>(null);
   const [drawerOrder, setDrawerOrder] = useState<Order | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -469,6 +470,47 @@ const UnifiedOrdersPage: React.FC = () => {
     }
   };
 
+  const handleSmartRefresh = async () => {
+    const refreshableStatuses = ["manifested", "shipped", "in_transit", "out_for_delivery", "undelivered"];
+    const targetOrders = (isSomeSelected ? effectiveSelectedOrders : filteredOrders).filter(
+      (o) => refreshableStatuses.includes(o.status.toLowerCase()) && !!o.awbNumber && !!o.courierName
+    );
+
+    if (targetOrders.length === 0) {
+      return toast.info("No active trackable orders found to refresh.");
+    }
+
+    setBulkRefreshing(true);
+    let successCount = 0;
+    const tid = toast.loading(`Refreshing ${targetOrders.length} active orders...`);
+
+    try {
+      for (const order of targetOrders) {
+        try {
+          const res = await axios.post("/api/user/orders/tracking", {
+            awbNumber: order.awbNumber,
+            courierName: order.courierName,
+          });
+          if (res.data.normalizedStatus) {
+            setAllOrders((prev) =>
+              prev.map((o) =>
+                o.id === order.id ? { ...o, status: res.data.normalizedStatus } : o
+              )
+            );
+            successCount++;
+          }
+        } catch (e) {
+          // ignore individual failures to allow the loop to continue
+        }
+      }
+      toast.update(tid, { render: `Successfully refreshed ${successCount} out of ${targetOrders.length} orders.`, type: "success", isLoading: false, autoClose: 4000 });
+    } catch (error) {
+      toast.update(tid, { render: "An error occurred during bulk refresh.", type: "error", isLoading: false, autoClose: 4000 });
+    } finally {
+      setBulkRefreshing(false);
+    }
+  };
+
   const handleDownloadLabel = async (order: Order) => {
     if (!order.awbNumber || !order.courierName) {
       return toast.error("No AWB/courier found.");
@@ -578,6 +620,16 @@ const UnifiedOrdersPage: React.FC = () => {
               />
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             </div>
+
+            <button
+              onClick={handleSmartRefresh}
+              disabled={bulkRefreshing}
+              className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-700 disabled:opacity-50"
+              title="Automatically refresh status of all trackable orders in view"
+            >
+              <RefreshCw className={`h-4 w-4 ${bulkRefreshing ? "animate-spin" : ""}`} />
+              Smart Refresh
+            </button>
 
             <button
               onClick={() =>
@@ -1260,6 +1312,15 @@ const UnifiedOrdersPage: React.FC = () => {
               </div>
 
               <div className="h-5 w-px bg-white/20" />
+
+              <button
+                onClick={handleSmartRefresh}
+                disabled={bulkRefreshing}
+                className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-teal-500/20 px-3 py-1.5 text-xs font-bold text-teal-300 transition-colors hover:bg-teal-500/40 disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${bulkRefreshing ? "animate-spin" : ""}`} />
+                Smart Refresh
+              </button>
 
               <button
                 onClick={() => downloadCSV(effectiveSelectedOrders)}
